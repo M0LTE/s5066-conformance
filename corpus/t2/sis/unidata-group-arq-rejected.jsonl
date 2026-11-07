@@ -1,0 +1,16 @@
+{"scenario": "sis-unidata-group-arq-rejected", "rows": ["S-0138", "S-0135", "S-0136", "A-0066", "A-0107", "S-0140", "S-0141", "S-0161"], "source": "Ed4 S.5.16.1, p.S-19; A.2.2.8, p.A-10", "description": "A request that sends ARQ to a group address, by the bind default or explicitly, is rejected with reason 6 (Broadcast Not Allowed); non-ARQ to the same group is accepted.", "config": {"local_address": "0.0.1.2", "address_size": 4, "csma": {"mode": "jitter"}}, "note": "Accepted non-ARQ requests go to the DTS queue, which has no observable effect until the planner (P3-4); a burst_started first keeps the channel busy, so a CSMA MAC holds in SENSE (K-0066) and the trace stays valid once Annex K lands."}
+{"t": 0, "in": "burst_started"}
+{"t": 0, "in": "sis_connect", "conn": 1}
+{"t": 0, "in": "sis_bytes", "conn": 1, "bytes": "90eb00000401501000"}
+{"out": "sis_bytes", "conn": 1, "bytes": "90eb00000403500800"}
+{"t": 100, "in": "sis_bytes", "conn": 1, "bytes": "90eb00000d1424f00000090000001e000101"}
+{"out": "sis_bytes", "conn": 1, "bytes": "90eb0000091764f0000009000101"}
+{"t": 200, "in": "sis_bytes", "conn": 1, "bytes": "90eb00000d1424f00000091400001e000102"}
+{"out": "sis_bytes", "conn": 1, "bytes": "90eb0000091764f0000009000102"}
+{"t": 300, "in": "sis_connect", "conn": 2}
+{"t": 300, "in": "sis_bytes", "conn": 2, "bytes": "90eb00000401602200"}
+{"out": "sis_bytes", "conn": 2, "bytes": "90eb00000403600800"}
+{"t": 400, "in": "sis_bytes", "conn": 2, "bytes": "90eb00000d1424f00000091000001e000103"}
+{"out": "sis_bytes", "conn": 2, "bytes": "90eb0000091764f0000009000103"}
+{"t": 500, "in": "sis_bytes", "conn": 2, "bytes": "90eb00000d1424f00000090000001e000104"}
+{"t": 600, "in": "sis_bytes", "conn": 1, "bytes": "90eb00000d1424f00000092220001e000105"}

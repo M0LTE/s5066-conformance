@@ -1,0 +1,19 @@
+{"scenario": "sis-bind-sap-in-use", "rows": ["A-0033", "A-0050", "A-0051", "A-0052", "A-0053", "A-0040", "S-0016", "S-0099", "S-0087", "S-0161"], "source": "Ed4 A.2.2.1 and A.2.2.4, pp.A-5 to A-6; S.5.3, p.S-10", "description": "A SAP held by one client is refused to another with reason 3, a second bind on a bound connection is refused with reason 3 and keeps the first binding, and a disconnect frees the SAP at once.", "config": {"local_address": "0.0.1.2", "address_size": 4}, "note": "S-0161 fixes the bind check order: already bound first, then the service type, then the SAP in use."}
+{"t": 0, "in": "sis_connect", "conn": 1}
+{"t": 0, "in": "sis_bytes", "conn": 1, "bytes": "90eb00000401501000"}
+{"out": "sis_bytes", "conn": 1, "bytes": "90eb00000403500800"}
+{"t": 10, "in": "sis_connect", "conn": 2}
+{"t": 10, "in": "sis_bytes", "conn": 2, "bytes": "90eb00000401502200"}
+{"out": "sis_bytes", "conn": 2, "bytes": "90eb0000020403"}
+{"t": 20, "in": "sis_bytes", "conn": 1, "bytes": "90eb00000401602200"}
+{"out": "sis_bytes", "conn": 1, "bytes": "90eb0000020403"}
+{"t": 30, "in": "sis_bytes", "conn": 1, "bytes": "90eb00000401501000"}
+{"out": "sis_bytes", "conn": 1, "bytes": "90eb0000020403"}
+{"t": 40, "in": "sis_bytes", "conn": 2, "bytes": "90eb00000401602200"}
+{"out": "sis_bytes", "conn": 2, "bytes": "90eb00000403600800"}
+{"t": 50, "in": "sis_connect", "conn": 3}
+{"t": 50, "in": "sis_bytes", "conn": 3, "bytes": "90eb00000401500000"}
+{"out": "sis_bytes", "conn": 3, "bytes": "90eb0000020401"}
+{"t": 60, "in": "sis_disconnect", "conn": 1}
+{"t": 70, "in": "sis_bytes", "conn": 3, "bytes": "90eb00000401502200"}
+{"out": "sis_bytes", "conn": 3, "bytes": "90eb00000403500800"}

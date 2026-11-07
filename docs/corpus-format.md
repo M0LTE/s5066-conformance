@@ -434,6 +434,10 @@ The base configuration and where each default comes from:
 |---|---|---|
 | `local_address` | `null` | Per node. |
 | `address_size` | `null` | Size-of-address field the node sends. |
+| `groups` | `[]` | Group addresses (dotted, section 2) this node receives. Membership is configuration, since no protocol joins a group [Ed4 A.2.2.9, p.A-12; A-0119, A-0120]. |
+| `time.epoch_year` | `2026` | UTC year of core time 0, for the TTD of DATA S_PDUs; the core has no clock, and day numbers restart each year (A-0161, A-0251). |
+| `time.epoch_day` | `1` | UTC day-of-year of core time 0, 1 to 365 or 366 (A-0161, A-0251). |
+| `time.epoch_second` | `0` | UTC seconds after midnight at core time 0, 0 to 86399 (A-0166, A-0251). |
 | `prng_seed` | `"0000000000000000"` | [prng.md](prng.md) |
 | `csma.mode` | `null` | `jitter`, `slotted` or `ed3`, network-wide (decision D7). `ed3` is the Ed3-compatible setting of the K-0107 ruling: jitter contention, one common LBT value equal to `lbt_wait_dcd_ms`, LBT rule 1 off. |
 | `csma.cont_slot_width_ms` | 3000 | [Ed4 K Table 7, p.K-12] |
@@ -444,6 +448,7 @@ The base configuration and where each default comes from:
 | `modem.preamble_ms` | `null` | Section 5 |
 | `modem.flush_ms` | `null` | Section 5 |
 | `modem.waveforms` | `[]` | Section 5 |
+| `sis.default_ttl` | 648000 | The default maximum TTL, in the 2-second units of the TTL field, used when a request gives TTL 0; it is configurable [Ed4 A.2.2.6, p.A-9; A-0087, A-0088], and we default it to the field maximum (A-0091). 1 to 648000. |
 
 New settings are added to `defaults.json` and this table together, each with its source, in the change that first needs them. Only settings the standard makes configurable, or that the plan records as ours, go in (plan 3.2 principle 5).
 
