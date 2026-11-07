@@ -436,7 +436,6 @@ The base configuration and where each default comes from:
 | Key | Default | Source |
 |---|---|---|
 | `local_address` | `null` | Per node. |
-| `address_size` | `null` | Size-of-address field the node sends. |
 | `groups` | `[]` | Group addresses (dotted, section 2) this node receives. Membership is configuration, since no protocol joins a group [Ed4 A.2.2.9, p.A-12; A-0119, A-0120]. |
 | `time.epoch_year` | `2026` | UTC year of core time 0, for the TTD of DATA S_PDUs; the core has no clock, and day numbers restart each year (A-0161, A-0251). |
 | `time.epoch_day` | `1` | UTC day-of-year of core time 0, 1 to 365 or 366 (A-0161, A-0251). |
@@ -455,6 +454,8 @@ The base configuration and where each default comes from:
 | `dts.max_segment_size` | 1023 | The largest C_PDU segment a new D_PDU carries, configurable up to 1023 bytes [Ed4 C.5.1, p.C-57; C.5.2, p.C-61; C-0503, C-0523]. 1 to 1023. |
 | `dts.max_transmission_ms` | 127500 | A configured maximum transmission length below the 127.5 s EOT limit [Ed4 K.3.2.5, p.K-12; K-0094, K-0095]; never applied so as to block one D_PDU (C-0551, C-0878). 1 to 127500. |
 | `drc.default_speed` | `{"wn": 2, "interleaver": "long"}` | The waveform and interleaver of every transmission until rate selection (phase 7) chooses them; a conservative start (plan 6.2). An object with `wn` and `interleaver` (section 4.2 enum). |
+
+There is no address size setting. A node sends each D_PDU with the smallest size-of-address field m that holds both its destination and its source, so m follows the addresses: a broadcast D_PDU always has m = 7 (C-0133, C-0130). Corpus 0.8.0 removed the `address_size` key that earlier versions had.
 
 New settings are added to `defaults.json` and this table together, each with its source, in the change that first needs them. Only settings the standard makes configurable, or that the plan records as ours, go in (plan 3.2 principle 5).
 
