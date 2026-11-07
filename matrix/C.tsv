@@ -2,7 +2,7 @@ id	source	page	strength	requirement	applies	reason	impl	tests	notes
 C-0001	Ed4 C (intro)	C-1	info	The DTS moves M_PDUs and C_PDUs over the radio link as D_PDUs, using segmentation and selective ARQ, or segmentation with best-effort reassembly for non-ARQ.	yes				
 C-0002	Ed4 C.1.1	C-1	info	The High Data Rate Change Request PDU is deprecated in Ed4 and described only in C.9.1.	no	deprecated profile option HDRCR (main Table 1; Ed4 C.9.1)			
 C-0003	Ed4 C.1.1	C-1	info	The expedited data user service is deprecated in Ed4 and described in C.9.2.	no	deprecated profile option EXPEDITED DATA user service (main Table 1; Ed4 C.9.2)			DTS expedited D_PDUs (types 4, 5, 8) remain for CAS use; see C-0025 and plan 4.3.
-C-0004	Ed4 C.1.2	C-1	shall	The DTS user service is either a simple non-ARQ service or a reliable selective ARQ service, as the higher sublayer requests.	yes				
+C-0004	Ed4 C.1.2	C-1	shall	Depending on what the upper sublayer asks for, the DTS offers either plain non-ARQ delivery or reliable selective-ARQ delivery.	yes				
 C-0005	Ed4 C.1.2	C-2	shall	The DTS provides sub-modes of both the non-ARQ and the selective ARQ delivery services.	yes				
 C-0006	Ed4 C.1.2	C-2	shall	Besides ARQ and non-ARQ, the DTS provides an Idle Repeat Request (stop-and-wait) service for peer-to-peer DTS communication.	yes				Used by RESET/WIN-RESYNC and MANAGEMENT D_PDUs (C.4.7.3, C.4.10). Unnumbered shall.
 C-0007	Ed4 C.1.3	C-2	shall	Non-ARQ service uses the D_PDU CRC bits to detect errors.	yes				
@@ -47,7 +47,7 @@ C-0045	Ed4 C.3	C-7	info	Peer edition can be found by a priori knowledge, by CAS-
 C-0046	Ed4 C.3	C-7	may	Peer edition may be known a priori, per peer or for the whole network.	no	plan 4.4: editions are discovered by CAS-1 negotiation only			
 C-0047	Ed4 C.3	C-7	info	Without ALE, CAS-1 capability negotiation is always used for ARQ data, so peer edition is always known when ARQ data flows.	yes				See Annex B link setup (Ed4 bit).
 C-0048	Ed4 C.3	C-7	shall	With ALE, CAS-1 capability negotiation is used for ARQ data whenever peer capability is not known.	no	ALE profile options not in CSMA Fixed Frequency (main Tables 1 and 2; plan 4.3)			
-C-0049	Ed4 C.3	C-7	may	The CAPABILITY EOW can establish Ed4 support without ARQ data and update it when a node is upgraded.	yes				Constrained by interp C-0055.
+C-0049	Ed4 C.3	C-7	info	The CAPABILITY EOW can establish Ed4 support without ARQ data and update it when a node is upgraded.	yes				Constrained by interp C-0055. Not phrased as may or shall.
 C-0050	Ed4 C.3	C-7	shall	Ed4 procedural options are used only with peers supporting Ed4 or later.	yes				
 C-0051	Ed4 C.3	C-7	shall	D_PDU types marked Ed4-only are used only with Ed4 (or later) peers.	yes				
 C-0052	Ed4 C.3	C-7	may	D_PDU types marked Ed3 may be used between Ed4 peers when both choose to.	yes				
@@ -104,7 +104,7 @@ C-0102	Ed4 C.4.2.2 Figure C-3(b)	C-13	info	EOW mapping: EOW bits 11-8 go in head
 C-0103	Ed4 C.4.2.3	C-13	shall	The 8-bit EOT field approximates the time remaining in the current transmission of the sending node.	yes				Used to time exchanges and cut turnaround and collisions.
 C-0104	Ed4 C.4.2.3	C-13	shall	EOT is an unsigned binary count of half-second intervals remaining in the current transmission, measured from the start of this D_PDU including its sync bytes.	yes				Rounding and monotonic decrease are in C.7.5.4.3 (other matrix part). Plan 5.4.
 C-0105	Ed4 C.4.2.3	C-13	info	In some transmission modes (C.7.5) EOT is zero, meaning no information about when the transmission ends.	yes				
-C-0106	Ed4 C.4.2.3	C-13	info	The largest EOT value, 255, represents 127.5 s.	yes				Derived from the 8-bit field.
+C-0106	Ed4 C.4.2.3; Ed4 C.7.5.4	C-13	info	The largest EOT value, 255, represents 127.5 s.	yes				Derived from the 8-bit field, not stated in C.4.2.3. C.7.5.4 caps a single channel transmission at 127.5 s (p.C-113).
 C-0107	Ed4 C.4.2.4	C-13	shall	Size of Address Field gives m, the number of bytes holding the source and destination addresses.	yes				
 C-0108	Ed4 C.4.2.4	C-13	info	The address field is 1 to 7 bytes long; source and destination addresses have equal length.	yes				
 C-0109	Ed4 C.4.2.4	C-14	shall	Address lengths come in 4-bit steps: 0.5, 1, 1.5, 2, 2.5, 3 or 3.5 bytes.	yes				
@@ -115,7 +115,7 @@ C-0113	Ed4 C.4.2.8 worked example	C-19	info	Worked example: a WARNING D_PDU has 
 C-0114	Ed4 C.4.2.6	C-14	shall	Every D_PDU sent carries both source and destination address, each taking half the address field bits.	yes				
 C-0115	Ed4 C.4.2.6	C-14	shall	The first half of the address field is the destination address.	yes				
 C-0116	Ed4 C.4.2.6	C-14	shall	The second half of the address field is the source address.	yes				
-C-0117	Ed4 C.4.2.6 Figure C-4	C-14	info	For odd m the middle address byte is shared: destination in its high nibble, source in its low nibble (Figure C-4(a)); for even m each address takes m/2 whole bytes (Figure C-4(b), p.C-15).	yes				
+C-0117	Ed4 C.4.2.6 Figure C-4	C-14	info	For odd m the middle address byte is shared: destination in its high nibble, source in its low nibble (Figure C-4(a)); for even m each address takes m/2 whole bytes (Figure C-4(b), p.C-15).	yes				Figure C-4 labels the last address row 4+m; the address ends at byte 3+m (Figure C-2, worked example p.C-19).
 C-0118	Ed4 C.4.2.6	C-15	shall	Addresses are binary numbers, from 4 bits up to 28 bits (3.5 bytes) each.	yes				
 C-0119	Ed4 C.4.2.6	C-15	shall	Each byte or fractional byte of an address is represented by a decimal number (dotted decimal).	yes				
 C-0120	Ed4 C.4.2.6	C-15	shall	The binary value of each dotted-decimal number is mapped into the corresponding byte.	yes				
@@ -124,7 +124,7 @@ C-0122	Ed4 C.4.2.6	C-15	should	For D_PDUs supporting group addressing (types 7 a
 C-0123	Ed4 C.4.2.6	C-15	info	The broadcast (all stations) address is group address 31.255.255.255.	yes				
 C-0124	Ed4 C.4.2.6	C-15	shall	A fractional-byte part of an address maps to the leftmost non-zero number of the dotted-decimal form.	yes				
 C-0125	Ed4 C.4.2.6	C-15	shall	The other dotted-decimal numbers refer to whole-byte parts of the address.	yes				
-C-0126	Ed4 C.4.2.6	C-15	info	Example: a 3.5-byte address w.x.y.z has w in 0-15 holding the most significant bits and z the least significant.	yes				
+C-0126	Ed4 C.4.2.6	C-15	info	Example: with 3.5-byte addresses written w.x.y.z, w ranges 0 to 15 and carries the top bits; z carries the bottom 8 bits.	yes				
 C-0127	Ed4 C.4.2.6	C-15	shall	Address bits are placed with the address MSB in the MSB of the first byte of its field and the LSB in the LSB of the last byte, per Figure C-4(a) for 0.5, 1.5, 2.5, 3.5 bytes and Figure C-4(b) for 1, 2, 3 bytes.	yes				
 C-0128	Ed4 C.4.2.6	C-16	shall	When any field spans several octets, bit significance decreases as octet number increases (most significant part in the first octet).	yes				General rule; see interp C-0134.
 C-0129	Ed4 C.4.2.6	C-16	info	The lowest numbered bit of a field holds its lowest order value.	yes				
@@ -132,7 +132,7 @@ C-0130	Ed4 C.4.2.6	C-16	may	Leading zero address bytes may be omitted, keeping s
 C-0131	Ed4 C.4.2.6	C-16	shall	Trailing zero address bytes are always sent.	yes				
 C-0132	Ed4 C.4.2.8 worked example	C-19	info	Worked example: m = 2 with destination 0.0.0.5 and source 0.0.0.100 gives address bytes 0x05 0x64.	yes				
 C-0133	Ed4 C.4.2.4; Ed4 C.4.2.6	C-16	interp	GAP: how a sender picks m is NOT STATED beyond dropping leading zero bytes, though lengths come in half-byte steps. Reading: send the smallest whole number of nibbles that holds both addresses (giving m = that nibble count, 1 to 7); on receipt accept any m from 1 to 7 and zero-extend.	yes				Plan 8.1.
-C-0134	Ed4 C.4.2.6; Ed4 Figures C-10, C-12, C-18, C-20	C-24	interp	CONFLICT: the Ed4 table-style figures for 16-bit TX FSN, RX LWE and NEW RX LWE label the field MSB at bit 0 of the first byte and the LSB at bit 7 of the second, which read literally is bit-reversed like the header CRC. C.4.2.6 rule (10) and Figures C-8, C-28, C-30, C-32 put the most significant bits in the first byte in normal bit order. Reading: big-endian, field bit 15 at bit 7 of the first byte.	yes				Figures on pp.C-24, C-28, C-34, C-37. Confirm against any available Ed4 capture or peer.
+C-0134	Ed4 C.4.2.6; Ed4 Figures C-10, C-12, C-18, C-20	C-24	interp	CONFLICT: the Ed4 table-style figures for 16-bit TX FSN, RX LWE and NEW RX LWE print "MSB" at bit 0 of the first byte and "LSB" at bit 7 of the second, the same drawing Figure C-5 uses for the bit-reversed header CRC. Reading: big-endian in normal bit order, field bit 15 at bit 7 of the first (lower-offset) byte and bit 0 at bit 0 of the second.	yes				Evidence: C.4.2.6 rule (10), p.C-16, says that when a field spans octets the bit significance falls as the octet number rises, and the lowest bit number is the lowest-order value. The CRC reversal is a separate, explicit shall, C.4.2.8 (6) with Figure C-5 (p.C-17), and no such text exists for FSN or LWE. Every other multi-byte header field is drawn and stated big-endian with normal bit order: SIZE OF SEGMENTED C_PDU (Figure C-8, p.C-20), C_PDU SIZE, SEGMENT OFFSET, RECEPTION WINDOW (Figures C-28, C-30, C-32, shalls 19, 23, 27, pp.C-49 to C-51), and the address field (rule 9, p.C-15). Figures C-10, C-12, C-18, C-20 (pp.C-24, C-28, C-34, C-37) rendered and checked; the labels sit at the row ends, so they also read as a byte marker. Confirm against an Ed4 capture or peer when one is available.
 C-0135	Ed4 C.4.2.7	C-16	shall	The bytes after the address field encode the type-specific header defined in C.4.4 to C.4.15.	yes				
 C-0136	Ed4 C.4.2.8	C-16	info	The header has its own 2-byte CRC so that a valid header can be used even when the data part is corrupt.	yes				
 C-0137	Ed4 C.4.2.8	C-16	shall	The two bytes after the type-specific header hold a 16-bit CRC.	yes				
@@ -168,7 +168,7 @@ C-0166	Ed4 C.4.3	C-22	shall	The ED3- D_PDUs (types 0 to 3) are used for regular 
 C-0167	Ed4 C.4.3	C-22	info	Between Ed4 peers the new 16-bit D_PDUs (types 9 to 12) are the default.	yes				
 C-0168	Ed4 C.4.3	C-22	may	Ed4 peers may agree through CAS-1 link setup to use the Ed3 D_PDUs instead (small gain at the slowest narrowband speeds).	yes				Short bit in CAS-1 negotiation (Annex B).
 C-0169	Ed4 C.4.3	C-22	info	Ed5 is expected to make the Ed3 D_PDUs optional and may later remove them.	yes				
-C-0170	Ed4 C.4.4.1 Figure C-9	C-23	info	Type 0 layout: byte 4+m bit 7 C_PDU START, bit 6 C_PDU END, bit 5 DELIVER IN ORDER, bit 4 DROP C_PDU, bit 3 TX WIN UWE, bit 2 TX WIN LWE, bits 1-0 segment size bits 9-8; byte 5+m size bits 7-0; byte 6+m TX FSN (8 bits); h = 9.	yes				h derived.
+C-0170	Ed4 C.4.4.1 Figure C-9	C-23	info	Type 0 layout: byte 4+m bit 7 C_PDU START, bit 6 C_PDU END, bit 5 DELIVER IN ORDER, bit 4 DROP C_PDU, bit 3 TX WIN UWE, bit 2 TX WIN LWE, bits 1-0 segment size bits 9-8; byte 5+m size bits 7-0; byte 6+m TX FSN (8 bits); h = 9.	yes				h derived. Figure C-9 labels the first segment byte 8+m; with h = 9 it is byte 9+m (h+m), as Figure C-10 shows for type 9.
 C-0171	Ed4 C.4.4.2 Figure C-10	C-24	info	Type 9 layout: as type 0 but TX FSN is 16 bits in bytes 6+m (high) and 7+m (low); h = 10.	yes				Byte order per interp C-0134; h derived.
 C-0172	Ed4 C.4.4.3	C-24	shall	DATA-ONLY carries segmented C_PDUs when the sender needs explicit confirmation of receipt.	yes				
 C-0173	Ed4 C.4.4.3	C-24	shall	DATA-ONLY is used with the basic selective ARQ protocol.	yes				
@@ -194,21 +194,21 @@ C-0192	Ed4 C.4.4.3	C-26	shall	The segmented C_PDU immediately follows the D_PDU 
 C-0193	Ed4 C.4.4.3	C-26	shall	The segmented C_PDU is mapped per C.4.2.9.	yes				
 C-0194	Ed4 C.4.5.1 Figure C-11	C-27	info	Type 1 layout: byte 4+m RX LWE (8 bits); then SELECTIVE ACKS of 0 to 16 bytes, whose length is implied by h (h = 7 + ack bytes).	yes				h relation derived.
 C-0195	Ed4 C.4.5.2 Figure C-12	C-28	info	Type 10 layout: bytes 4+m and 5+m RX LWE (16 bits); byte 6+m bit 7 Encoding, bits 6-0 Offset; byte 7+m Ack Length (aa); then Ack Data of 0 to 21 bytes in the header; or, in the long form, Ack Data after the header CRC followed by a 32-bit CRC on the Ack Data.	yes				Byte order per interp C-0134.
-C-0196	Ed4 C.4.5.3	C-28	shall	ACK-ONLY selectively acknowledges received DATA-ONLY or DATA-ACK D_PDUs when the receiver has no segments of its own to send or, Ed4 only, when the acknowledgement does not fit in a DATA-ACK.	yes				
+C-0196	Ed4 C.4.5.3	C-28	shall	ACK-ONLY is the selective acknowledgement for received DATA-ONLY or DATA-ACK D_PDUs, used when the node has no segments of its own to send or (Ed4 only) when the acks will not fit in a DATA-ACK.	yes				
 C-0197	Ed4 C.4.5.3	C-28	shall	ACK-ONLY carries the fields of Figure C-11 or C-12: at least RECEIVE LOWER WINDOW EDGE.	yes				
 C-0198	Ed4 C.4.5.3	C-29	shall	RX LWE equals the sequence number at the RX LWE pointer of the node's receive window.	yes				
 C-0199	Ed4 C.4.5.3	C-29	shall	RX LWE is modulo 256 for type 1 and modulo 65536 for type 10.	yes				Unnumbered shall.
 C-0200	Ed4 C.4.5.4	C-29	shall	ED3-ACK-ONLY (type 1) carries the SELECTIVE ACKS field, mapped per Figure C-11.	yes				
 C-0201	Ed4 C.4.5.4	C-29	shall	SELECTIVE ACKS (0 to 16 bytes) is a bitmap of the status of every D_PDU from the receive window LWE up to and including its UWE; its length comes from Size of Header, not an explicit field.	yes				
 C-0202	Ed4 C.4.5.4	C-29	shall	A set bit in SELECTIVE ACKS is a positive acknowledgement: that FSN was received correctly.	yes				
-C-0203	Ed4 C.4.5.4	C-29	shall	Only D_PDUs whose segmented C_PDU CRC is correct are acknowledged positively, even if the header CRC is correct.	yes				
+C-0203	Ed4 C.4.5.4	C-29	shall	A D_PDU gets a positive ack only if its segment CRC checks; a good header CRC alone is not enough.	yes				
 C-0204	Ed4 C.4.5.4	C-29	shall	D_PDUs with DROP C_PDU set are acknowledged positively whatever their data CRC result.	yes				
 C-0205	Ed4 C.4.5.4	C-29	shall	A clear bit in SELECTIVE ACKS is a negative acknowledgement: that FSN was received in error or not at all.	yes				
 C-0206	Ed4 C.4.5.4	C-29	shall	SELECTIVE ACKS is built and mapped per Figures C-13 and C-14 and the rules below.	yes				
 C-0207	Ed4 C.4.5.4	C-30	shall	The LSB of the first SELECTIVE ACKS byte stands for FSN RX LWE + 1; the RX LWE bit itself is always 0 and is not sent.	yes				
 C-0208	Ed4 C.4.5.4	C-30	shall	Each following bit stands for the next FSN in ascending order, with no FSN skipped.	yes				Figure C-14: bits fill each byte from bit 0 to bit 7.
 C-0209	Ed4 C.4.5.4	C-30	shall	The bit for the receive window UWE lies in the last SELECTIVE ACKS byte.	yes				
-C-0210	Ed4 C.4.5.4	C-30	shall	If the UWE bit is not the MSB of the last byte, the bits above it up to the MSB are zero padding.	yes				
+C-0210	Ed4 C.4.5.4	C-30	shall	Any bits in the last byte above the UWE bit are padded with zero.	yes				
 C-0211	Ed4 C.4.5.4	C-30	shall	No SELECTIVE ACKS bytes follow the byte holding the UWE bit.	yes				
 C-0212	Ed4 C.4.5.5	C-31	info	Type 10 offers two Ack Data encodings for large windows; acknowledgements may be spread over several ACK-ONLY D_PDUs.	yes				
 C-0213	Ed4 C.4.5.5	C-31	should	Keep each ACK-ONLY D_PDU small to reduce the risk of losing it.	yes				
@@ -242,7 +242,7 @@ C-0240	Ed4 C.4.6.3	C-35	should	Repeat acknowledgements with ACK-ONLY D_PDUs.	yes
 C-0241	Ed4 C.4.6.3	C-35	shall	DATA-ACK carries segments needing explicit confirmation when the sender also has received D_PDUs to acknowledge.	yes				
 C-0242	Ed4 C.4.6.3	C-35	shall	A DTS receiving DATA-ACK acknowledges it with ACK-ONLY, or with DATA-ACK if it has C_PDUs of its own for that source.	yes				
 C-0243	Ed4 C.4.6.3	C-35	info	Every DATA-ONLY and ACK-ONLY field rule also applies to DATA-ACK.	yes				
-C-0244	Ed4 C.4.6.3	C-35	shall	DATA-ACK fields C_PDU START, C_PDU END, DELIVER IN ORDER, DROP C_PDU, TX WIN UWE, TX WIN LWE, SIZE OF SEGMENTED C_PDU and TX FSN follow C.4.4.3; RX LWE follows C.4.5.3.	yes				Nine cross-referencing shall clauses merged into one row; the referenced rows carry the detail.
+C-0244	Ed4 C.4.6.3	C-35	shall	DATA-ACK C_PDU START follows the DATA-ONLY rule of C.4.4.3.	yes				Split: the other eight DATA-ACK field clauses are C-1000 to C-1007.
 C-0245	Ed4 C.4.6.4	C-35	shall	Type 2 SELECTIVE ACKS follow C.4.5.4 (type 1 rules).	yes				
 C-0246	Ed4 C.4.6.4	C-35	shall	Type 11 follows a subset of the C.4.5.5 rules: its Encoding bit selects bitmap or RLE exactly as in type 10.	yes				Text says Type 2; see interp C-0250.
 C-0247	Ed4 C.4.6.4	C-36	shall	Type 11 Selective Acks are encoded like type 10 Ack Data, per the chosen encoding.	yes				
@@ -258,7 +258,7 @@ C-0256	Ed4 C.4.7.3	C-37	shall	Receiving a RESET/WIN-RESYNC causes the receiver t
 C-0257	Ed4 C.4.7.3	C-37	shall	Sending of regular-data D_PDUs (DATA-ONLY, ACK-ONLY, DATA-ACK) is suspended until any RESET/WIN-RESYNC stop-and-wait exchange completes.	yes				
 C-0258	Ed4 C.4.7.3	C-38	shall	RESET/WIN-RESYNC carries FULL RESET COMMAND, RESET TX WIN RQST, RESET RX WIN CMND, RESET ACK, NEW RECEIVE LWE and RESET FRAME ID NUMBER, mapped per Figure C-19 (and C-20).	yes				
 C-0259	Ed4 C.4.7.3	C-38	shall	FULL RESET COMMAND = 1 forces a full reset of the ARQ machines at both ends to their initial values (C.7.2, C.7.3).	yes				
-C-0260	Ed4 C.4.7.3	C-38	shall	RESET TX WIN RQST = 1 requests resynchronisation of the TX-LWE and RX-LWE pointers used for DATA.	yes				
+C-0260	Ed4 C.4.7.3	C-38	shall	Setting RESET TX WIN RQST asks the peer to resynchronise the data TX-LWE and RX-LWE pointers at both ends.	yes				
 C-0261	Ed4 C.4.7.3	C-38	shall	A node receiving RESET TX WIN RQST = 1 answers by forcing window resynchronisation with a RESET/WIN-RESYNC carrying RESET RX WIN CMND.	yes				
 C-0262	Ed4 C.4.7.3	C-38	shall	RESET RX WIN CMND = 1 forces resynchronisation of the sender's TX-LWE and the receiver's RX-LWE.	yes				Unnumbered shall (10).
 C-0263	Ed4 C.4.7.3	C-38	shall	A node sending RESET RX WIN CMND = 1 sets NEW RECEIVE LWE to its own TX-LWE.	yes				
@@ -273,10 +273,10 @@ C-0271	Ed4 C.4.7.3	C-39	shall	The DTS uses RESET FRAME ID NUMBER to recognise a 
 C-0272	Ed4 C.4.7.3	C-39	shall	RESET FRAME ID NUMBER is a unique integer assigned in ascending order (with wrap) and not reused until the D_PDU carrying it has been acknowledged.	yes				
 C-0273	Ed4 C.4.7.3	C-39	interp	GAP: the RESET FRAME ID modulus is only 'appropriate modulo'. Reading: modulo 256, the size of its 8-bit field in both types 3 and 12.	yes				
 C-0274	Ed4 C.4.7.3	C-38	interp	CONFLICT: the RESET RX WIN CMND rules disagree on direction: the sender puts its own TX-LWE in NEW RECEIVE LWE (p.C-38), but the receiver is told to set its TX LWE from it (p.C-39), while the field name and the flag's definition point to the receiver's RX LWE. Reading to be fixed by a worked two-node scenario test before implementation and recorded here.	yes				Plan 4.4. Pages C-38 to C-39.
-C-0275	Ed4 C.4.8 Figure C-21	C-40	info	Type 4 layout: byte 4+m bit 7 C_PDU START, bit 6 C_PDU END, bits 5-2 C_PDU ID NUMBER (4 bits), bits 1-0 size bits 9-8; 5+m size bits 7-0; 6+m TX FSN (8 bits); h = 9.	yes				Figure rendered; h derived.
+C-0275	Ed4 C.4.8 Figure C-21	C-40	info	Type 4 layout: byte 4+m bit 7 C_PDU START, bit 6 C_PDU END, bits 5-2 C_PDU ID NUMBER (4 bits), bits 1-0 size bits 9-8; 5+m size bits 7-0; 6+m TX FSN (8 bits); h = 9.	yes				Figure rendered; h derived. Figure C-21 labels the first segment byte 8+m; with h = 9 it is byte 9+m (h+m).
 C-0276	Ed4 C.4.8	C-40	shall	EXPEDITED-DATA-ONLY (type 4) carries segments of C_PDUs needing expedited delivery with explicit confirmation of receipt.	no	we never send expedited ARQ: no procedure in our profile uses it (plan 4.3; Ed4 B.7.2.9, p.B-37)			
 C-0277	Ed4 C.4.8	C-40	shall	A DTS receiving type 4 D_PDUs selectively acknowledges all of them from that source with EXPEDITED-ACK-ONLY (type 5).	yes				Unnumbered shall (2).
-C-0278	Ed4 C.4.8	C-40	shall	Type 4 carries C_PDU START and C_PDU END as for DATA-ONLY (C.4.4), C_PDU ID NUMBER, SIZE OF SEGMENTED C_PDU per C.4.2.10, and TX FSN as for DATA-ONLY, mapped per Figure C-21.	yes				Field list runs onto p.C-41; its five per-field shall clauses are merged here.
+C-0278	Ed4 C.4.8	C-40	shall	Type 4 carries C_PDU START, C_PDU END, C_PDU ID NUMBER, SIZE OF SEGMENTED C_PDU and TX FSN, laid out per Figure C-21.	yes				Field list runs onto p.C-41. Split: the five per-field clauses (4) to (8) are C-1008 to C-1012.
 C-0279	Ed4 C.4.8	C-41	shall	C_PDU ID NUMBER identifies the C_PDU this expedited D_PDU belongs to.	yes				
 C-0280	Ed4 C.4.8	C-41	shall	Type 4 C_PDU ID NUMBER is an integer modulo 16, assigned to C_PDUs in ascending order (with wrap).	no	we never send expedited ARQ: no procedure in our profile uses it (plan 4.3; Ed4 B.7.2.9, p.B-37)			
 C-0281	Ed4 C.4.8	C-41	shall	A type 4 C_PDU ID NUMBER is not reused for another C_PDU until the whole C_PDU has been acknowledged.	no	we never send expedited ARQ: no procedure in our profile uses it (plan 4.3; Ed4 B.7.2.9, p.B-37)			
@@ -284,8 +284,8 @@ C-0282	Ed4 C.4.8	C-41	shall	Type 4 FSNs come from their own pool 0 to 255, used 
 C-0283	Ed4 C.4.8	C-41	info	Expedited and regular delivery therefore need independent state machines and flow-control windows (or separate variables in one machine).	yes				
 C-0284	Ed4 C.4.8	C-41	shall	The type 4 segmented C_PDU immediately follows the header.	yes				
 C-0285	Ed4 C.4.8	C-41	shall	The type 4 segmented C_PDU is mapped per C.4.2.9.	yes				Text cites C.3.2.9, an Ed3 section number.
-C-0286	Ed4 C.4.8	C-41	shall	Processing of expedited D_PDUs in the EXPEDITED DATA state differs from DATA-ONLY or DATA-ACK processing in the DATA state as listed below.	yes				
-C-0287	Ed4 C.4.8	C-41	shall	C_PDUs on the expedited delivery service travel in EXPEDITED-DATA-ONLY and EXPEDITED-ACK-ONLY D_PDUs, which may share a transmission for two-way traffic.	yes				We only receive type 4 and send type 5.
+C-0286	Ed4 C.4.8	C-41	shall	In the EXPEDITED DATA state, expedited D_PDUs are handled differently from regular data D_PDUs in the DATA state, as the next rows list.	yes				
+C-0287	Ed4 C.4.8	C-41	shall	C_PDUs on the expedited delivery service travel in EXPEDITED-DATA-ONLY and EXPEDITED-ACK-ONLY D_PDUs.	yes				We only receive type 4 and send type 5. Split: the permission to mix both types in one transmission is C-1013.
 C-0288	Ed4 C.4.8	C-41	shall	Expedited C_PDUs and their D_PDUs are never queued in the DTS behind D_PDUs carrying non-expedited data (DATA-ONLY or DATA-ACK).	yes				Applies to our type 5 replies and type 8 CAS-1 traffic.
 C-0289	Ed4 C.4.9 Figure C-22	C-42	info	Type 5 layout: identical to type 1 (RX LWE 8 bits at 4+m, SELECTIVE ACKS 0 to 16 bytes) with type value 5.	yes				
 C-0290	Ed4 C.4.9	C-42	shall	EXPEDITED-ACK-ONLY (type 5) selectively acknowledges received EXPEDITED-DATA-ONLY D_PDUs.	yes				
@@ -295,7 +295,7 @@ C-0293	Ed4 C.4.10 Figure C-23	C-43	info	Type 6 layout: byte 4+m bits 7-3 NOT USE
 C-0294	Ed4 C.4.10	C-43	shall	MANAGEMENT (type 6) carries EOW messages or M_PDUs when the sender needs explicit acknowledgement of receipt.	yes				
 C-0295	Ed4 C.4.10	C-43	should	Repeat MANAGEMENT D_PDUs when sending them; they bypass other D_PDUs to arrive quickly.	yes				Phrased as a recommendation.
 C-0296	Ed4 C.4.10	C-43	shall	A DTS acknowledges a received MANAGEMENT D_PDU by sending a MANAGEMENT D_PDU with ACK = 1.	yes				
-C-0297	Ed4 C.4.10	C-43	shall	Processing and sending of MANAGEMENT D_PDUs take precedence over, and bypass, all other pending D_PDU types.	yes				
+C-0297	Ed4 C.4.10	C-43	shall	MANAGEMENT D_PDUs jump the queue: they are processed and sent ahead of every other pending D_PDU type.	yes				
 C-0298	Ed4 C.4.10	C-43	shall	MANAGEMENT D_PDUs are stop-and-wait: at most one unacknowledged MANAGEMENT D_PDU at any time.	yes				
 C-0299	Ed4 C.4.10	C-43	shall	MANAGEMENT carries EXTENDED MESSAGE, VALID MESSAGE, ACK, MANAGEMENT FRAME ID NUMBER and EXTENDED MANAGEMENT MESSAGE, mapped per Figure C-23.	yes				List runs onto p.C-44.
 C-0300	Ed4 C.4.10	C-44	shall	VALID MESSAGE = 1 when the EOW field holds a valid management message, or the first part of one continued in the extended field.	yes				
@@ -303,7 +303,7 @@ C-0301	Ed4 C.4.10	C-44	shall	VALID MESSAGE = 0 when the EOW field holds an EOW t
 C-0302	Ed4 C.4.10	C-44	shall	A MANAGEMENT D_PDU with VALID MESSAGE = 0 is used only to acknowledge another MANAGEMENT D_PDU.	yes				
 C-0303	Ed4 C.4.10	C-44	shall	EXTENDED MESSAGE = 1 when the D_PDU carries a non-empty EXTENDED MANAGEMENT MESSAGE field.	yes				
 C-0304	Ed4 C.4.10	C-44	shall	With EXTENDED MESSAGE = 0 the EXTENDED MANAGEMENT MESSAGE field is absent.	yes				
-C-0305	Ed4 C.4.10	C-44	shall	MANAGEMENT FRAME ID NUMBER is an integer 0 to 255 that identifies MANAGEMENT D_PDUs.	yes				
+C-0305	Ed4 C.4.10	C-44	shall	MANAGEMENT FRAME ID NUMBER holds an integer from 0 to 255.	yes				Split: shall (12), identification by this number, is C-1014.
 C-0306	Ed4 C.4.10	C-44	shall	The DTS keeps variables for MANAGEMENT frame ID numbers.	yes				
 C-0307	Ed4 C.4.10	C-44	shall	TX MANAGEMENT FRAME ID NUMBER holds the frame ID for MANAGEMENT D_PDUs being sent.	yes				
 C-0308	Ed4 C.4.10	C-44	shall	RX MANAGEMENT FRAME ID NUMBER holds the frame ID of the most recently received MANAGEMENT D_PDU.	yes				
@@ -313,8 +313,8 @@ C-0311	Ed4 C.4.10	C-44	shall	Each unique MANAGEMENT D_PDU sent carries the curre
 C-0312	Ed4 C.4.10	C-44	shall	TX MANAGEMENT FRAME ID NUMBER increments by one modulo 256 after each use, except when repeated copies of the D_PDU are to be sent.	yes				
 C-0313	Ed4 C.4.10	C-44	shall	Repeated copies of a MANAGEMENT D_PDU keep the same frame ID number.	yes				
 C-0314	Ed4 C.4.10	C-44	shall	The DTS compares the frame ID of each received MANAGEMENT D_PDU with RX MANAGEMENT FRAME ID NUMBER.	yes				
-C-0315	Ed4 C.4.10	C-45	shall	If the received frame ID differs, the D_PDU is new and RX MANAGEMENT FRAME ID NUMBER is set to the received value.	yes				
-C-0316	Ed4 C.4.10	C-45	shall	If the received frame ID equals RX MANAGEMENT FRAME ID NUMBER, the D_PDU is a repeat and the variable is left unchanged.	yes				Two shalls, (24) and an unnumbered one; there is no (25).
+C-0315	Ed4 C.4.10	C-45	shall	A received MANAGEMENT D_PDU whose frame ID differs from RX MANAGEMENT FRAME ID NUMBER is treated as new.	yes				Split: shall (23), updating the variable, is C-1015.
+C-0316	Ed4 C.4.10	C-45	shall	A received MANAGEMENT D_PDU whose frame ID equals RX MANAGEMENT FRAME ID NUMBER is taken as a repeat of one already received.	yes				Shall (24); there is no (25). Split: the unnumbered shall to leave the variable alone is C-1016.
 C-0317	Ed4 C.4.10	C-45	shall	Each management message goes in its own MANAGEMENT D_PDU, which may be repeated (one-to-one mapping).	yes				
 C-0318	Ed4 C.4.10	C-45	shall	The 12-bit EOW field of a MANAGEMENT D_PDU carries the non-extended management message as defined in C.6.	yes				
 C-0319	Ed4 C.4.10	C-45	may	The EXTENDED MANAGEMENT MESSAGE field may carry implementation-specific messages outside the STANAG.	no	we define no implementation-specific extended management messages			
@@ -362,7 +362,7 @@ C-0360	Ed4 C.4.13 Figure C-34	C-52	info	Type 13 layout: byte 4+m Extended D_PDU 
 C-0361	Ed4 C.4.13	C-52	info	EXTENSION lets later editions and other annexes define up to 256 new D_PDU types; assignments are listed in C.8.	yes				
 C-0362	Ed4 C.4.13	C-52	shall	EXTENSION D_PDUs are used only with Ed4 (or later) peers.	yes				Unnumbered shall. We send none.
 C-0363	Ed4 C.4.13	C-52	info	An extended type is either header only (Figure C-2(a), ending in the header CRC) or carries data after the header ending in a 4-byte CRC (Figure C-2(b)).	yes				
-C-0364	Ed4 C.4.13	C-52	shall	Each Extended D_PDU Type specifies which format it uses; the choice may depend on header contents.	na	we define no extended D_PDU types			Unnumbered shall.
+C-0364	Ed4 C.4.13	C-52	shall	Each Extended D_PDU Type states which of the two formats it uses.	na	we define no extended D_PDU types			Unnumbered shall. Split: the permission to vary the format with header contents is C-1017.
 C-0365	Ed4 C.4.13; C.7.7.3.2	C-52	interp	GAP: for an unknown Extended D_PDU Type a receiver cannot tell whether data follows the header. Reading: check the header CRC, send WARNING reason 4 if addressed to us, then resume the sync search after the header CRC.	yes				Plan 4.4 (WARNING reason 4). Sync search is C.7.7.3.2, p.C-124.
 C-0366	Ed4 C.4.14 Figure C-35	C-53	info	Type 14 layout: generic header only (bytes 0 to 3, addresses, header CRC) with no type-specific fields; h = 6.	yes				h derived.
 C-0367	Ed4 C.4.14	C-53	shall	PADDING D_PDUs are used only with Ed4 (or later) peers.	yes				Unnumbered shall. See interp C-0055.
@@ -392,7 +392,7 @@ C-0390	Ed4 C.4.15	C-56	shall	Send WARNING reason 2 when, in the IDLE/BROADCAST s
 C-0391	Ed4 C.4.15	C-56	shall	Send WARNING reason 3 when any recognised D_PDU arrives that is not allowed in the receiver's current state (general case of reasons 1 and 2).	yes				Allowed types per state are in C.7.1 (other matrix part).
 C-0392	Ed4 C.4.15	C-56	shall	Send WARNING reason 4 when a header addressed to this node with a valid CRC has an unrecognised Extended D_PDU Type.	yes				
 C-0393	Ed4 C.4.15	C-56	shall	Never send a WARNING in response to a received WARNING.	yes				
-C-0394	Ed4 C.4.15	C-56	interp	AMBIGUITY: WARNING conditions 1, 2 and 5 require a header 'addressed to itself', condition 4 says 'any D_PDU'. Reading: only D_PDUs whose destination is this node's own unicast address can trigger a WARNING; group and broadcast destinations never do (avoids warning storms on a shared channel).	yes				
+C-0394	Ed4 C.4.15	C-56	interp	AMBIGUITY: WARNING conditions 1, 2, 3 and 5 require a header 'addressed to itself', condition 4 says 'any D_PDU'. Reading: only D_PDUs whose destination is this node's own unicast address can trigger a WARNING; group and broadcast destinations never do (avoids warning storms on a shared channel).	yes				
 C-0395	Ed4 C.4.15; C.7.1	C-56	interp	AMBIGUITY: the WARNING conditions name an IDLE/BROADCAST state, a term the C.7 state model does not use. Reading: IDLE/BROADCAST is IDLE(UNCONNECTED), and the C.7 allowed-type lists and state tables decide which D_PDUs draw a WARNING and with which reason; the five conditions are read as a summary.	yes				Check against the C.7 rows of the other matrix part.
 C-0396	Ed4 C.6	C-66	info	The EOW messages of C.6 may go in the 12-bit EOW of any D_PDU; they are information only and unacknowledged.	yes				
 C-0397	Ed4 C.6	C-66	info	Acknowledged EOWs, used in earlier editions, are sent in MANAGEMENT D_PDUs.	yes				
@@ -414,9 +414,9 @@ C-0412	Ed4 C.6 Table C-4	C-66	info	EOW type 14 = RESERVED.	yes				Treated as unr
 C-0413	Ed4 C.6 Table C-4	C-66	info	EOW type 15 = CAPABILITY (C.6.10), Ed4 only.	yes				
 C-0414	Ed4 C.6 Table C-4 Note 1	C-67	shall	If the optional procedures of C.7.6.1.2 are implemented, EOW types 2, 5 and 6 are encoded as in Ed3 Annex C.	no	optional Ed3 rate procedures of C.7.6.1.2 not implemented (plan 4.3)			Unnumbered shall. Ed3 Annex C is not available to us.
 C-0415	Ed4 C.6	C-67	info	EOWs marked All may be used with any peer.	yes				
-C-0416	Ed4 C.6	C-67	may	EOWs marked Ed3 may be used with any peer known to support Ed3 or earlier.	yes				
+C-0416	Ed4 C.6	C-67	may	An Ed3 EOW may be sent to a peer known to run Ed3 or earlier.	yes				
 C-0417	Ed4 C.6	C-67	shall	EOWs marked Ed3 are not used with peers known to support Ed4 or later, nor where the peer's edition is unknown.	yes				
-C-0418	Ed4 C.6	C-67	may	EOWs marked Ed4 may be used with any peer known to support Ed4 or later.	yes				
+C-0418	Ed4 C.6	C-67	may	An Ed4 EOW may be sent to a peer known to run Ed4 or later.	yes				
 C-0419	Ed4 C.6	C-67	shall	EOWs marked Ed4 are not used with peers known to support only Ed3 or earlier, nor where the peer's edition is unknown.	yes				See interp C-0055.
 C-0420	Ed4 C.6	C-67	info	Support for the Ed3 EOWs is expected to be dropped in a future edition.	yes				
 C-0421	Ed4 C.6	C-67	interp	CONFLICT: the text says three EOWs are RESERVED and that EOW 2 (old rate change), EOW 7 (alternate rate change) and EOWs 5 and 6 (Annex I) are no longer used, but Table C-4 marks only 7 and 14 RESERVED and lists 2, 5 and 6 as Ed3 EOWs for the optional C.7.6.1.2 procedures. Reading: we implement none of those procedures, so we never send 2, 5, 6, 7 or 14, and treat any received as unrecognised (C.6.3).	yes				
@@ -455,8 +455,8 @@ C-0453	Ed4 C.6.4	C-71	shall	ED3-CAPABILITY Contents is the capability bitmap of 
 C-0454	Ed4 C.6.4 Table C-8	C-71	info	ED3-CAPABILITY Contents bits (1 = yes): 7 adaptive modem parameters (DRC) capable; 6 STANAG 4529 available; 5 MIL-STD-188-110 75 to 2400 bps available; 4 extended data rate capable.	yes				
 C-0455	Ed4 C.6.4 Table C-8	C-71	info	ED3-CAPABILITY Contents bits (1 = yes): 3 full duplex supported; 2 split frequency supported; 1 non-ARCS ALE capable; 0 ARCS capable.	yes				
 C-0456	Ed4 C.6.4 Table C-8 notes	C-71	info	Table C-8 notes: a DRC-capable node implements at least 75 to 2400 bps (1200 for STANAG 4529) with short and long interleaving; extended rates refer to Annex G; a full duplex node has split frequency; ALE and ARCS ambiguity is resolved outside the STANAG.	yes				
-C-0457	Ed4 C.6.4 Table C-8 note 2	C-71	shall	Every node has at least the STANAG 4285 waveform available.	no	see interp C-0458; our modem is MIL-STD-188-110D Appendix D only			Shall inside a table note.
-C-0458	Ed4 C.6.4 Table C-8 note 2	C-71	interp	CONFLICT: a note to the legacy ED3-CAPABILITY table says every node shall have STANAG 4285, while the main body and C.7.7 leave the modem open and our profile names no waveform. Reading: the note describes Ed3-era nodes advertising ED3-CAPABILITY; it does not bind an Ed4 node on another waveform. We never send ED3-CAPABILITY, and if we did all bits would be 0.	yes				Needs a decision recorded by the project owner. Ed4 main 3.4 p.7; C.7.7 p.C-123.
+C-0457	Ed4 C.6.4 Table C-8 note 2	C-71	shall	Every node has at least the STANAG 4285 waveform available.	no	our node uses only the MIL-STD-188-110D Appendix D modem; the note belongs to the legacy ED3-CAPABILITY advertisement (interp C-0458)			Shall inside a table note.
+C-0458	Ed4 C.6.4 Table C-8 note 2	C-71	interp	CONFLICT: a note to the legacy ED3-CAPABILITY table says every node shall have STANAG 4285, while the main body and C.7.7 leave the modem open. Reading: the note describes Ed3-era nodes that advertise ED3-CAPABILITY and does not bind our node.	no	our node uses only the MIL-STD-188-110D Appendix D modem; the note belongs to the legacy ED3-CAPABILITY advertisement, which we never send (C-1019)			Coordinator ruling on PR #6, 2026-11-07. Ed4 main 3.4 p.7; C.7.7 p.C-123. Never advertising 4285 is C-1019.
 C-0459	Ed4 C.6.5	C-71	info	MAX-SPEED (type 8) is sent by a node receiving data to recommend the transmit speed for maximum throughput, at which a significant fraction of D_PDUs is expected to be corrupted and resent.	yes				Only to Ed4 peers in unicast D_PDUs: C.7.6.3 (other matrix part).
 C-0460	Ed4 C.6.5	C-71	info	MAX-SPEED carries a speed and interleaver encoded per C.6.5.1; the speed is the recommended one for maximum throughput.	yes				
 C-0461	Ed4 C.6.5	C-72	info	The MAX-SPEED interleaver is the shortest interleaver recommended at that speed; a sender may well choose a longer one.	yes				
@@ -477,7 +477,7 @@ C-0475	Ed4 C.6.7	C-74	info	MAX-SEGMENT contents are an integer 0 to 255; the rec
 C-0476	Ed4 C.6.7	C-74	interp	GAP: MAX-SEGMENT value 0 (0 bytes) is NOT STATED. Reading: ignore it. Any other value caps new segments at value x 4 bytes (at most 1020).	yes				
 C-0477	Ed4 C.6.8	C-74	may	A node sending data may send SENDER-APPROACH (type 11) to describe its approach, so the receiver can return the most useful recommendations (choices in C.7.6).	yes				
 C-0478	Ed4 C.6.8 Figure C-52	C-74	info	SENDER-APPROACH layout (EOW bits 7-0): bits 7-4 reserved; bit 3 EOW 12 Needed; bits 2-1 Strategy; bit 0 Fixed.	yes				
-C-0479	Ed4 C.6.8	C-74	shall	Fixed = 1 means the sender transmits at a fixed speed; Fixed = 0 means its speed may vary.	yes				Unnumbered shall.
+C-0479	Ed4 C.6.8	C-74	shall	SENDER-APPROACH Fixed = 1 means the sender transmits at a fixed speed.	yes				Unnumbered shall. Split: the Fixed = 0 permission is C-1018.
 C-0480	Ed4 C.6.8	C-74	info	SENDER-APPROACH Strategy codes: 00 = bulk data, optimise for throughput; 01 = low latency data; 10 = a mix of bulk and low latency; 11 = bulk data with low latency needs, for example web browsing.	yes				
 C-0481	Ed4 C.6.8	C-74	may	EOW 12 Needed = 1 says the sender cannot determine the speed or interleaver of what it receives; the receiver may treat it as a request for SPEED-USED.	yes				
 C-0482	Ed4 C.6.8	C-74	should	If EOW 12 Needed is clear, the receiver sends no SPEED-USED EOWs to that node.	yes				Printed as 'EOW 12 Not Needed is not set'; read as bit 3 clear.
@@ -490,3 +490,23 @@ C-0488	Ed4 C.6.10 Figure C-53	C-75	info	CAPABILITY layout (EOW bits 7-0): bits 7
 C-0489	Ed4 C.6.10	C-75	shall	The Ed4 bit is set if the node supports Edition 4 (or later); C.3 says how it is used.	yes				Unnumbered shall.
 C-0490	Ed4 C.6.10	C-75	info	The Duplex bit is set if the node supports duplex with separate transmit and receive channels.	yes				We send 0: no duplex in our profile.
 C-0491	Ed4 C.6.10	C-75	shall	CAPABILITY bits 2-7 are zero.	yes				Unnumbered shall.
+C-1000	Ed4 C.4.6.3	C-35	shall	DATA-ACK C_PDU END follows the DATA-ONLY rule of C.4.4.3.	yes				Split from C-0244.
+C-1001	Ed4 C.4.6.3	C-35	shall	DATA-ACK DELIVER IN ORDER follows the DATA-ONLY rule of C.4.4.3.	yes				Split from C-0244.
+C-1002	Ed4 C.4.6.3	C-35	shall	DATA-ACK DROP C_PDU follows the DATA-ONLY rule of C.4.4.3.	yes				Split from C-0244.
+C-1003	Ed4 C.4.6.3	C-35	shall	DATA-ACK TX WIN UWE follows the DATA-ONLY rule of C.4.4.3.	yes				Split from C-0244.
+C-1004	Ed4 C.4.6.3	C-35	shall	DATA-ACK TX WIN LWE follows the DATA-ONLY rule of C.4.4.3.	yes				Split from C-0244.
+C-1005	Ed4 C.4.6.3	C-35	shall	DATA-ACK SIZE OF SEGMENTED C_PDU follows the DATA-ONLY rule of C.4.4.3.	yes				Split from C-0244.
+C-1006	Ed4 C.4.6.3	C-35	shall	DATA-ACK TRANSMIT FRAME SEQUENCE NUMBER follows the DATA-ONLY rule of C.4.4.3.	yes				Split from C-0244.
+C-1007	Ed4 C.4.6.3	C-35	shall	DATA-ACK RX LWE follows the ACK-ONLY rule of C.4.5.3.	yes				Split from C-0244.
+C-1008	Ed4 C.4.8	C-40	shall	Type 4 C_PDU START follows the DATA-ONLY rule (C.4.4).	yes				Split from C-0278.
+C-1009	Ed4 C.4.8	C-41	shall	Type 4 C_PDU END follows the DATA-ONLY rule (C.4.4).	yes				Split from C-0278.
+C-1010	Ed4 C.4.8	C-41	shall	Type 4 C_PDU ID NUMBER follows the C.4.8 rules that come after the field list.	yes				Split from C-0278. See C-0279 to C-0281.
+C-1011	Ed4 C.4.8	C-41	shall	Type 4 SIZE OF SEGMENTED C_PDU follows C.4.2.10, as for every D_PDU with a segment field.	yes				Split from C-0278.
+C-1012	Ed4 C.4.8	C-41	shall	Type 4 TX FSN follows the DATA-ONLY rule (C.4.4), plus the separate expedited FSN pool.	yes				Split from C-0278. See C-0282.
+C-1013	Ed4 C.4.8	C-41	may	For two-way expedited traffic, types 4 and 5 may go in the same transmission.	yes				Split from C-0287. We only send type 5.
+C-1014	Ed4 C.4.10	C-44	shall	MANAGEMENT D_PDUs are identified by their MANAGEMENT FRAME ID NUMBER.	yes				Split from C-0305.
+C-1015	Ed4 C.4.10	C-45	shall	When a received MANAGEMENT D_PDU is new (frame ID differs), RX MANAGEMENT FRAME ID NUMBER takes the received frame ID.	yes				Split from C-0315.
+C-1016	Ed4 C.4.10	C-45	shall	On a repeated MANAGEMENT D_PDU, RX MANAGEMENT FRAME ID NUMBER is left unchanged.	yes				Unnumbered shall. Split from C-0316.
+C-1017	Ed4 C.4.13	C-52	may	An Extended D_PDU Type may make its format depend on information in its header.	na	we define no extended D_PDU types			Split from C-0364. See interp C-0365 for unknown types on receipt.
+C-1018	Ed4 C.6.8	C-74	may	SENDER-APPROACH Fixed = 0 means the sender may vary its speed.	yes				Split from C-0479.
+C-1019	Ed4 C.6.4 Table C-8; Ed4 C.6	C-71	interp	We never claim STANAG 4285 (or any legacy waveform) capability: we never send ED3-CAPABILITY (type 4), which is only a may towards Ed3 peers. Should one ever be sent, bits 7, 6 and 5 are 0.	yes				Coordinator ruling on PR #6, 2026-11-07. Table C-8 has no 4285 bit; the note 2 rule would be implied by sending the EOW at all. Ed4 peers get CAPABILITY (type 15).
