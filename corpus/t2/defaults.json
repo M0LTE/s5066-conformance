@@ -32,5 +32,11 @@
       "wn": 2,
       "interleaver": "long"
     }
+  },
+  "cas": {
+    "max_links": null,
+    "link_request_timeout_ms": null,
+    "link_request_retries": null,
+    "first_data_timeout_ms": null
   }
 }

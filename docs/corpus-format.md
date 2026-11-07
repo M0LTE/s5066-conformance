@@ -404,10 +404,14 @@ Each timer name, and each `link_state` state name, is registered in a table in t
 | `csma.vdcd_end` | none | The predicted end time of the channel activity heard, from parsed EOTs: runs exactly while the MAC is in SENSE or LBT_WAIT, data is queued, DCD is false and the predicted end time is later than now, with that end time as its deadline; its expiry is the VDCD idle event (C-0844, K-0021, K-0073, K-0111) |
 | `dts.ttd` | none | The DTS transmit queue's next change with no input: runs to the earliest TTD of a queued C_PDU, or, while a C_PDU waits for a C_PDU ID still in use, to the instant that ID is freed, whichever is sooner. Started or restarted when that instant changes, cancelled when there is none (for example when the transmit queue empties); at expiry every C_PDU whose TTD is at or before now is dropped and rejected (C-0857, C-0859, C-0864, C-0327, C-1050, C-1053) |
 | `dts.reception_window` | none | The earliest reception window deadline among the incomplete non-ARQ C_PDUs being reassembled: started or restarted when that earliest deadline changes, cancelled when none is left; at its expiry every incomplete C_PDU whose deadline has passed is discarded (C-0336, C-0350, C-1077; core-architecture collapsing rule) |
+| `cas.link_request` | peer address | The Caller's wait for an answer to its PHYSICAL LINK REQUEST: started with `cas.link_request_timeout_ms` when the transmission carrying the request has ended; cancelled on PHYSICAL LINK ACCEPTED or REJECTED or on a WARNING that restarts linking without the Ed4 bit; at expiry the request is sent again, or the link fails after `cas.link_request_retries` repeats (B-0203, B-0204, B-0221 to B-0223, B-0400, B-0407, B-0411) |
+| `cas.first_data` | peer address | The Called node's wait for the first DATA C_PDU on a link it accepted: started with `cas.first_data_timeout_ms` when the transmission carrying PHYSICAL LINK ACCEPTED has ended, and restarted when a repeated accept has been sent; cancelled by the first DATA C_PDU received by ARQ from that peer; at expiry the link is aborted (B-0215, B-0216, B-0400, B-0401, B-0403, B-0406) |
 
 | Link state | Defined by |
 |---|---|
-| (none yet) | |
+| `calling` | The CAS has started the Caller procedure towards the peer and has no answer yet (B-0196, B-0202) |
+| `linked` | A physical link with the peer is made: as Caller on PHYSICAL LINK ACCEPTED (B-0219), as Called node when the transmission carrying PHYSICAL LINK ACCEPTED has ended (B-0213, B-0400) |
+| `unlinked` | No physical link and no link being made: emitted when a call fails (B-0220, B-0223) or a link is aborted (B-0215) |
 
 ## 5. The modem fixture
 
@@ -454,6 +458,10 @@ The base configuration and where each default comes from:
 | `dts.max_segment_size` | 1023 | The largest C_PDU segment a new D_PDU carries, configurable up to 1023 bytes [Ed4 C.5.1, p.C-57; C.5.2, p.C-61; C-0503, C-0523]. 1 to 1023. |
 | `dts.max_transmission_ms` | 127500 | A configured maximum transmission length below the 127.5 s EOT limit [Ed4 K.3.2.5, p.K-12; K-0094, K-0095]; never applied so as to block one D_PDU (C-0551, C-0878). 1 to 127500. |
 | `drc.default_speed` | `{"wn": 2, "interleaver": "long"}` | The waveform and interleaver of every transmission until rate selection (phase 7) chooses them; a conservative start (plan 6.2). An object with `wn` and `interleaver` (section 4.2 enum). |
+| `cas.max_links` | `null` | The configurable limit on active physical links; a request that would take the count above it is rejected with reason 4 (B-0193, B-0209, B-0313). Links being made count (B-0402). 1 or more. |
+| `cas.link_request_timeout_ms` | `null` | The Caller's wait for an answer to a PHYSICAL LINK REQUEST, from the end of the transmission carrying it; configurable with no value given (B-0203, B-0204). 1 or more. |
+| `cas.link_request_retries` | `null` | How many times an unanswered PHYSICAL LINK REQUEST is sent again before the link fails, so 1 + retries sends in all (B-0222, B-0407). 0 or more. |
+| `cas.first_data_timeout_ms` | `null` | The Called node's wait for the first DATA C_PDU on a link it accepted (B-0215, B-0216). 1 or more. |
 
 There is no address size setting. A node sends each D_PDU with the smallest size-of-address field m that holds both its destination and its source, so m follows the addresses: a broadcast D_PDU always has m = 7 (C-0133, C-0130). Corpus 0.8.0 removed the `address_size` key that earlier versions had.
 
