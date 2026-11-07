@@ -1,0 +1,331 @@
+id	source	page	strength	requirement	applies	reason	impl	tests	notes
+B-0001	Ed4 B.1	B-1	info	CAS service 1: carry out SIS requests to make and to break physical links	yes				
+B-0002	Ed4 B.1	B-1	info	CAS service 2: tell SIS when the state of a physical link changes	yes				
+B-0003	Ed4 B.1	B-1	info	CAS service 3: accept S_PDUs from SIS for sending on a physical link	yes				
+B-0004	Ed4 B.1	B-1	info	CAS service 4: pass S_PDUs received on a physical link up to SIS	yes				
+B-0005	Ed4 B.1	B-1	info	Definition: a physical link is a logical link between two nodes that share consistent ARQ state	yes				
+B-0006	Ed4 B.1	B-1	info	The channel access protocol specified is CAS-1 (Channel Access Type 1)	yes				
+B-0007	Ed4 B.1	B-1	info	CAS also manages ALE links with peers	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0008	Ed4 B.1 (Changes in This Edition)	B-1	info	Towards peers that do not support Ed4, only Edition 3 compatible CAS features are used	yes				Decision D6: Ed3 interop is mandatory
+B-0009	Ed4 B.2	B-2	info	The CAS to SIS interface implementation is not mandated; a conceptual model is used to describe it	yes				
+B-0010	Ed4 B.2	B-2	shall	The interface lets SIS ask CAS to make or break a physical link with a given node address	yes				
+B-0011	Ed4 B.2	B-2	shall	The interface lets CAS notify SIS of changes in physical link status	yes				
+B-0012	Ed4 B.2	B-2	shall	The interface lets CAS accept S_PDUs from SIS	yes				
+B-0013	Ed4 B.2	B-2	shall	The interface lets CAS deliver S_PDUs to SIS	yes				
+B-0014	Ed4 B.2	B-2	shall	Control information that SIS passes for CAS management must not be derived from client data or U_PDU contents inside S_PDUs	yes				Client data may be encrypted or in any format
+B-0015	Ed4 B.2	B-2 to B-3	info	CAS does not queue traffic; the DTS queues, and SIS queues in some modes	yes				
+B-0016	Ed4 B.2	B-3	may	The interface may derive CAS control information from S_PDU contents (never from encapsulated U_PDUs); the annex strongly discourages this	yes				Our choice: do not use it; see the following should row
+B-0017	Ed4 B.2	B-3	should	Information CAS needs for protocol control should be passed explicitly in interface primitives	yes				
+B-0018	Ed4 B.2, Table B-1	B-3 to B-4	info	Nominal C_ primitives (non-mandatory, information only): C_PHYSICAL_LINK_MAKE, _MADE, _REJECTED, _BREAK, _BROKEN, C_UNIDATA_REQUEST, _REQUEST_CONFIRM, _REQUEST_REJECTED, C_UNIDATA_INDICATION	yes				Used as the names of our internal CAS/SIS events
+B-0019	Ed4 B.2.1	B-4	info	C_PHYSICAL_LINK_BREAK carries a SIS reason: higher priority link, share the channel, or idle soft link	yes				
+B-0020	Ed4 B.2.1	B-4	info	SIS supplies a break reason that CAS carries to the peer in the Reason field of the break C_PDU (text points at B.7.1.5, the type 4 BREAK)	yes				No mapping table given; see interp row on break reason mapping
+B-0021	Ed4 B.2.2.1	B-4	info	Link-make errors from peer rejection: sub-reasons Reason Unknown and Broadcast-only node	yes				Type 3 also defines reasons 2, 4 and 5; see interp row
+B-0022	Ed4 B.2.2.1	B-4 to B-5	info	Link-make error from the DTS rejecting the request transfer; the only local DTS cause is TTL expiry	yes				
+B-0023	Ed4 B.2.2.1	B-5	should	The TTL used for the link-make transfer should be large enough that it never expires in practice	yes				
+B-0024	Ed4 B.2.2.1	B-5	info	Link-make error: timer expired after the last PHYSICAL LINK REQUEST was sent	yes				
+B-0025	Ed4 B.2.2.1	B-5	info	Local link-make error reasons that can occur without ALE: Maximum Physical Links In Use; Link not allowed due to EMCON	yes				
+B-0026	Ed4 B.2.2.1	B-5	info	Local link-make error reasons for ALE: ALE Call Timeout, ALE Call Rejected, Duplex ALE Timeout, Physical Link Prevents Broadcast	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0027	Ed4 B.2.2.1	B-5	info	Broadcast-only rejection indicates a misconfiguration to be fixed	yes				
+B-0028	Ed4 B.2.2.1	B-5	info	On Maximum Physical Links In Use, SIS holds off linking to that peer until another physical link closes	yes				
+B-0029	Ed4 B.2.2.1	B-5	info	On any other link-make error, SIS rejects all S_PDUs queued for that link and the client may resubmit	yes				
+B-0030	Ed4 B.2.2.2	B-5	info	C_UNIDATA_REQUEST is unacknowledged, so there are no peer errors for it	yes				
+B-0031	Ed4 B.2.2.2	B-5	info	The only DTS cause for rejecting a valid C_UNIDATA_REQUEST is TTL expiry	yes				
+B-0032	Ed4 B.2.2.2	B-5	info	Local C_UNIDATA_REQUEST reject reasons that can occur without ALE: Broadcast Not Allowed, Address Not Known, Address not Routable	yes				
+B-0033	Ed4 B.2.2.2	B-5	info	Local C_UNIDATA_REQUEST reject reasons for ALE: No ALE Mapping for Address, Physical Link Needed	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0034	Ed4 B.2.2.2	B-5	info	TTL expiry, Broadcast Not Allowed, Address Not Known and No ALE Mapping are passed up to the SIS user with the S_PDU rejection	yes				
+B-0035	Ed4 B.2.2.2	B-5 to B-6	info	Physical Link Needed is used when non-ARQ data goes to an ALE peer that requires a physical link	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0036	Ed4 B.3, Table B-2	B-6	info	Nominal ALE_ primitives between CAS and the ALE layer (non-mandatory)	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0037	Ed4 B.3	B-6	info	The ALE layer is assumed to control ALE scanning; sounding is handled per B.6.2.7	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0038	Ed4 B.4	B-6 to B-7	info	Two peer access models exist: Multiple Simultaneous Peer Access and Single Peer Access	yes				
+B-0039	Ed4 B.4	B-7	shall	Every node on a channel uses the same peer access model	yes				All our nodes use Multiple Simultaneous Peer Access
+B-0040	Ed4 B.4	B-7	info	A profile must state which access model(s) it supports	yes				CSMA Fixed Frequency uses MULTIPLE ACCESS (main Table 2, p.13)
+B-0041	Ed4 B.5	B-7	info	Multiple Simultaneous Peer Access: a node may send to several peers at once over the broadcast channel; channel access is controlled by the MAC (Annex K CSMA or Annex L WTRP)	yes				We use Annex K
+B-0042	Ed4 B.5	B-7	info	In this model CAS hands data for every destination straight to the DTS	yes				
+B-0043	Ed4 B.5	B-7	info	Support for this model is optional and signalled by the MULTIPLE ACCESS profile option	yes				Mandatory in our profile (main Table 2, p.13)
+B-0044	Ed4 B.6	B-7	shall	Single Peer Access is used where ALE links the peers	no	Single Peer Access model not used; our profile is MULTIPLE ACCESS (main Table 2, p.13)			
+B-0045	Ed4 B.6	B-7	shall	When ALE mode is used it is configured on all nodes using the channel	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0046	Ed4 B.6	B-7	shall	Single Peer Access is used for duplex operation over two exclusive channels	no	Single Peer Access model not used; our profile is MULTIPLE ACCESS (main Table 2, p.13)			
+B-0047	Ed4 B.6	B-7	info	In Single Peer Access CAS rejects transfers to peers other than the active one, so SIS queues and schedules per peer	no	Single Peer Access model not used; our profile is MULTIPLE ACCESS (main Table 2, p.13)			
+B-0048	Ed4 B.6	B-7	info	Single Peer Access has four optional variants, each a profile option	no	Single Peer Access model not used; our profile is MULTIPLE ACCESS (main Table 2, p.13)			
+B-0049	Ed4 B.6.1	B-8	info	Duplex without ALE uses the multiple access procedures and suits only one pair of nodes (DUPLEX FIXED option)	no	DUPLEX FIXED option is not in CSMA Fixed Frequency (main Table 2, p.13)			
+B-0050	Ed4 B.6.1	B-8	shall	In duplex without ALE, unicast data to any address other than the duplex peer is rejected with Address Not Known	no	DUPLEX FIXED option is not in CSMA Fixed Frequency (main Table 2, p.13)			
+B-0051	Ed4 B.6.1	B-8	may	In duplex without ALE, group addressing may be used	no	DUPLEX FIXED option is not in CSMA Fixed Frequency (main Table 2, p.13)			
+B-0052	Ed4 B.6.2	B-8	shall	With 1:1 ALE, ALE is used for all communication	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0053	Ed4 B.6.2	B-8	info	1:1 ALE works with any ALE generation and is signalled by the ALE 1:1 profile option	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0054	Ed4 B.6.2.1	B-8	info	IMPLICIT CAS-1 mode: the soft link opens and closes with the ALE link	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0055	Ed4 B.6.2.1	B-8	shall	An implementation supporting 1:1 ALE supports EXPLICIT CAS-1 mode	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0056	Ed4 B.6.2.1	B-8	shall	The 1:1 ALE mode (IMPLICIT or EXPLICIT) is the same for all nodes in a network	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0057	Ed4 B.6.2.1	B-8	may	The choice of 1:1 ALE mode may be influenced by Ed3 interop (B.7.2.3)	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0058	Ed4 B.6.2.2	B-9	info	IMPLICIT mode has one active CAS-1 link with queueing in SIS; EXPLICIT mode keeps a queue and DTS state per CAS-1 link in CAS	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0059	Ed4 B.6.2.2	B-9	may	In EXPLICIT mode, CAS decides for itself when to open or close ALE links	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0060	Ed4 B.6.2.3	B-9	may	A node may have several 1:1 ALE channels	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0061	Ed4 B.6.2.3	B-9	shall	With several 1:1 ALE channels, each channel's DTS operates independently	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0062	Ed4 B.6.2.4	B-9	shall	With a 1:1 ALE link open, data to a broadcast address is rejected with Physical Link Prevents Broadcast	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0063	Ed4 B.6.2.4	B-9	may	With no 1:1 ALE link open, broadcast data may be handled by Multicast ALE (B.6.3)	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0064	Ed4 B.6.2.4	B-9	shall	Under 1:1 ALE, data to an unknown 5066 address is rejected with Address Not Known	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			The non-ALE equivalent is in B.7, p.B-12
+B-0065	Ed4 B.6.2.4	B-9	shall	Under 1:1 ALE, data whose ALE address cannot be found is rejected with No ALE Mapping for Address	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0066	Ed4 B.6.2.4	B-9	shall	In EXPLICIT mode, the CAS-1 soft link procedure is followed after the ALE link is made (an ALE link may be made directly if a CAS-1 link is already open)	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0067	Ed4 B.6.2.4	B-9	may	In IMPLICIT mode, the CAS-1 link procedure may be run to learn the peer edition or negotiate short FSN	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0068	Ed4 B.6.2.4	B-9	should	In IMPLICIT mode, run the CAS-1 link process only when necessary	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0069	Ed4 B.6.2.4	B-9	shall	Closing an ALE link follows the ALE Link Break procedure	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0070	Ed4 B.6.2.4	B-9	may	In EXPLICIT mode the ALE link may be dropped while the CAS-1 link stays open	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0071	Ed4 B.6.2.4	B-9 to B-10	shall	In EXPLICIT mode the CAS-1 link is closed with the CAS-1 link break procedure	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0072	Ed4 B.6.2.4	B-10	should	In IMPLICIT mode, do not run the CAS-1 break exchange; the CAS-1 link ends with the ALE link	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0073	Ed4 B.6.2.4	B-10	shall	If an open ALE link is closed externally, the ALE Link Break procedure is followed	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0074	Ed4 B.6.2.4	B-10	shall	In IMPLICIT mode the CAS-1 link is treated as closed when the ALE link closes	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0075	Ed4 B.6.2.4	B-10	shall	Under 1:1 ALE, CAS keeps a list of open physical links, at most one per channel	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			No equivalent fixed cap without ALE; see B.7.2 configurable limit
+B-0076	Ed4 B.6.2.4	B-10	shall	Under 1:1 ALE, a new link request when all channels are in use is rejected with Maximum Physical Links In Use	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0077	Ed4 B.6.2.4	B-10	shall	In IMPLICIT mode, non-ARQ data with no physical link to the destination is rejected with Physical Link Needed	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0078	Ed4 B.6.2.4	B-10	shall	In EXPLICIT mode, CAS ensures a suitable ALE link is open to carry non-ARQ data	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0079	Ed4 B.6.2.4	B-10	info	In IMPLICIT mode SIS opens and closes CAS-1 links, closing cleanly per B.7.2.4	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0080	Ed4 B.6.2.5	B-10	info	Frequency change or validation: EXPLICIT relinks by ALM or close and reopen; IMPLICIT uses B.7.2.7	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0081	Ed4 B.6.2.6	B-11	info	ALE link failure: EXPLICIT makes a new ALE link and keeps the soft link; IMPLICIT uses the resume procedure B.7.2.9	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0082	Ed4 B.6.2.7	B-11	info	ALE sounding coordination is outside the scope of the annex	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0083	Ed4 B.6.3	B-11	info	Multicast ALE carries non-ARQ traffic only, starts when non-ARQ data goes to a broadcast address, needs 1:1 links closed first, and the caller closes the call (MULTICAST ALE option)	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			The annex does not support soft links over multicast ALE
+B-0084	Ed4 B.6.4	B-12	shall	With duplex and ALE, a node determines whether the peer supports duplex (a priori or via DTS EOWs)	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0085	Ed4 B.6.4	B-12	should	When both peers support duplex, duplex should be negotiated using ALE	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0086	Ed4 B.6.4	B-12	may	On receiving an ALE link from a duplex peer, a node may make a second ALE connection to it	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0087	Ed4 B.6.4	B-12	shall	With two duplex ALE links, each initiator sends its data on the link it initiated	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0088	Ed4 B.7	B-12	info	Without ALE, the node sits on a channel (fixed, or with frequency set by an outside process) that other nodes may share	yes				
+B-0089	Ed4 B.7	B-12	shall	If the node knows the addresses of all nodes that can use the channel, data to any other address is rejected with Address Not Known	yes				Applies only when a complete station list is configured
+B-0090	Ed4 B.7	B-12	shall	Making and breaking physical links between two nodes is coordinated by CAS alone	yes				
+B-0091	Ed4 B.7	B-12	shall	When ALE is not used, the CAS-1 linking protocol is used	yes				Basis for implementing C_PDU types 1 to 5
+B-0092	Ed4 B.7	B-12	shall	If CAS-1 linking was skipped under ALE and ARQ data draws a WARNING saying no connection exists, run CAS-1 linking and resend	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0093	Ed4 B.7	B-12	shall	A called node that accepted an ALE link answers a PHYSICAL LINK REQUEST per the CAS-1 linking protocol	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0094	Ed4 B.7	B-13	shall	Under ALE, a received type 4 BREAK is answered with a type 5 BREAK CONFIRM, then the ALE link closes and the physical link is broken	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			Text cites B.4.2.2, a stale reference
+B-0095	Ed4 B.7	B-13	shall	A node uses a physical link for control and data of soft-link data exchange sessions that SIS requests	yes				
+B-0096	Ed4 B.7	B-13	may	A node may hold physical links with several nodes at once, at most one per remote node	yes				
+B-0097	Ed4 B.7	B-13	may	A node may make a new physical link before breaking existing ones	yes				
+B-0098	Ed4 B.7	B-13	shall	Switching between physical links needs no explicit peer-to-peer exchange	yes				
+B-0099	Ed4 B.7	B-13	info	Under 1:1 ALE, CAS allows one active ALE link per channel and binds one physical link to it	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0100	Ed4 B.7	B-13	shall	CAS-1 talks to peer CAS sublayers with these protocols to make and break physical links	yes				
+B-0101	Ed4 B.7	B-13	shall	CAS-1 talks to peer CAS sublayers with these protocols to carry S_PDUs between local and remote SIS	yes				
+B-0102	Ed4 B.7.1	B-13	shall	CAS peers communicate using the C_PDUs listed in B.7.1	yes				
+B-0103	Ed4 B.7.1	B-13	info	C_PDU type codes used in our profile: 0 DATA, 1 PHYSICAL LINK REQUEST, 2 PHYSICAL LINK ACCEPTED, 3 PHYSICAL LINK REJECTED, 4 PHYSICAL LINK BREAK, 5 PHYSICAL LINK BREAK CONFIRM, 6 PHYSICAL LINK BREAK REQUEST	yes				
+B-0104	Ed4 B.7.1	B-13	info	C_PDU type codes for ALE: 7 PHYSICAL LINK RESUME, 8 PHYSICAL LINK RESUME ACCEPT, 9 PHYSICAL LINK RESUME REJECT, 10 ALE RELINK	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			Codes 11 to 15 are not defined; see interp row on unknown types
+B-0105	Ed4 B.7.1	B-13	shall	The first argument and first encoded field of every C_PDU is the C_PDU Type	yes				
+B-0106	Ed4 B.7.1 (Figures B-1 to B-11)	B-14 to B-24	info	The Type is a 4-bit field in bits 7 to 4 of octet 0 (bit 7 is the MSB)	yes				
+B-0107	Ed4 B.7.1	B-14	shall	The rest of each C_PDU's format and content is as given in B.7.1.1 to B.7.1.11	yes				
+B-0108	Ed4 B.7.1	B-14	shall	Unless stated otherwise, a field inside one octet has its lowest-numbered bit as its least significant bit (CCITT V.42 8.1.2.3)	yes				
+B-0109	Ed4 B.7.1	B-14	shall	Unless stated otherwise, a field spanning octets has bit significance falling as octet number rises, with the lowest-numbered bit as the least significant bit (CCITT V.42 8.1.2.3)	yes				
+B-0110	Ed4 B.7.1	B-14	shall	Unless stated otherwise, NOT USED bit-fields are encoded as 0	yes				
+B-0111	Ed4 B.7.1.1, Figure B-1	B-14	info	DATA C_PDU layout: octet 0 bits 7 to 4 Type = 0, bits 3 to 0 not used; the S_PDU follows from octet 1	yes				
+B-0112	Ed4 B.7.1.1	B-15	shall	A DATA C_PDU carries one S_PDU to the peer node	yes				
+B-0113	Ed4 B.7.1.1	B-15	shall	The DATA C_PDU Type goes in the first 4-bit field and its value is 0	yes				
+B-0114	Ed4 B.7.1.1	B-15	shall	After the first octet, the DATA C_PDU holds the S_PDU and nothing else	yes				
+B-0115	Ed4 B.7.1.1	B-15	shall	A DATA C_PDU is sent with the lower sublayer's normal (not expedited) data delivery service	yes				Ed1 allowed expedited; Ed4 deprecates EXPEDITED DATA (main Table 1)
+B-0116	Ed4 B.7.1.1	B-15	shall	The DATA C_PDU gets the same delivery mode (ARQ or non-ARQ etc.) that SIS gave the S_PDU it carries	yes				
+B-0117	Ed4 B.7.1.2, Figure B-2	B-15	info	PHYSICAL LINK REQUEST layout, one octet: bits 7 to 4 Type = 1, bit 3 not used, bit 2 Short, bit 1 Ed4, bit 0 LINK	yes				
+B-0118	Ed4 B.7.1.2	B-15	shall	CAS sends a PHYSICAL LINK REQUEST to ask for a physical link to be made	yes				
+B-0119	Ed4 B.7.1.2	B-16	shall	The PHYSICAL LINK REQUEST is made up of the Type and LINK arguments	yes				Figure B-2 adds the Ed4 and Short bits; see interp row on argument lists
+B-0120	Ed4 B.7.1.2	B-16	shall	The PHYSICAL LINK REQUEST Type value is 1, in a 4-bit field	yes				
+B-0121	Ed4 B.7.1.2	B-16	shall	Unused bits of the PHYSICAL LINK REQUEST are reserved and not used by any implementation (sent as 0)	yes				
+B-0122	Ed4 B.7.1.2	B-16	shall	The Ed4 bit is set in a PHYSICAL LINK REQUEST when the peer is known to support Ed4 or later	yes				
+B-0123	Ed4 B.7.1.2	B-16	shall	The Ed4 bit is not set when the peer is known not to support Ed4	yes				
+B-0124	Ed4 B.7.1.2	B-16	may	When the peer's edition is unknown, the Ed4 bit may be set to discover whether it supports Ed4	yes				Our choice: set it (plan 4.4, discovery by CAS-1 negotiation only)
+B-0125	Ed4 B.7.1.2	B-16	may	The Short bit, asking for the 8-bit FSN D_PDU family, may be set only if Ed4 is also set	yes				Short is never set without Ed4
+B-0126	Ed4 B.7.1.2	B-16	shall	If HARD LINKS is supported, the LINK bit is used per B.9.1	no	deprecated option HARD LINKS not implemented (main Table 1, p.11; plan 4.3)			
+B-0127	Ed4 B.7.1.2	B-16	shall	Without HARD LINKS, the LINK bit is sent as 0	yes				
+B-0128	Ed4 B.7.1.2	B-16	shall	A received PHYSICAL LINK REQUEST with LINK set is answered with a PHYSICAL LINK REJECTED, reason 5 (Exclusive Links Not Supported)	yes				Plan 4.3
+B-0129	Ed4 B.7.1.2	B-16	shall	The PHYSICAL LINK REQUEST is sent via the expedited non-ARQ service (type 8 D_PDUs), since no ARQ link exists yet	yes				
+B-0130	Ed4 B.7.1.2	B-16	shall	A CAS that receives a PHYSICAL LINK REQUEST answers with either PHYSICAL LINK ACCEPTED (type 2) or PHYSICAL LINK REJECTED (type 3)	yes				
+B-0131	Ed4 B.7.1.3, Figure B-3	B-17	info	PHYSICAL LINK ACCEPTED layout, one octet: bits 7 to 4 Type = 2, bit 3 not used, bit 2 Short, bit 1 Ed4, bit 0 LINK	yes				
+B-0132	Ed4 B.7.1.3	B-17	shall	PHYSICAL LINK ACCEPTED is sent as the positive answer to a PHYSICAL LINK REQUEST	yes				
+B-0133	Ed4 B.7.1.3	B-17	shall	PHYSICAL LINK ACCEPTED is made up of the Type argument only	yes				Contradicts Figure B-3 and the Ed4, Short and LINK bit rules below; see interp row on argument lists
+B-0134	Ed4 B.7.1.3	B-17	shall	The PHYSICAL LINK ACCEPTED Type is a 4-bit field with value 2	yes				
+B-0135	Ed4 B.7.1.3	B-17	shall	Unused bits of PHYSICAL LINK ACCEPTED are reserved, not used, and sent as 0	yes				
+B-0136	Ed4 B.7.1.3	B-17	shall	If HARD LINKS is supported, the LINK bit of PHYSICAL LINK ACCEPTED is used per B.9.1	no	deprecated option HARD LINKS not implemented (main Table 1, p.11; plan 4.3)			
+B-0137	Ed4 B.7.1.3	B-17	shall	Without HARD LINKS, the LINK bit of PHYSICAL LINK ACCEPTED is sent as 0	yes				
+B-0138	Ed4 B.7.1.3	B-17	shall	The Ed4 bit of PHYSICAL LINK ACCEPTED is set when the Ed4 bit was set in the request being answered	yes				
+B-0139	Ed4 B.7.1.3	B-17	shall	The Ed4 bit of PHYSICAL LINK ACCEPTED is clear when it was clear in the request being answered	yes				
+B-0140	Ed4 B.7.1.3	B-17	may	The Short bit of PHYSICAL LINK ACCEPTED may be set only when the Ed4 bit is set and the request had Short set	yes				
+B-0141	Ed4 B.7.1.3	B-18	shall	When the accept has both Ed4 and Short set, short-FSN D_PDUs are used on the link in both directions	yes				Links to Annex C D_PDU family selection
+B-0142	Ed4 B.7.1.3	B-18	shall	When the accept has Ed4 set and Short clear, short-FSN D_PDUs are not used on the link	yes				
+B-0143	Ed4 B.7.1.3	B-18	shall	PHYSICAL LINK ACCEPTED is sent via the expedited non-ARQ service (type 8 D_PDUs)	yes				
+B-0144	Ed4 B.7.1.4, Figure B-4	B-18	info	PHYSICAL LINK REJECTED layout, one octet: bits 7 to 4 Type = 3, bits 3 to 0 Reason (bit 3 MSB)	yes				
+B-0145	Ed4 B.7.1.4	B-18	shall	PHYSICAL LINK REJECTED is sent as the negative answer to a PHYSICAL LINK REQUEST	yes				
+B-0146	Ed4 B.7.1.4	B-18	shall	PHYSICAL LINK REJECTED is made up of the Type and Reason arguments	yes				
+B-0147	Ed4 B.7.1.4	B-18	shall	The PHYSICAL LINK REJECTED Type is a 4-bit field with value 3	yes				
+B-0148	Ed4 B.7.1.4	B-18 to B-19	shall	The Reject Reason is encoded per its table: 0 Reason Unknown, 1 Broadcast-Only-Node, 2 Higher-Priority-Link-Request-Pending, 3 not used, 4 Too many active links, 5 Exclusive Links Not Supported, 6 to 15 unspecified	yes				Label for 5 is clipped in the table; B.7.1.2 p.B-16 gives the full name
+B-0149	Ed4 B.7.1.4	B-19	info	Reject reason 0 (unknown) is always a valid reason	yes				
+B-0150	Ed4 B.7.1.4	B-19	info	Reject reasons 6 to 15 are unspecified and unused	yes				
+B-0151	Ed4 B.7.1.4	B-19	info	Link busy is not a reject reason; that role belongs to the DTS WARNING D_PDU (Annex C)	yes				
+B-0152	Ed4 B.7.1.4	B-19	shall	PHYSICAL LINK REJECTED is sent via the expedited non-ARQ service (type 8 D_PDUs)	yes				
+B-0153	Ed4 B.7.1.5, Figure B-5	B-19	info	PHYSICAL LINK BREAK layout, one octet: bits 7 to 4 Type = 4, bits 3 to 0 Reason (bit 3 MSB)	yes				
+B-0154	Ed4 B.7.1.5	B-19	shall	Either CAS peer on an active physical link may send PHYSICAL LINK BREAK to ask for the link to be broken	yes				
+B-0155	Ed4 B.7.1.5	B-19	shall	PHYSICAL LINK BREAK is made up of the Type and Reason arguments	yes				
+B-0156	Ed4 B.7.1.5	B-20	shall	The PHYSICAL LINK BREAK Type is a 4-bit field with value 4	yes				
+B-0157	Ed4 B.7.1.5	B-20	shall	The Break Reason is encoded per its table: 0 Reason Unknown, 1 Higher-Layer-(label clipped), 2 Switching to Broadcast-Data-(label clipped), 3 switching link to send higher priority data, 4 No More Data, 5 Switching link for (label clipped), 6 Operator request, 7 to 15 unspecified	yes				Labels checked on the rendered page. Ed1 v1.2 Annex B gives 1 Higher-Layer-Request, 2 Switching to Broadcast-Data-Exchange Session, 3 Higher-Priority-Link-Request-Pending, 4 to 15 unspecified. See interp rows B-0302, B-0309
+B-0158	Ed4 B.7.1.5	B-20	info	Break reason 0 (unknown) is always a valid reason	yes				
+B-0159	Ed4 B.7.1.5	B-20	shall	A CAS receiving PHYSICAL LINK BREAK declares the physical link broken at once and replies with a PHYSICAL LINK BREAK CONFIRM (type 5)	yes				Text says 'PHYSICAL LINK BREAK (TYPE 5)' and cites B.3.1.6, an Ed1 leftover; type 5 is BREAK CONFIRM
+B-0160	Ed4 B.7.1.5	B-20	shall	PHYSICAL LINK BREAK is sent via the expedited non-ARQ service (type 8 D_PDUs)	yes				Non-ARQ because the receiver drops the link at once and cannot acknowledge
+B-0161	Ed4 B.7.1.6, Figure B-6	B-21	info	PHYSICAL LINK BREAK CONFIRM layout, one octet: bits 7 to 4 Type = 5, bits 3 to 0 not used	yes				Figure is an image; checked on the rendered page
+B-0162	Ed4 B.7.1.6	B-21	shall	CAS sends PHYSICAL LINK BREAK CONFIRM in answer to a PHYSICAL LINK BREAK	yes				
+B-0163	Ed4 B.7.1.6	B-21	shall	PHYSICAL LINK BREAK CONFIRM is made up of the Type argument only	yes				
+B-0164	Ed4 B.7.1.6	B-21	shall	The PHYSICAL LINK BREAK CONFIRM Type is a 4-bit field with value 5	yes				
+B-0165	Ed4 B.7.1.6	B-21	shall	PHYSICAL LINK BREAK CONFIRM is sent via the expedited non-ARQ service (type 8 D_PDUs)	yes				
+B-0166	Ed4 B.7.1.6	B-21	shall	On receiving PHYSICAL LINK BREAK CONFIRM, the peer that started the break declares the link broken	yes				
+B-0167	Ed4 B.7.1.7, Figure B-7	B-22	info	PHYSICAL LINK BREAK REQUEST layout, two octets: octet 0 bits 7 to 4 Type = 6, bit 3 not used, bits 2 to 0 Reason (bit 2 MSB); octet 1 Priority	yes				Plan 4.3 cites this as B.7.1.6; the rendered page shows B.7.1.7
+B-0168	Ed4 B.7.1.7	B-22	may	A CAS may send PHYSICAL LINK BREAK REQUEST to tell the peer it wants to break the link, enabling a clean close (B.7.2.4)	yes				Towards Ed4 peers only; B.7.2.4 and B.7.2.8 make it the required route to a clean close
+B-0169	Ed4 B.7.1.7	B-22	shall	PHYSICAL LINK BREAK REQUEST is never sent to Edition 3 peers	yes				
+B-0170	Ed4 B.7.1.7	B-22	info	The text describes type 6 as requesting termination of the ALE link and its physical link	yes				See interp row: also used without ALE
+B-0171	Ed4 B.7.1.7	B-22	info	BREAK REQUEST Reason values: 000 No Data, 001 Higher Priority, 010 Channel Share, 011 Operator Request, 100 to 111 reserved	yes				
+B-0172	Ed4 B.7.1.7	B-22 to B-23	shall	When Reason is Higher Priority, the Priority field holds the priority of that higher priority traffic	yes				
+B-0173	Ed4 B.7.1.7	B-23	shall	For any other Reason the Priority field is 0	yes				
+B-0174	Ed4 B.7.1.7	B-23	shall	PHYSICAL LINK BREAK REQUEST is sent via the normal ARQ data service (not type 8), since the link exists	yes				Conflicts with B.7.2 p.B-25; see interp row
+B-0175	Ed4 B.7.1.7	B-23	info	Because it rides on ARQ, type 6 arrives after any data sent earlier in the same transmission; before breaking, the peer checks via the ARQ window that all earlier data has arrived	yes				
+B-0176	Ed4 B.7.1.8, Figure B-8	B-23	info	PHYSICAL LINK RESUME layout, one octet: bits 7 to 4 Type = 7, bits 3 to 0 not used	no	C_PDU types 7 to 9 and the resume procedure are ALE-only (B.7.2.9 is for a failed ALE link); ALE not in our profile (main Tables 1, 2)			
+B-0177	Ed4 B.7.1.8	B-23	shall	PHYSICAL LINK RESUME is sent to tell the peer a physical link should be resumed	no	C_PDU types 7 to 9 and the resume procedure are ALE-only (B.7.2.9 is for a failed ALE link); ALE not in our profile (main Tables 1, 2)			
+B-0178	Ed4 B.7.1.8	B-23	shall	PHYSICAL LINK RESUME is never sent to Edition 3 peers	no	C_PDU types 7 to 9 and the resume procedure are ALE-only (B.7.2.9 is for a failed ALE link); ALE not in our profile (main Tables 1, 2)			
+B-0179	Ed4 B.7.1.9, Figure B-9	B-23	info	PHYSICAL LINK RESUME ACCEPT layout, one octet: bits 7 to 4 Type = 8, bits 3 to 0 not used	no	C_PDU types 7 to 9 and the resume procedure are ALE-only (B.7.2.9 is for a failed ALE link); ALE not in our profile (main Tables 1, 2)			The type table on p.B-13 misprints this name; see interp row
+B-0180	Ed4 B.7.1.9	B-23 to B-24	shall	PHYSICAL LINK RESUME ACCEPT is sent to tell the peer that resuming the physical link is agreed	no	C_PDU types 7 to 9 and the resume procedure are ALE-only (B.7.2.9 is for a failed ALE link); ALE not in our profile (main Tables 1, 2)			
+B-0181	Ed4 B.7.1.9	B-24	shall	PHYSICAL LINK RESUME ACCEPT is never sent to Edition 3 peers	no	C_PDU types 7 to 9 and the resume procedure are ALE-only (B.7.2.9 is for a failed ALE link); ALE not in our profile (main Tables 1, 2)			
+B-0182	Ed4 B.7.1.10, Figure B-10	B-24	info	PHYSICAL LINK RESUME REJECT layout, one octet: bits 7 to 4 Type = 9, bits 3 to 0 not used	no	C_PDU types 7 to 9 and the resume procedure are ALE-only (B.7.2.9 is for a failed ALE link); ALE not in our profile (main Tables 1, 2)			
+B-0183	Ed4 B.7.1.10	B-24	shall	PHYSICAL LINK RESUME REJECT is sent to tell the peer it will not resume the physical link	no	C_PDU types 7 to 9 and the resume procedure are ALE-only (B.7.2.9 is for a failed ALE link); ALE not in our profile (main Tables 1, 2)			
+B-0184	Ed4 B.7.1.10	B-24	shall	PHYSICAL LINK RESUME REJECT is never sent to Edition 3 peers	no	C_PDU types 7 to 9 and the resume procedure are ALE-only (B.7.2.9 is for a failed ALE link); ALE not in our profile (main Tables 1, 2)			
+B-0185	Ed4 B.7.1.11, Figure B-11	B-24	info	ALE RELINK layout, one octet: bits 7 to 4 Type = 10, bit 3 not used, bits 2 to 0 Reason (bit 2 MSB)	no	C_PDU type 10 and ALE relinking are ALE-only; ALE not in our profile (main Tables 1, 2)			Plan 4.3 cites this as B.7.1.10, p.B-25; the rendered page shows B.7.1.11, pp.B-24 to B-25
+B-0186	Ed4 B.7.1.11	B-24	may	ALE RELINK may be sent to ask the peer to drop the ALE link while keeping the physical link	no	C_PDU type 10 and ALE relinking are ALE-only; ALE not in our profile (main Tables 1, 2)			
+B-0187	Ed4 B.7.1.11	B-24	shall	ALE RELINK is never sent to Edition 3 peers	no	C_PDU type 10 and ALE relinking are ALE-only; ALE not in our profile (main Tables 1, 2)			
+B-0188	Ed4 B.7.1.11	B-25	info	ALE RELINK Reason values: 000 ALE Quality, 001 ALE Time, 010 to 111 reserved	no	C_PDU type 10 and ALE relinking are ALE-only; ALE not in our profile (main Tables 1, 2)			
+B-0189	Ed4 B.7.1.11	B-25	shall	ALE RELINK is sent via an expedited ARQ data service	no	C_PDU type 10 and ALE relinking are ALE-only; ALE not in our profile (main Tables 1, 2)			
+B-0190	Ed4 B.7.2	B-25	shall	CAS performs all peer-to-peer protocol control with C_PDU types 1 to 5	yes				Type 6 is also control; see interp row
+B-0191	Ed4 B.7.2	B-25	shall	All CAS peer-to-peer control traffic uses the expedited non-ARQ service (type 8 D_PDUs)	yes				Holds for types 1 to 5; type 6 uses ARQ (B.7.1.7); see interp row
+B-0192	Ed4 B.7.2	B-25	shall	In Single Peer Access mode a physical link request is always accepted	no	Single Peer Access model not used; our profile is MULTIPLE ACCESS (main Table 2, p.13)			
+B-0193	Ed4 B.7.2	B-26	shall	In Multiple Simultaneous Peer Access mode a physical link request is accepted unless the number of active links exceeds a configurable limit or another operational reason applies	yes				See interp row on the limit and other reasons
+B-0194	Ed4 B.7.2.1	B-26	info	Terms: the node asking for the link is the Caller; the node receiving the request is the Called node	yes				
+B-0195	Ed4 B.7.2.1	B-26	shall	Making a physical link follows the Step 1 (Caller), Step 2 (Called) and Step 3 (Caller) procedure	yes				
+B-0196	Ed4 B.7.2.1 Step 1	B-26	info	The Caller starts linking when SIS issues C_PHYSICAL_LINK_MAKE	yes				
+B-0197	Ed4 B.7.2.1 Step 1	B-26	shall	With ALE, the Caller first requests an ALE link to the peer	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0198	Ed4 B.7.2.1 Step 1	B-26	shall	With ALE, if the ALE link is rejected or times out, the link request is rejected with ALE Call Timeout or ALE Link Rejected	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			B.2.2.1 names the second reason ALE Call Rejected
+B-0199	Ed4 B.7.2.1 Step 1	B-26	shall	With duplex ALE, if the peer's return ALE call does not arrive within a configurable time, the first call is released and the request rejected with Duplex ALE Timeout	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0200	Ed4 B.7.2.1 Step 1	B-26	shall	With ALE, if the peer edition is unknown or short FSN is wanted, the second stage (CAS-1 exchange) is run; otherwise IMPLICIT mode declares the link made	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0201	Ed4 B.7.2.1 Step 1	B-26	info	The second stage procedure is the one used when ALE is not used	yes				
+B-0202	Ed4 B.7.2.1 Step 1(a)	B-26	shall	The Caller's CAS starts the protocol by sending a PHYSICAL LINK REQUEST (type 1)	yes				
+B-0203	Ed4 B.7.2.1 Step 1(b)	B-26	shall	On sending the PHYSICAL LINK REQUEST, the Caller starts a timer set to at least the longest time the Called node needs to answer (depends on modem parameters, retransmissions and so on)	yes				No value given; derive from modem plan and the Annex K contention wait
+B-0204	Ed4 B.7.2.1 Step 1(c)	B-26 to B-27	shall	The maximum wait for an answer to a PHYSICAL LINK REQUEST is configurable	yes				
+B-0205	Ed4 B.7.2.1 Step 2	B-27	info	With ALE, the Called node waits for the ALE link (and makes a second call for duplex), signals D_CONNECTION_MADE per peer, then waits for a first C_PDU	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0206	Ed4 B.7.2.1 Step 2	B-27	info	With ALE, DATA C_PDUs arrive as D_UNIDATA_INDICATION and other C_PDUs as D_EXPEDITED_UNIDATA_INDICATION	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			Without ALE the same split follows from the per-C_PDU service rules, except type 6 on normal ARQ
+B-0207	Ed4 B.7.2.1 Step 2	B-27	info	With ALE, a first DATA or PHYSICAL LINK ACCEPTED C_PDU marks the link made; a PHYSICAL LINK REQUEST is handled per CAS-1; any other C_PDU clears the ALE link	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0208	Ed4 B.7.2.1 Step 2	B-27	shall	With ALE, if no C_PDU arrives within a configurable time the ALE link is cleared	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0209	Ed4 B.7.2.1 Step 2(a)(1)	B-27	shall	A Called node already at its maximum number of active physical links rejects the request with reason Too many active links (4)	yes				
+B-0210	Ed4 B.7.2.1 Step 2(a)(2)	B-27	shall	Otherwise the Called node accepts the request	yes				B.7.2 also allows rejection for other operational reasons; see interp row
+B-0211	Ed4 B.7.2.1 Step 2(b)(1)	B-27	shall	A Called node that accepts answers with PHYSICAL LINK ACCEPTED (type 2)	yes				
+B-0212	Ed4 B.7.2.1 Step 2(b)(2)	B-27 to B-28	shall	A Called node that rejects answers with PHYSICAL LINK REJECTED (type 3)	yes				
+B-0213	Ed4 B.7.2.1 Step 2(b)	B-28	shall	After sending PHYSICAL LINK ACCEPTED the Called node declares the link made and enters the data exchange state	yes				Step lettering repeats b in the source. Figure B-13 (p.B-30) shows the called side reaching link made only on receipt of a type 0; the text declares it made on sending type 2 and aborts it if no type 0 follows (Step 2(d)). Same behaviour, the text wins
+B-0214	Ed4 B.7.2.1 Step 2(c)	B-28	shall	A further PHYSICAL LINK REQUEST from the same address after the link is made is answered again with PHYSICAL LINK ACCEPTED	yes				See interp row on Ed4 and Short bits of repeat requests
+B-0215	Ed4 B.7.2.1 Step 2(d)	B-28	shall	If no DATA (type 0) C_PDU arrives on a newly made link within a maximum time, the Called node aborts the link and declares it inactive	yes				
+B-0216	Ed4 B.7.2.1 Step 2(e)	B-28	shall	The maximum wait for the first DATA C_PDU on a new link is configurable	yes				
+B-0217	Ed4 B.7.2.1 Step 2	B-28	info	On accepting a link the Called node informs SIS with C_PHYSICAL_LINK_MADE and, without ALE, the DTS with D_CONNECTION_MADE	yes				
+B-0218	Ed4 B.7.2.1 Step 3	B-28	info	Step 3 applies when the Caller ran the second stage (CAS-1 exchange)	yes				
+B-0219	Ed4 B.7.2.1 Step 3(a)	B-28	shall	On PHYSICAL LINK ACCEPTED the Caller declares the link made, sends C_PHYSICAL_LINK_MADE to SIS and D_CONNECTION_MADE to the DTS	yes				
+B-0220	Ed4 B.7.2.1 Step 3(b)	B-28	shall	On PHYSICAL LINK REJECTED the Caller declares the link failed and sends C_PHYSICAL_LINK_REJECTED to SIS	yes				
+B-0221	Ed4 B.7.2.1 Step 3(c)	B-28	shall	If the timer expires with no answer, the Caller repeats Step 1 (resends the request and restarts the timer)	yes				
+B-0222	Ed4 B.7.2.1 Step 3	B-28	shall	The maximum number of PHYSICAL LINK REQUEST sends without any answer is configurable	yes				
+B-0223	Ed4 B.7.2.1 Step 3	B-28 to B-29	shall	After that many unanswered sends the Caller declares the link failed and sends C_PHYSICAL_LINK_REJECTED to SIS	yes				
+B-0224	Ed4 B.7.2.1, Figure B-12	B-29	info	Nominal Caller flow: if a physical link to the requested node already exists, the link is reported made without sending a request	yes				Figures B-12 and B-13 are nominal; other implementations meeting the requirements are allowed
+B-0225	Ed4 B.7.2.1, Figure B-13	B-30	info	Nominal Called flow: after sending type 2 it waits for a type 0 from the caller, answers a repeated type 1 with type 2 again, and aborts the link on timeout	yes				
+B-0226	Ed4 B.7.2.1	B-30	info	Once a link is declared made, the peers do no further handshake to confirm it	yes				
+B-0227	Ed4 B.7.2.2	B-30	info	Link setup also discovers Ed4 support: a PHYSICAL LINK REQUEST with the Ed4 bit set shows the sender supports Ed4	yes				
+B-0228	Ed4 B.7.2.2	B-30 to B-31	info	An Ed3 or earlier peer is expected to ignore the Ed4 bit and accept without it, which tells the Caller the peer is not Ed4	yes				
+B-0229	Ed4 B.7.2.2	B-31	shall	If a peer answers an Ed4-bit request with a WARNING D_PDU, the Caller records that the peer does not support Ed4	yes				See interp row on which WARNING counts
+B-0230	Ed4 B.7.2.2	B-31	shall	After such a WARNING the Caller repeats link establishment with the Ed4 bit clear	yes				
+B-0231	Ed4 B.7.2.2	B-31	info	The recorded edition can be reused for later links to avoid repeating the failed attempt	yes				
+B-0232	Ed4 B.7.2.2	B-31	info	Between Ed4 peers the default D_PDU family has 16-bit FSN; the Short bit negotiates the 8-bit FSN family, aimed at speeds of 1200 bps or less	yes				
+B-0233	Ed4 B.7.2.3	B-31	info	Ed4 defines 1:1 ALE with Ed3 peers using Ed3 PDUs only	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0234	Ed4 B.7.2.3	B-31	should	The IMPLICIT or EXPLICIT choice should follow how the Ed3 system works	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0235	Ed4 B.7.2.4	B-31	info	Before terminating a link it is desirable that CAS-1 state is clean, with nothing pending either way	yes				
+B-0236	Ed4 B.7.2.4	B-31	info	Clean state definition: (a) no data from the peer still to acknowledge, and (b) no sent data still unacknowledged	yes				
+B-0237	Ed4 B.7.2.4	B-31	info	A node can only judge whether it is clean when it is its turn to transmit, usually just after receiving from the peer	yes				
+B-0238	Ed4 B.7.2.4	B-32	info	Clean close is needed only where another link may be opened afterwards; an ALE relink with resume does not need it	yes				
+B-0239	Ed4 B.7.2.4	B-32	shall	When a request to close a link is received, this procedure is used to reach clean close with peers that support Ed4	yes				Reached from B.7.2.8 for SIS break requests
+B-0240	Ed4 B.7.2.4	B-32	shall	The clean close procedure is not used with Edition 3 peers	yes				
+B-0241	Ed4 B.7.2.4	B-32	shall	If not in clean state, the node finishes active traffic on the link and stops using the link for new traffic	yes				Phrased as 'the requirements are'
+B-0242	Ed4 B.7.2.4	B-32	info	To reach clean close, a PHYSICAL LINK BREAK REQUEST carrying the close reason is sent; it uses ARQ so needs no timer or repeats	yes				
+B-0243	Ed4 B.7.2.4	B-32	shall	After sending a BREAK REQUEST, the node watches link state and starts closing the link as soon as it is clean	yes				See interp row on what starting to close means
+B-0244	Ed4 B.7.2.4	B-32	info	What a node does on receiving a BREAK REQUEST depends on its Reason	yes				
+B-0245	Ed4 B.7.2.4	B-32	shall	On a BREAK REQUEST with reason Channel Share or Operator Request, the node acts to bring the link to clean close	yes				
+B-0246	Ed4 B.7.2.4	B-32	shall	Then no new DATA C_PDU starts transmission except client confirmations (may need DTS cooperation)	yes				See interp row on client confirmations
+B-0247	Ed4 B.7.2.4	B-32	shall	A DATA C_PDU already partly sent (some D_PDUs out) is sent in full	yes				
+B-0248	Ed4 B.7.2.4	B-32	shall	For Channel Share or Operator Request, the node starts closing the link as soon as it is clean	yes				Clean close may take several transmissions each way
+B-0249	Ed4 B.7.2.4	B-32	info	Reason No Data is advisory	yes				
+B-0250	Ed4 B.7.2.4	B-32	shall	On reason No Data, a node with data to send keeps using the link	yes				
+B-0251	Ed4 B.7.2.4	B-32	shall	On reason No Data, the node starts closing the link as soon as it is clean	yes				
+B-0252	Ed4 B.7.2.4	B-32	shall	On reason Higher Priority, new C_PDUs of lower priority than the stated priority do not start transmission	yes				See interp row on the priority comparison
+B-0253	Ed4 B.7.2.4	B-32	shall	On reason Higher Priority, new C_PDUs of the same or higher priority do start transmission	yes				
+B-0254	Ed4 B.7.2.4	B-32	shall	On reason Higher Priority, the node starts closing the link as soon as it is clean	yes				
+B-0255	Ed4 B.7.2.5	B-33	shall	In IMPLICIT mode, ALE link termination follows this procedure, which also closes the associated physical links	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0256	Ed4 B.7.2.5	B-33	should	ALE links should be terminated promptly when idle or when SIS needs a different peer	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0257	Ed4 B.7.2.5	B-33	shall	On C_PHYSICAL_LINK_BREAK from SIS under IMPLICIT ALE, clean close is run with the SIS reason, then the ALE Link Break	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0258	Ed4 B.7.2.5	B-33	shall	When ALE analysis decides to break (quality or duration), clean close is run with the ALE reason, then the ALE Link Break	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0259	Ed4 B.7.2.5	B-33	shall	Otherwise ALE Link Break starts once every link is clean or lost, non-ARQ idle timer expired, and (multi-node) no recent traffic between other nodes	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0260	Ed4 B.7.2.5	B-33	shall	A configurable ALE link timer triggers ALE Link Break when no data is received for that long	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0261	Ed4 B.7.2.5	B-34	shall	On ALE Link Break, associated physical links are declared broken with D_CONNECTION_TERMINATED to the DTS	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0262	Ed4 B.7.2.5	B-34	shall	If the link was clean at termination, C_PHYSICAL_LINK_BROKEN is sent to SIS	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0263	Ed4 B.7.2.5	B-34	may	If not clean, C_PHYSICAL_LINK_BROKEN may be sent, or a new ALE link may be made and the link resumed (B.7.2.9)	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0264	Ed4 B.7.2.5	B-34	shall	On ALE_LINK_TERMINATED, associated physical links are declared broken with D_CONNECTION_TERMINATED and C_PHYSICAL_LINK_BROKEN	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0265	Ed4 B.7.2.6	B-34	shall	In EXPLICIT mode, ALE termination follows B.7.2.8 to break the CAS-1 link, then the initiator ends the ALE link on BREAK CONFIRM	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0266	Ed4 B.7.2.7	B-34	may	In EXPLICIT mode either node may relink ALE at any time	no	C_PDU type 10 and ALE relinking are ALE-only; ALE not in our profile (main Tables 1, 2)			
+B-0267	Ed4 B.7.2.7	B-34	shall	The IMPLICIT relink procedure is not used with Edition 3 peers	no	C_PDU type 10 and ALE relinking are ALE-only; ALE not in our profile (main Tables 1, 2)			
+B-0268	Ed4 B.7.2.7	B-35	shall	A node wanting to relink sends ALE RELINK with reason ALE Quality or ALE Time	no	C_PDU type 10 and ALE relinking are ALE-only; ALE not in our profile (main Tables 1, 2)			
+B-0269	Ed4 B.7.2.7	B-35	shall	It then waits for the DTS acknowledgement of the ALE RELINK	no	C_PDU type 10 and ALE relinking are ALE-only; ALE not in our profile (main Tables 1, 2)			
+B-0270	Ed4 B.7.2.7	B-35	shall	It then relinks at ALE level at once, using ALM relink if available, otherwise terminate then make	no	C_PDU type 10 and ALE relinking are ALE-only; ALE not in our profile (main Tables 1, 2)			
+B-0271	Ed4 B.7.2.7	B-35	shall	After relinking, the relinking node starts the resume procedure (B.7.2.9)	no	C_PDU type 10 and ALE relinking are ALE-only; ALE not in our profile (main Tables 1, 2)			
+B-0272	Ed4 B.7.2.7	B-35	shall	A node receiving ALE RELINK acknowledges it at DTS level and sends no other data	no	C_PDU type 10 and ALE relinking are ALE-only; ALE not in our profile (main Tables 1, 2)			
+B-0273	Ed4 B.7.2.7	B-35	shall	If it then sees ALE_LINK_TERMINATED, it makes no new ALE calls for a configurable time and waits for the incoming call	no	C_PDU type 10 and ALE relinking are ALE-only; ALE not in our profile (main Tables 1, 2)			
+B-0274	Ed4 B.7.2.7	B-35	may	It may reject an incoming call that is not from the relinking peer	no	C_PDU type 10 and ALE relinking are ALE-only; ALE not in our profile (main Tables 1, 2)			
+B-0275	Ed4 B.7.2.8	B-35	info	Terms: the node asking to break is the Initiator; the other is the Responder. This protocol applies without ALE (and in EXPLICIT mode)	yes				
+B-0276	Ed4 B.7.2.8	B-35	info	Physical links are broken on C_PHYSICAL_LINK_BREAK from SIS, or on D_CONNECTION_LOST from the DTS	yes				
+B-0277	Ed4 B.7.2.8	B-35	info	On D_CONNECTION_LOST, SIS is told with C_PHYSICAL_LINK_BROKEN	yes				See interp row on whether a type 4 is sent
+B-0278	Ed4 B.7.2.8	B-35	shall	On C_PHYSICAL_LINK_BREAK, the clean close procedure (B.7.2.4) is followed with the reason SIS gave	yes				Ed4 peers only, since B.7.2.4 bars Ed3 peers
+B-0279	Ed4 B.7.2.8	B-35	should	SIS client flow control should be used to avoid large queues building in the DTS	yes				Annex A/S flow control
+B-0280	Ed4 B.7.2.8	B-35	info	The break exchange uses expedited data so it is not stuck behind queued traffic	yes				
+B-0281	Ed4 B.7.2.8	B-36	shall	Breaking a physical link follows Steps 1 to 3 below	yes				
+B-0282	Ed4 B.7.2.8 Step 1(a)	B-36	shall	The Initiator starts by sending a PHYSICAL LINK BREAK (type 4)	yes				
+B-0283	Ed4 B.7.2.8 Step 1(b)	B-36	shall	On sending it, the Initiator starts a timer of at least the longest time the peer needs to answer	yes				
+B-0284	Ed4 B.7.2.8 Step 2(a)	B-36	shall	The Responder, on a type 4, declares the link broken and sends PHYSICAL LINK BREAK CONFIRM (type 5)	yes				
+B-0285	Ed4 B.7.2.8 Step 2(a)	B-36	shall	Having confirmed, the Responder tells the DTS (D_CONNECTION_TERMINATED) and SIS (C_PHYSICAL_LINK_BROKEN)	yes				
+B-0286	Ed4 B.7.2.8 Step 3(a)	B-36	shall	On a type 5, the Initiator treats the link as broken and tells the DTS (D_CONNECTION_TERMINATED) and SIS (C_PHYSICAL_LINK_BROKEN)	yes				
+B-0287	Ed4 B.7.2.8 Step 3(b)	B-36	shall	If the timer expires with no answer, the Initiator repeats Step 1 and waits again	yes				
+B-0288	Ed4 B.7.2.8 Step 3(c)	B-36	shall	After a configurable maximum number of repeats with no answer, the Initiator declares the link broken anyway (D_CONNECTION_TERMINATED to DTS, C_PHYSICAL_LINK_BROKEN to SIS)	yes				
+B-0289	Ed4 B.7.2.8, Figure B-14	B-37	info	Figure B-14 shows the nominal Initiator and Responder break flows; both send in non-ARQ expedited requests	yes				
+B-0290	Ed4 B.7.2.9	B-37	may	After an ALE link failure, Ed4 peers may resume the physical link without resetting CAS-1 state	no	C_PDU types 7 to 9 and the resume procedure are ALE-only (B.7.2.9 is for a failed ALE link); ALE not in our profile (main Tables 1, 2)			
+B-0291	Ed4 B.7.2.9	B-37	shall	The resume procedure is not used with Edition 3 peers	no	C_PDU types 7 to 9 and the resume procedure are ALE-only (B.7.2.9 is for a failed ALE link); ALE not in our profile (main Tables 1, 2)			
+B-0292	Ed4 B.7.2.9	B-37	shall	The node starting resume sends PHYSICAL LINK RESUME via expedited ARQ and waits for an answer	no	C_PDU types 7 to 9 and the resume procedure are ALE-only (B.7.2.9 is for a failed ALE link); ALE not in our profile (main Tables 1, 2)			
+B-0293	Ed4 B.7.2.9	B-37	may	A receiver that kept CAS-1 state may accept with PHYSICAL LINK RESUME ACCEPT via expedited ARQ and wait for the initiator's data	no	C_PDU types 7 to 9 and the resume procedure are ALE-only (B.7.2.9 is for a failed ALE link); ALE not in our profile (main Tables 1, 2)			
+B-0294	Ed4 B.7.2.9	B-37	may	A receiver may reject with PHYSICAL LINK RESUME REJECT via expedited ARQ, then treat it as a new ALE link	no	C_PDU types 7 to 9 and the resume procedure are ALE-only (B.7.2.9 is for a failed ALE link); ALE not in our profile (main Tables 1, 2)			
+B-0295	Ed4 B.7.2.9	B-38	info	On accept the initiator continues with the kept state; on reject it resets CAS-1 and ARQ state and treats the link as new	no	C_PDU types 7 to 9 and the resume procedure are ALE-only (B.7.2.9 is for a failed ALE link); ALE not in our profile (main Tables 1, 2)			
+B-0296	Ed4 B.7.2.9	B-38	info	A node with kept state whose new ALE link's first data is not PHYSICAL LINK RESUME resets its ARQ state	no	C_PDU types 7 to 9 and the resume procedure are ALE-only (B.7.2.9 is for a failed ALE link); ALE not in our profile (main Tables 1, 2)			
+B-0297	Ed4 B.8	B-38	shall	The sending CAS accepts S_PDUs from SIS, wraps each in a DATA C_PDU (adds the C_PCI) and passes it to the DTS for the peer	yes				
+B-0298	Ed4 B.8	B-38	shall	The receiving CAS takes DATA C_PDUs from the DTS, checks them for validity, removes the C_PCI and delivers the S_PDU to SIS	yes				Validity checks are not stated; see interp row
+B-0299	Ed4 B.9	B-38	info	Hard links are optional and deprecated, kept for Ed3 interop and likely to be removed	no	deprecated option HARD LINKS not implemented (main Table 1, p.11; plan 4.3)			
+B-0300	Ed4 B.9.1	B-38 to B-39	info	HARD LINKS profile option is specified by reference to Ed3 Annex A	no	deprecated option HARD LINKS not implemented (main Table 1, p.11; plan 4.3)			Text cites B.3.2, a stale reference
+B-0301	Ed4 B.10	B-39	info	Changes from Ed3: C_CHANNEL_AVAILABILITY removed, C_ errors listed, hard links and expedited data deprecated, Ed4 negotiation added	yes				No behaviour of its own
+B-0302	Ed4 B.2.1 p.B-4; B.7.1.5 p.B-20; B.7.1.7 p.B-22	B-4	interp	SIS break reasons to C_PDU reasons, mapping NOT STATED. Our reading: higher priority link -> type 6 Higher Priority (001), type 4 reason 3; share channel -> type 6 Channel Share (010), type 4 reason 0; idle -> type 6 No Data (000), type 4 reason 4 (No More Data); operator break -> type 6 Operator Request (011), type 4 reason 6	yes				Type 4 has no share-channel value we can read (5 is clipped); 0 is always valid. Ed1 v1.2 Annex B leaves type 4 values 4 to 15 unspecified, so an Ed3 peer may not know 4 or 6; harmless, since the receiver acts the same for every reason
+B-0303	Ed4 B.2.2.1 p.B-4; B.7.1.4 p.B-18	B-4	interp	Peer reject reasons 2, 4 and 5 are not in the B.2.2.1 error list. Our reading: reason 4 (Too many active links) is handled like Maximum Physical Links In Use (SIS holds off); all others fall under the general rule (SIS rejects queued S_PDUs)	yes				
+B-0304	Ed4 B.7.1 p.B-13; B.7.1.9 p.B-23; B.7.1.11 p.B-24	B-13	interp	The type table on p.B-13 misprints type 8 as PHYSICAL LINK RESUME and drops the number for ALE RELINK. Our reading: the per-PDU sections win, 8 = RESUME ACCEPT, 10 = ALE RELINK	yes				
+B-0305	Ed4 B.7.1 pp.B-13 to B-14; B.7.2.1 Step 2 p.B-27	B-13	interp	Receipt of a C_PDU of undefined type (11 to 15) or of an ALE-only type (7 to 10) is NOT STATED. Our reading: discard it, deliver nothing to SIS, send no C_PDU in reply, count it for diagnostics	yes				The ALE Step 2 rule (clear the ALE link) does not apply without ALE
+B-0306	Ed4 B.7.1 p.B-14; B.7.1.2 p.B-16; B.7.1.3 p.B-17	B-14	interp	Receipt of a C_PDU with NOT USED or reserved bits set is NOT STATED. Our reading: ignore those bits on receipt and always send them as 0	yes				
+B-0307	Ed4 B.7.1.2 p.B-16; B.7.1.3 p.B-17, Figures B-2, B-3	B-16	interp	The text gives the REQUEST as Type and LINK only and the ACCEPTED as Type only, but the figures and later paragraphs add the Ed4, Short and LINK bits. Our reading: follow the figures, one octet with Short bit 2, Ed4 bit 1, LINK bit 0	yes				
+B-0308	Ed4 B.7.1.3 p.B-17	B-17	interp	An ACCEPTED with Ed4 set when our request had Ed4 clear, or with Short set when our request had Short clear, breaks the B.7.1.3 rules. Our reading: use only what we offered (Ed3 family if we did not send Ed4; long FSN if we did not send Short)	yes				
+B-0309	Ed4 B.7.1.5 p.B-20; Ed1 Annex B type 4 reason table	B-20	interp	Break reasons: the prose says values 5 to 15 are undefined, but the table lists 5 (clipped) and 6 (Operator request), and the labels for 1 and 2 are clipped. Our reading: labels 1 and 2 as in Ed1 (Higher-Layer-Request; Switching to Broadcast-Data-Exchange Session); on receipt any reason value is accepted, since the receiver action does not depend on it; on send we use 0, 3, 4 and 6 and never 5 (plan 4.4)	yes				Ed1 labels from Ed1 v1.2 Annex B (s5066-research dl3). Plan 4.4 covers the clipped labels; the 6 versus prose part is new
+B-0310	Ed4 B.7.1.7 p.B-22; B.7.2.4 p.B-32; B.7.2.8 p.B-35	B-22	interp	Type 6 is described as an ALE termination request, yet the non-ALE break procedure (B.7.2.8) requires clean close (B.7.2.4), which sends type 6. Our reading: type 6 and clean close apply without ALE towards Ed4 peers	yes				Plan 4.3
+B-0311	Ed4 B.7.1.7 pp.B-22 to B-23	B-22	interp	The Priority field encoding and range are NOT STATED. Our reading: the whole of octet 1 is an unsigned integer holding the SIS priority (0 to 15, Annex A) of the higher priority traffic; on receipt values above 15 are treated as 15	yes				
+B-0312	Ed4 B.7.2 p.B-25; B.7.1.7 p.B-23	B-25	interp	B.7.2 lists only types 1 to 5 as control C_PDUs and says all peer control goes on the expedited non-ARQ service, while B.7.1.7 sends type 6 on normal ARQ (and B.7.1.8 to B.7.1.11 use expedited ARQ). Our reading: the per-C_PDU rule is more specific and wins; types 1 to 5 on type 8 D_PDUs, type 6 on normal ARQ	yes				
+B-0313	Ed4 B.7.2 p.B-26; B.7.2.1 Step 2(a) p.B-27	B-26	interp	B.7.2 rejects when active links exceed a configurable limit or for another operational reason; Step 2 rejects only at the maximum and otherwise must accept. Our reading: reject with reason 4 when accepting would take the count above the configured maximum; the only other rejections are reason 5 (LINK bit set) and reason 1 (node configured broadcast-only)	yes				
+B-0314	Ed4 B.7.2.1 Step 2(c) p.B-28	B-28	interp	For a repeated PHYSICAL LINK REQUEST on a link already made, the Ed4 and Short bits of the reply are NOT STATED. Our reading: reply with the values already in force; the D_PDU family of an open link never changes	yes				
+B-0315	Ed4 B.7.2.2 p.B-31	B-31	interp	Which WARNING counts as the Ed3 response to the Ed4 bit is NOT STATED. Our reading: any WARNING D_PDU from the called address received while our Ed4-bit request is outstanding	yes				
+B-0316	Ed4 B.7.2.4 p.B-32; B.7.2.8 p.B-36	B-32	interp	What starting to close the link means after clean close is NOT STATED. Our reading: the node begins B.7.2.8 Step 1 (sends type 4). If a node with its own type 4 outstanding receives a type 4, it acts as Responder (sends type 5, declares broken) and cancels its own retries; a type 5 that arrives after the link is broken is ignored	yes				
+B-0317	Ed4 B.7.2.4 p.B-32	B-32	interp	If the node is already clean when a close is requested, the text sends a type 6 only when not clean. Our reading: when already clean, skip type 6 and go straight to B.7.2.8 Step 1	yes				
+B-0318	Ed4 B.7.2.4 p.B-32	B-32	interp	Client confirmations exempt from the no-new-data rule are NOT STATED precisely. Our reading: DATA C_PDUs carrying Annex A delivery confirm or delivery fail S_PDUs	yes				
+B-0319	Ed4 B.7.2.4 p.B-32	B-32	interp	For reason Higher Priority, the priority compared is NOT STATED. Our reading: compare the SIS priority of the S_PDU in each new DATA C_PDU with the type 6 Priority field	yes				
+B-0320	Ed4 B.7.1.7 p.B-22; B.7.2.4 p.B-32	B-32	interp	Receipt of type 6 with a reserved Reason (100 to 111) is NOT STATED. Our reading: treat it like Channel Share	yes				
+B-0321	Ed4 B.7.2.4 p.B-32; B.7.2.8 p.B-35	B-32	interp	Towards Ed3 peers clean close is barred, so a SIS break request goes straight to B.7.2.8 Step 1 (type 4)	yes				
+B-0322	Ed4 B.7.2.4 p.B-32	B-32	interp	No limit on the time to reach clean state is given. Our reading: a configurable clean close timeout, after which the node proceeds to B.7.2.8 Step 1 anyway	yes				Proposed; keeps a stalled peer from holding a link open
+B-0323	Ed4 B.7.2.8 pp.B-35 to B-36	B-36	interp	Receipt of a type 4 from a node with no physical link to us is NOT STATED. Our reading: reply with type 5 anyway so the peer stops retrying (our earlier type 5 may have been lost)	yes				
+B-0324	Ed4 B.7.2.8 p.B-35	B-35	interp	Whether a type 4 is sent after D_CONNECTION_LOST is NOT STATED. Our reading: no; the link is declared broken locally, the DTS told with D_CONNECTION_TERMINATED and SIS with C_PHYSICAL_LINK_BROKEN	yes				
+B-0325	Ed4 B.8 p.B-38	B-38	interp	The validity checks on a received DATA C_PDU are NOT STATED. Our reading: Type nibble 0 and at least one S_PDU octet; the low nibble of octet 0 is ignored; anything else is discarded	yes				
+B-0326	Ed4 B.6.2.4	B-9	info	Under 1:1 ALE every ALE connection to a peer comes with a CAS-1 link; in IMPLICIT mode the CAS-1 start-up exchange is not needed	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0327	Ed4 B.7.1.3	B-17	info	A node never asks for more than one physical link to a given node, so a PHYSICAL LINK ACCEPTED is matched to its request by the address it is sent to	yes				Basis for one link-setup state per peer address
+B-0328	Ed4 B.7.2.5	B-34	info	A peer is expected to end an ALE link only once it is in clean close state	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
+B-0329	Ed4 B.7.2.7	B-35	may	A node that received ALE RELINK may learn of the relink through ALM, or may instead see ALE_LINK_TERMINATED	no	C_PDU type 10 and ALE relinking are ALE-only; ALE not in our profile (main Tables 1, 2)			
+B-0330	Ed4 B.7.2.9	B-37	info	Resume works only if both nodes kept their CAS-1 and ARQ state from the earlier ALE link	no	C_PDU types 7 to 9 and the resume procedure are ALE-only (B.7.2.9 is for a failed ALE link); ALE not in our profile (main Tables 1, 2)			
