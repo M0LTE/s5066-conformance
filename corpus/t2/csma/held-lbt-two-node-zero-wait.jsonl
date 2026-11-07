@@ -1,0 +1,16 @@
+{"scenario": "csma-held-lbt-two-node-zero-wait", "rows": ["K-0067", "K-0068", "K-0072", "K-0077", "K-0087", "K-0089", "K-0120", "K-0073", "K-0111", "K-0079", "K-0080", "K-0084", "C-0868", "C-1050"], "source": "Ed4 K.3.2.2, p.K-9; K.3.2.3, Table 3, p.K-10; K.3.2.4, Table 4, p.K-11; K.2.2.10, p.K-4", "description": "A node that lost a contention round is held in LBT_WAIT; when the transmission that held it was addressed only to this node and its EOT end produces the idle, the held timer takes the value of LBT rule 1, zero, so the node goes straight to CONT_WAIT with a fresh jitter draw (issue #64, channel capture).", "config": {"local_address": "0.0.1.2", "csma": {"mode": "jitter"}}, "note": "Conn 1 binds SAP 5 for non-ARQ and gets S_BIND_ACCEPTED (A-0041, A-0047); its S_UNIDATA_REQUEST (priority 0 to SAP 5 at 0.0.1.3, U_PDU \"hello\", no confirmation) is data queued for transmission and produces no SIS output (A-0095, K-0096). Seed 0 draws uniform(16) = 15 then 4 (prng.md 5): 45000 ms, then 12000 ms. The burst at 40000 loses the round (K-0089): csma.cont_wait is cancelled and the node waits in LBT_WAIT with csma.lbt_wait held (K-0087). Its bytes at 41000 are the two D_PDUs of csma-two-node-zero-lbt: a single-segment NON-ARQ-DATA from 0.0.1.3 to this node (C_PDU ID 1, EOT 10, end 46000) and one from 0.0.1.3 to the broadcast address (C_PDU ID 2, EOT 10), so condition (a) holds (K-0068, K-0072); their S_PDUs are for SAP 9, which no client has bound, so delivering them gives no output (A-0235). Burst end 43000: csma.vdcd_end 3000 ms. At 46000 the idle is VDCD-determined and the transmission just heard met condition (a), so the held LBT_WAIT_TIMER takes rule 1's zero (K-0120): nothing is started (zero-duration rule) and the node enters CONT_WAIT at once with the second draw, 12000 ms (K-0079). Read as written, K.3.2.3 would give lbt_wait_dcd_ms, 30000 ms, here; K-0120 records why not. Since corpus 0.7.0 the DTS also keeps dts.ttd at the earliest TTD in its transmit queue (C-1050)."}
+{"t": 0, "in": "sis_connect", "conn": 1}
+{"t": 0, "in": "sis_bytes", "conn": 1, "bytes": "90eb00000401502000"}
+{"out": "sis_bytes", "conn": 1, "bytes": "90eb00000403500800"}
+{"t": 0, "in": "sis_bytes", "conn": 1, "bytes": "90eb0000111405e000010300000000000568656c6c6f"}
+{"out": "timer_start", "name": "dts.ttd", "ms": 1296000000}
+{"out": "timer_start", "name": "csma.lbt_wait", "ms": 30000}
+{"t": 30000, "in": "timer_expired", "name": "csma.lbt_wait"}
+{"out": "timer_start", "name": "csma.cont_wait", "ms": 45000}
+{"t": 40000, "in": "burst_started"}
+{"out": "timer_cancel", "name": "csma.cont_wait"}
+{"t": 41000, "in": "bytes_received", "bytes": "90eb70000a8f010201030006010006000000143672000099006869bf44d33b90eb70000aeffffffff0000103040602000600000014166a000099006869bf44d33b"}
+{"t": 43000, "in": "burst_ended", "reason": "eom", "wn": 2, "interleaver": "long", "k": 7, "snr_tenth_db": 60, "blocks": 2}
+{"out": "timer_start", "name": "csma.vdcd_end", "ms": 3000}
+{"t": 46000, "in": "timer_expired", "name": "csma.vdcd_end"}
+{"out": "timer_start", "name": "csma.cont_wait", "ms": 12000}
