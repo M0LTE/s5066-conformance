@@ -1,0 +1,12 @@
+{"scenario": "dts-rx-sync-search-junk", "rows": ["C-0973", "D-0007", "D-0016", "C-0140", "C-0842", "C-0843", "K-0071", "K-0073", "C-1024", "C-1025"], "source": "Ed4 C.7.7.3.2, p.C-124; Annex D, p.D-1", "description": "The receiver finds D_PDUs by searching the byte stream for the sync: it skips junk, rejects a false sync whose header CRC fails without skipping the D_PDU that starts inside it, and finds a sync split across two blocks.", "config": {"local_address": "0.0.1.2", "address_size": 4, "csma": {"mode": "jitter"}}, "note": "Conn 1 binds SAP 5 for non-ARQ and gets S_BIND_ACCEPTED (A-0041, A-0047); its S_UNIDATA_REQUEST (priority 0 to SAP 5 at 0.0.1.3, U_PDU \"hello\", no confirmation) is data queued for transmission and produces no SIS output (A-0095, K-0096). Every received D_PDU is a single-segment NON-ARQ-DATA (type 7, address size 4, C_PDU ID as stated, reception window 20) whose segment is a DATA C_PDU holding a DATA S_PDU from SAP 9 to SAP 9 with U_PDU \"hi\". Block 1 (2000): 4 junk bytes; a false sync 90 EB 70 00 00 8F whose size fields (type 7, m 4, h 15) make its claimed header cover the next D_PDU's first 15 bytes, where the header CRC fails, so the search moves on one byte (C-1025); a D_PDU from 0.0.1.3 to 0.0.1.9 (C_PDU ID 1, EOT 10, end 7000); 3 junk bytes; then the first byte (90) of a sync. Block 2 (2500): the rest of a second D_PDU (C_PDU ID 2, EOT 8), whose header completes at 2500, end 6500. The estimate is the minimum, 6500 (C-1024). Burst end 3000: csma.vdcd_end 3500 ms, then rule 3 gives 3000 ms."}
+{"t": 0, "in": "sis_connect", "conn": 1}
+{"t": 0, "in": "sis_bytes", "conn": 1, "bytes": "90eb00000401502000"}
+{"out": "sis_bytes", "conn": 1, "bytes": "90eb00000403500800"}
+{"t": 1000, "in": "burst_started"}
+{"t": 1500, "in": "sis_bytes", "conn": 1, "bytes": "90eb0000111405e000010300000000000568656c6c6f"}
+{"t": 2000, "in": "bytes_received", "bytes": "0011223390eb7000008f90eb70000a8f01090103000601000600000014a9df000099006869bf44d33baabbcc90"}
+{"t": 2500, "in": "bytes_received", "bytes": "eb7000088f010901030006020006000000146506000099006869bf44d33b"}
+{"t": 3000, "in": "burst_ended", "reason": "eom", "wn": 2, "interleaver": "long", "k": 7, "snr_tenth_db": 60, "blocks": 2}
+{"out": "timer_start", "name": "csma.vdcd_end", "ms": 3500}
+{"t": 6500, "in": "timer_expired", "name": "csma.vdcd_end"}
+{"out": "timer_start", "name": "csma.lbt_wait", "ms": 3000}

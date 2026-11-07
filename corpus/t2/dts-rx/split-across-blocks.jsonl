@@ -1,0 +1,20 @@
+{"scenario": "dts-rx-split-across-blocks", "rows": ["C-0973", "D-0007", "C-0842", "C-0843", "K-0021", "K-0073", "K-0075", "K-0077", "K-0087", "K-0071", "C-1024", "K-0111"], "source": "Ed4 C.7.5.1.1, p.C-110; C.7.7.3.2, p.C-124; K.3.2.3, Table 3, p.K-10", "description": "A D_PDU split across modem blocks is reassembled; its EOT counts from the block that completed its header, even when its data arrives in a later block. A VDCD busy period in LBT_WAIT holds LBT_WAIT_TIMER like a DCD one.", "config": {"local_address": "0.0.1.2", "address_size": 4, "csma": {"mode": "jitter"}}, "note": "Conn 1 binds SAP 5 for non-ARQ and gets S_BIND_ACCEPTED (A-0041, A-0047); its S_UNIDATA_REQUEST (priority 0 to SAP 5 at 0.0.1.3, U_PDU \"hello\", no confirmation) is data queued for transmission and produces no SIS output (A-0095, K-0096). Every received D_PDU is a single-segment NON-ARQ-DATA (type 7, address size 4, C_PDU ID as stated, reception window 20) whose segment is a DATA C_PDU holding a DATA S_PDU from SAP 9 to SAP 9 with U_PDU \"hi\". Burst 1: D_PDU A (0.0.1.3 to 0.0.1.9, C_PDU ID 1, EOT 12) arrives as its first 10 bytes at 2000 and the rest at 3000; its 21-byte header completes at 3000, so its end is 3000 + 6000 = 9000 (C-1024). Burst end 4000: csma.vdcd_end 5000 ms; at 9000 rule 3 gives LBT_WAIT_TIMER 3000 ms. Burst 2 starts at 10000, inside LBT_WAIT: the timer is held (K-0077, K-0087). D_PDU B (C_PDU ID 2, EOT 8) arrives as its header and 5 data bytes at 10500 and the rest at 11000; its header completed at 10500, so its end is 10500 + 4000 = 14500. The burst ends at 11500 with that prediction in the future, so the channel is still busy (K-0073): csma.vdcd_end runs 3000 ms, and at 14500 LBT_WAIT_TIMER restarts with lbt_wait_dcd_ms, 30000 ms (K-0087)."}
+{"t": 0, "in": "sis_connect", "conn": 1}
+{"t": 0, "in": "sis_bytes", "conn": 1, "bytes": "90eb00000401502000"}
+{"out": "sis_bytes", "conn": 1, "bytes": "90eb00000403500800"}
+{"t": 1000, "in": "burst_started"}
+{"t": 1500, "in": "sis_bytes", "conn": 1, "bytes": "90eb0000111405e000010300000000000568656c6c6f"}
+{"t": 2000, "in": "bytes_received", "bytes": "90eb70000c8f01090103"}
+{"t": 3000, "in": "bytes_received", "bytes": "00060100060000001422ab000099006869bf44d33b"}
+{"t": 4000, "in": "burst_ended", "reason": "eom", "wn": 2, "interleaver": "long", "k": 7, "snr_tenth_db": 60, "blocks": 2}
+{"out": "timer_start", "name": "csma.vdcd_end", "ms": 5000}
+{"t": 9000, "in": "timer_expired", "name": "csma.vdcd_end"}
+{"out": "timer_start", "name": "csma.lbt_wait", "ms": 3000}
+{"t": 10000, "in": "burst_started"}
+{"out": "timer_cancel", "name": "csma.lbt_wait"}
+{"t": 10500, "in": "bytes_received", "bytes": "90eb7000088f0109010300060200060000001465060000990068"}
+{"t": 11000, "in": "bytes_received", "bytes": "69bf44d33b"}
+{"t": 11500, "in": "burst_ended", "reason": "eom", "wn": 2, "interleaver": "long", "k": 7, "snr_tenth_db": 60, "blocks": 2}
+{"out": "timer_start", "name": "csma.vdcd_end", "ms": 3000}
+{"t": 14500, "in": "timer_expired", "name": "csma.vdcd_end"}
+{"out": "timer_start", "name": "csma.lbt_wait", "ms": 30000}
