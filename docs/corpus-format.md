@@ -81,6 +81,11 @@ A decoder that rejects input reports one of these kinds. Harnesses compare the k
 | `bad_address_size` | The size-of-address field is zero or otherwise impossible. |
 | `trailing_bytes` | Bytes remain after the PDU in a T1 decode case. |
 | `invalid_field` | A field holds a value the codec cannot represent. |
+| `bad_version` | `sis_frame` and `sis_stream`: the version byte is not 0. |
+| `bad_size` | `sis_frame` and `sis_stream`: the size field is 0. |
+| `unknown_type` | `sis_frame` and `sis_stream`: the type byte is 0 or above 27 (and so not a primitive of this edition or a deprecated one). |
+| `deprecated_type` | `sis_frame` and `sis_stream`: the type is a hard link (6 to 13) or expedited data (24 to 27) primitive. It is recognised and reported, never decoded. |
+| `bad_length` | `sis_frame` and `sis_stream`: the body length does not fit the type's layout, or an inner size field disagrees with the body. |
 
 Where several apply, the kind is decided by the check order its kind registers (for `dpdu`, section 3.3), so both languages report the same kind. A CRC-32 mismatch on a segment is not an error kind: Annex C requires the header to be processed when its own CRC is valid, whatever the segment CRC says [Ed4 C.4.2.8, p.C-17], so the decoder returns the value with `segment_crc_ok` false.
 
@@ -95,13 +100,13 @@ A kind is added to this table, and to the validator, in the same change that add
 | `dpdu` | Section 3.3 | One whole D_PDU from its first sync byte to its last CRC byte. |
 | `cpdu` | Section 3.5 | One whole CAS C_PDU. |
 | `spdu` | Section 3.6 | One whole SIS peer S_PDU. |
-| `eow` | Section 3.7 | The 12-bit EOW as 2 bytes: the EOW type, then the contents byte. |
-| `address` | Section 3.8 | The m-byte address field. |
+| `eow` | Section 3.8 | The 12-bit EOW as 2 bytes: the EOW type, then the contents byte. |
+| `address` | Section 3.9 | The m-byte address field. |
 | `speed_interleaver` | `{"interleaver": 0-7, "speed": 0-31}` | The one speed and interleaver byte [Ed4 Figure C-49, p.C-72]: interleaver in bits 7-5, speed in bits 4-0. |
+| `sis_frame` | Section 3.7 | One whole SIS Access Protocol frame, from the first preamble byte to the last body byte. |
+| `sis_stream` | Section 3.7 | A byte stream made of several frames, junk and partial frames, with the events a streaming decoder gives. |
 
 For `crc16` and `crc32`, `register` is the final value of the Annex C shift-register code example after all bytes of `data` [Ed4 C.4.2.8, p.C-18; C.4.2.11, p.C-21], and `bytes` is that register sent least significant byte first [Ed4 pp.C-18, C-22]. These kinds are `encode` only.
-
-Kinds planned for phase 1 and not yet registered: `sis_frame`.
 
 ### 3.3 The `dpdu` value
 
@@ -237,7 +242,46 @@ Decode check order, stopping at the first failure:
 
 All the bytes after the fixed part belong to the U_PDU copy, so there is no `trailing_bytes` for S_PDUs.
 
-### 3.7 The `eow` value
+### 3.7 The `sis_frame` and `sis_stream` kinds
+
+Both kinds cover the S_primitive framing of Annex S [Ed4 S.5.2, pp.S-8 to S-10]: preamble `90 eb`, version `00`, a 2-byte big-endian size of the body, then the body, whose first byte is the type [matrix S-0060 to S-0072]. A decoder decodes every primitive of the profile whatever its direction (a client-to-node type received by a client is the node's or client's policy, not the codec's). Hard link types 6 to 13 and expedited types 24 to 27 are recognised and reported as `deprecated_type` [S-0157]. Fields marked NOT USED are not in the value, are written as zero, and are ignored on receipt [S-0073, S-0074]. RANK in S_BIND_REQUEST is not in the value for the same reason [S-0088].
+
+`sis_frame` is one frame, in the same style as `dpdu`: `bytes` is exactly one frame, and `value` is the primitive. Its decode check order, stopping at the first failure:
+
+1. Fewer than 2 bytes: `truncated`. The first two bytes are not `90 eb`: `bad_sync`.
+2. Fewer than 5 bytes: `truncated`.
+3. Version not 0: `bad_version`.
+4. Size 0: `bad_size`.
+5. Fewer than 5 + size bytes: `truncated`.
+6. Type in 6 to 13 or 24 to 27: `deprecated_type`. Type 0 or above 23 (other than 24 to 27): `unknown_type`.
+7. Body length not matching the type's layout: `bad_length`.
+8. Bytes left over: `trailing_bytes`.
+
+The value always has `primitive` (the Annex S name) and these keys. `service_type` is `{"tx_mode": 0-15, "confirm": 0-3, "order": 0-1, "extended": 0-1, "min_retx": 0-15}` (the 12-bit Service Type or Delivery Mode [S-0079, S-0139]). An address is `{"address": "w.x.y.z", "group": bool, "size": 0-7}`: the 28-bit value (written as in section 2), the group flag, and the SIZE field as sent. The 28 bits are read right-aligned whatever SIZE says, and an encoder writes SIZE as given [S-0059, S-0137]. `u_pdu` and `body` are hex.
+
+| `primitive` | Keys |
+|---|---|
+| `S_BIND_REQUEST` | `sap` (0-15), `service_type` |
+| `S_UNBIND_REQUEST`, `S_DATA_FLOW_ON`, `S_DATA_FLOW_OFF` (type 16 [S-0111]), `S_KEEP_ALIVE` | none |
+| `S_BIND_ACCEPTED` | `sap`, `mtu` (0-65535) |
+| `S_BIND_REJECTED`, `S_UNBIND_INDICATION` | `reason` (0-255) |
+| `S_SUBNET_AVAILABILITY` | `node_status`, `reason` (0-255 each) |
+| `S_MANAGEMENT_MSG_REQUEST`, `S_MANAGEMENT_MSG_INDICATION` | `msg_type` (0-255), `body` |
+| `S_UNIDATA_REQUEST` | `priority` (0-15), `dest_sap`, `dest_address`, `delivery_mode` (a `service_type`), `ttl` (0 to 1048575, the 20-bit field as sent), `u_pdu` |
+| `S_UNIDATA_INDICATION` | `priority`, `dest_sap`, `dest_address`, `tx_mode` (0-15), `src_sap`, `src_address`, `u_pdu` |
+| `S_UNIDATA_REQUEST_CONFIRM` | `dest_sap`, `dest_address`, `u_pdu` |
+| `S_UNIDATA_REQUEST_REJECTED` | `reason` (0-15), `dest_sap`, `dest_address`, `u_pdu` |
+
+The U_PDU size fields are not in the value; the encoder computes them and the decoder checks them. Whether a value is acceptable to the node (a U_PDU over the MTU, TTL above 648000, an invalid service type, a group address with ARQ) is node policy and is not tested here.
+
+`sis_stream` is decode only. `value` is `{"chunks": [hex, ...], "events": [event, ...]}`; `bytes` is the chunks joined. The harness feeds the chunks to a streaming decoder one by one and collects every event it gives, in order; the list must equal `events`. An event is a primitive (a value as above) or `{"error": kind}` where kind is one of the five SIS kinds above or `bad_sync`. Results must not depend on how the bytes are chunked, so a harness should also try the bytes as one chunk and one byte at a time. Rules [S-0075, S-0076, S-0159]:
+
+- Bytes that are not at a preamble, where one is expected (at the start, or after a whole frame), give one `bad_sync` event, then the decoder scans forward byte by byte for the next `90 eb` and resumes there. A run of junk of any length, however chunked, gives one event.
+- A bad version or zero size gives its event, then the scan restarts at the byte after the first preamble byte. The bytes that scan passes over give no further event.
+- A deprecated type, an unknown type or a body of the wrong length is reported once the whole body has arrived, and the body is then skipped by its size field. That counts as a whole frame, so junk after it is a new run.
+- A frame that has not fully arrived gives no event. A final lone `90` is held in case it starts a preamble. There is no end-of-input event.
+
+### 3.8 The `eow` value
 
 ```json
 {"type": 8, "fields": {"speed": 6, "interleaver": 3}}
@@ -259,7 +303,7 @@ All the bytes after the fixed part belong to the U_PDU copy, so there is no `tra
 
 Reserved bits are zero in every case here (C-1020, C-0094): a receiver ignores them. A `decode` of a type above 15 cannot arise from 2 bytes in the corpus; a decoder given a first byte over 15 reports `invalid_field`, and given other than 2 bytes `truncated` or `trailing_bytes`.
 
-### 3.8 The `address` value
+### 3.9 The `address` value
 
 ```json
 {"address_size": 2, "dst": "0.0.0.5", "src": "0.0.0.100"}
