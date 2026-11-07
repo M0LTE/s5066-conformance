@@ -1,0 +1,16 @@
+{"scenario":"dts-nonarq-eow-unrecognised-type-3","rows":["C-0444","C-0445","C-0446","C-0447","C-0448","C-0443","C-0401","C-0405","C-0412","C-0421","C-0396","C-1079","C-0415","C-0585","C-0605","C-0570","C-0575","K-0067","K-0068","C-1050"],"source":"Ed4 C.6.3, p.C-70; C.6, pp.C-66 to C-67","description":"An EOW of a type this node does not recognise, in a D_PDU addressed to it, is answered with an UNRECOGNIZED-TYPE-ERROR EOW in the next D_PDU sent to that node; one in a D_PDU to a group is not answered.","config":{"local_address":"0.0.1.2","address_size":4,"csma":{"mode":"jitter"},"modem":{"preamble_ms":600,"flush_ms":150,"waveforms":[{"wn":2,"interleaver":"long","block_bytes":256,"block_ms":4800}]},"groups":["0.0.2.1"]},"note":"Conn 1 binds SAP 5 for non-ARQ (service type tx_mode 2, no confirmation) and gets S_BIND_ACCEPTED with MTU 2048 (A-0041, A-0047). groups is [0.0.2.1]. At 1500, during the burst, conn 1 sends an S_UNIDATA_REQUEST (priority 0, SAP 5 at 0.0.1.3, TTL 0, U_PDU \u0022hello\u0022, no confirmation): no SIS output. At 2000, two single-segment type 7 D_PDUs from 0.0.1.3, EOT 10 (end 7000), reception window 0, DATA S_PDU SAP 9 to SAP 7 (no client, so not delivered, A-0235): C_PDU ID 1 to 0.0.1.2, individual, address size 4, EOW 0x7AB (type 7, RESERVED, contents 0xAB); C_PDU ID 2 to group 0.0.2.1, address size 7, EOW 0xE12 (type 14, RESERVED). Both EOW types are unrecognised (C-0405, C-0412, C-0421). The first is answered: UNRECOGNIZED-TYPE-ERROR, EOW 0x307 (type 3, reserved bits 0, unrecognised type 7; C-0446 to C-0448), owed to 0.0.1.3; the second, to a group, is not (C-1079), or it would have replaced it with 0x30E. Burst end 3000: csma.vdcd_end 4000; at 7000 rule 1 holds (the group D_PDU is non-ARQ to a group, K-0068), CONT_WAIT 45000; at 52000 the type 7 for \u0022hello\u0022 (C_PDU ID 0, TTD 1500 \u002B 1296000000 ms) goes out carrying EOW 0x307 instead of EMPTY (C-0396, C-1079), EOT and reception window 10. Since corpus 0.7.0 the DTS also keeps dts.ttd at the earliest TTD in its transmit queue: started when a request becomes the earliest, cancelled when the transmit queue empties (C-1050)."}
+{"t":0,"in":"sis_connect","conn":1}
+{"t":0,"in":"sis_bytes","conn":1,"bytes":"90eb00000401502000"}
+{"out":"sis_bytes","conn":1,"bytes":"90eb00000403500800"}
+{"t":1000,"in":"burst_started"}
+{"t":1500,"in":"sis_bytes","conn":1,"bytes":"90eb0000111405e000010300000000000568656c6c6f"}
+{"out":"timer_start","name":"dts.ttd","ms":1296000000}
+{"t":2000,"in":"bytes_received","bytes":"90eb77ab0a8f010201030006010006000000002f68000097006531c85391d090eb7e120aef00002010000103040602000600000000e0190000970065323b272764"}
+{"t":3000,"in":"burst_ended","reason":"eom","wn":2,"interleaver":"long","k":7,"snr_tenth_db":60,"blocks":1}
+{"out":"timer_start","name":"csma.vdcd_end","ms":4000}
+{"t":7000,"in":"timer_expired","name":"csma.vdcd_end"}
+{"out":"timer_start","name":"csma.cont_wait","ms":45000}
+{"t":52000,"in":"timer_expired","name":"csma.cont_wait"}
+{"out":"timer_cancel","name":"dts.ttd"}
+{"out":"transmit","bytes":"90eb73070a8f01030102000b00000b0000000aa57400005540000068656c6c6f5398c0d5","wn":2,"interleaver":"long","k":7,"eom":true}
+{"t":57550,"in":"transmit_done"}

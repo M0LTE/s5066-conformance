@@ -1,0 +1,7 @@
+{"scenario":"dts-nonarq-no-warning-on-warning","rows":["C-0393","C-0589","C-0588","C-0386"],"source":"Ed4 C.4.15, p.C-56; C.7.1.1.1 Table C-10, p.C-79","description":"A WARNING received from a peer is never answered with a WARNING, and a PADDING D_PDU is ignored, so nothing is queued.","config":{"local_address":"0.0.1.2","address_size":4,"csma":{"mode":"jitter"},"modem":{"preamble_ms":600,"flush_ms":150,"waveforms":[{"wn":2,"interleaver":"long","block_bytes":256,"block_ms":4800}]}},"note":"Conn 1 binds SAP 5 for non-ARQ (service type tx_mode 2, no confirmation) and gets S_BIND_ACCEPTED with MTU 2048 (A-0041, A-0047). At 2000, from 0.0.1.3 to 0.0.1.2, address size 4, EOW 0, EOT 10: a WARNING (type 15, RECEIVED FRAME TYPE 7, reason 2) and a PADDING (type 14). The WARNING goes to the CAS as D_WARNING_RECEIVED (C-0589), which has no output, and is never answered (C-0393); the PADDING is ignored (C-0588). Nothing is queued, so the burst end starts no csma.vdcd_end, unlike warning-reason-1-arq-while-unconnected."}
+{"t":0,"in":"sis_connect","conn":1}
+{"t":0,"in":"sis_bytes","conn":1,"bytes":"90eb00000401502000"}
+{"out":"sis_bytes","conn":1,"bytes":"90eb00000403500800"}
+{"t":1000,"in":"burst_started"}
+{"t":2000,"in":"bytes_received","bytes":"90ebf0000a870102010372c5f190ebe0000a8601020103596e"}
+{"t":3000,"in":"burst_ended","reason":"eom","wn":2,"interleaver":"long","k":7,"snr_tenth_db":60,"blocks":1}

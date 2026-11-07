@@ -403,6 +403,7 @@ Each timer name, and each `link_state` state name, is registered in a table in t
 | `csma.cont_wait` | none | CONT_WAIT_TIMER: started on entry to CONT_WAIT with the contention wait; cancelled when the round is lost or the queue empties (K-0031, K-0079 to K-0082, K-0089, K-0091) |
 | `csma.vdcd_end` | none | The predicted end time of the channel activity heard, from parsed EOTs: runs exactly while the MAC is in SENSE or LBT_WAIT, data is queued, DCD is false and the predicted end time is later than now, with that end time as its deadline; its expiry is the VDCD idle event (C-0844, K-0021, K-0073, K-0111) |
 | `dts.ttd` | none | The DTS transmit queue's next change with no input: runs to the earliest TTD of a queued C_PDU, or, while a C_PDU waits for a C_PDU ID still in use, to the instant that ID is freed, whichever is sooner. Started or restarted when that instant changes, cancelled when there is none (for example when the transmit queue empties); at expiry every C_PDU whose TTD is at or before now is dropped and rejected (C-0857, C-0859, C-0864, C-0327, C-1050, C-1053) |
+| `dts.reception_window` | none | The earliest reception window deadline among the incomplete non-ARQ C_PDUs being reassembled: started or restarted when that earliest deadline changes, cancelled when none is left; at its expiry every incomplete C_PDU whose deadline has passed is discarded (C-0336, C-0350, C-1077; core-architecture collapsing rule) |
 
 | Link state | Defined by |
 |---|---|
