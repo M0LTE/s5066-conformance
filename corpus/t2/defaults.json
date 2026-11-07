@@ -1,6 +1,12 @@
 {
   "local_address": null,
   "address_size": null,
+  "groups": [],
+  "time": {
+    "epoch_year": 2026,
+    "epoch_day": 1,
+    "epoch_second": 0
+  },
   "prng_seed": "0000000000000000",
   "csma": {
     "mode": null,
@@ -14,5 +20,8 @@
     "preamble_ms": null,
     "flush_ms": null,
     "waveforms": []
+  },
+  "sis": {
+    "default_ttl": 648000
   }
 }

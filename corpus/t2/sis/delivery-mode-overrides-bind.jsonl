@@ -1,0 +1,15 @@
+{"scenario": "sis-delivery-mode-overrides-bind", "rows": ["A-0035", "A-0068", "S-0086", "S-0140", "S-0141", "S-0142", "S-0143", "A-0067", "A-0069"], "source": "Ed4 A.2.2.1 and A.2.2.6, pp.A-5, A-8; S.5.16.2, pp.S-19 to S-20", "description": "A non-DEFAULT delivery mode overrides the bind service type for one U_PDU, and DEFAULT (Transmission Mode 0) uses the bind service type and ignores its other subfields, as group-address acceptance shows.", "config": {"local_address": "0.0.1.2", "address_size": 4, "csma": {"mode": "jitter"}}, "note": "ARQ to a group is refused (S-0138), so whether a group request is accepted shows which mode applied. Accepted non-ARQ requests go to the DTS queue, which has no observable effect until the planner (P3-4); a burst_started first keeps the channel busy, so a CSMA MAC holds in SENSE (K-0066) and the trace stays valid once Annex K lands."}
+{"t": 0, "in": "burst_started"}
+{"t": 0, "in": "sis_connect", "conn": 1}
+{"t": 0, "in": "sis_bytes", "conn": 1, "bytes": "90eb00000401501000"}
+{"out": "sis_bytes", "conn": 1, "bytes": "90eb00000403500800"}
+{"t": 100, "in": "sis_bytes", "conn": 1, "bytes": "90eb00000d1414f00000092200001e0001aa"}
+{"t": 200, "in": "sis_bytes", "conn": 1, "bytes": "90eb00000d1414f00000090000001e0001bb"}
+{"out": "sis_bytes", "conn": 1, "bytes": "90eb0000091764f00000090001bb"}
+{"t": 300, "in": "sis_connect", "conn": 2}
+{"t": 300, "in": "sis_bytes", "conn": 2, "bytes": "90eb00000401602200"}
+{"out": "sis_bytes", "conn": 2, "bytes": "90eb00000403600800"}
+{"t": 400, "in": "sis_bytes", "conn": 2, "bytes": "90eb00000d1414f00000090df0001e0001cc"}
+{"t": 500, "in": "sis_bytes", "conn": 2, "bytes": "90eb00000d1414f00000091200001e0001dd"}
+{"out": "sis_bytes", "conn": 2, "bytes": "90eb0000091764f00000090001dd"}
+{"t": 600, "in": "sis_bytes", "conn": 2, "bytes": "90eb00000d1414f00000090000001e0001ee"}

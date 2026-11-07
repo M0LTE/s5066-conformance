@@ -29,69 +29,69 @@ A-0027	Ed4 A.2.1	A-4	info	Flow control and management between SIS and applicatio
 A-0028	Ed4 A.2.2	A-4	shall	The content and use of the SIS primitives are as given in A.2.2.1 to A.2.2.9.	yes				
 A-0029	Ed4 A.2.2.1	A-4	info	S_BIND_REQUEST carries the requested SAP ID and the default service type.	yes				Rank removed in Ed4 (A.5 item 3); the S encoding keeps a RANK nibble set to 0.
 A-0030	Ed4 A.2.2.1	A-4	shall	A new client issues S_BIND_REQUEST when it first connects.	yes				Client duty (client library). Node side: see S interp rows on primitives before bind.
-A-0031	Ed4 A.2.2.1	A-4	info	A client that has not bound cannot be served; binding declares it on-line.	yes				
-A-0032	Ed4 A.2.2.1	A-5	shall	The first argument of S_BIND_REQUEST is the SAP ID the client wants.	yes				
-A-0033	Ed4 A.2.2.1	A-5	shall	A SAP ID is unique within the node: it cannot be given to a second client of the same node.	yes				Node enforces with S_BIND_REJECTED reason 3.
-A-0034	Ed4 A.2.2.1	A-5	shall	The last argument of S_BIND_REQUEST is the default Service Type, defined in A.2.2.6.	yes				Shall numbering jumps from (3) to (7) where Ed3 rank text was removed.
-A-0035	Ed4 A.2.2.1	A-5	shall	The bind Service Type applies to every U_PDU the client submits unless that U_PDU explicitly overrides it.	yes				
+A-0031	Ed4 A.2.2.1	A-4	info	A client that has not bound cannot be served; binding declares it on-line.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
+A-0032	Ed4 A.2.2.1	A-5	shall	The first argument of S_BIND_REQUEST is the SAP ID the client wants.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
+A-0033	Ed4 A.2.2.1	A-5	shall	A SAP ID is unique within the node: it cannot be given to a second client of the same node.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Node enforces with S_BIND_REJECTED reason 3.
+A-0034	Ed4 A.2.2.1	A-5	shall	The last argument of S_BIND_REQUEST is the default Service Type, defined in A.2.2.6.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Shall numbering jumps from (3) to (7) where Ed3 rank text was removed.
+A-0035	Ed4 A.2.2.1	A-5	shall	The bind Service Type applies to every U_PDU the client submits unless that U_PDU explicitly overrides it.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
 A-0036	Ed4 A.2.2.2	A-5	shall	A client goes off-line by issuing S_UNBIND_REQUEST.	yes				Client duty.
-A-0037	Ed4 A.2.2.2	A-5	shall	On S_UNBIND_REQUEST the SIS releases the client's SAP ID.	yes				
-A-0038	Ed4 A.2.2.2	A-5	shall	A released SAP ID becomes available to any other client that asks for it.	yes				
-A-0039	Ed4 A.2.2.2	A-5	info	A client that unbound can come back on-line with a new S_BIND_REQUEST.	yes				Basis for keeping the TCP connection open after unbind (S interp).
-A-0040	Ed4 A.2.2.2	A-5	info	Disconnecting physically (for example powering off or unplugging) also takes a client off-line.	yes				Over TCP: connection close counts as unbind (S interp).
-A-0041	Ed4 A.2.2.3	A-5	shall	S_BIND_ACCEPTED is the SIS's positive response to S_BIND_REQUEST.	yes				
-A-0042	Ed4 A.2.2.3	A-5	shall	The SAP ID argument of S_BIND_ACCEPTED is the SAP ID assigned to the client.	yes				
-A-0043	Ed4 A.2.2.3	A-5	shall	That SAP ID equals the one in the S_BIND_REQUEST being answered.	yes				
-A-0044	Ed4 A.2.2.3	A-6	shall	The MTU argument tells the client the largest U_PDU, in bytes, it may submit in S_UNIDATA_REQUEST.	yes				
-A-0045	Ed4 A.2.2.3	A-6	shall	S_UNIDATA_REQUESTs whose U_PDU exceeds the MTU are rejected.	yes				See the over-MTU interp row.
-A-0046	Ed4 A.2.2.3	A-6	shall	U_PDUs received over the air are delivered to clients whatever their size; the MTU limit applies only to client submissions.	yes				
-A-0047	Ed4 A.2.2.3	A-6	shall	A general-purpose node uses an MTU of 2048 bytes.	yes				
+A-0037	Ed4 A.2.2.2	A-5	shall	On S_UNBIND_REQUEST the SIS releases the client's SAP ID.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
+A-0038	Ed4 A.2.2.2	A-5	shall	A released SAP ID becomes available to any other client that asks for it.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
+A-0039	Ed4 A.2.2.2	A-5	info	A client that unbound can come back on-line with a new S_BIND_REQUEST.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Basis for keeping the TCP connection open after unbind (S interp).
+A-0040	Ed4 A.2.2.2	A-5	info	Disconnecting physically (for example powering off or unplugging) also takes a client off-line.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Over TCP: connection close counts as unbind (S interp).
+A-0041	Ed4 A.2.2.3	A-5	shall	S_BIND_ACCEPTED is the SIS's positive response to S_BIND_REQUEST.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
+A-0042	Ed4 A.2.2.3	A-5	shall	The SAP ID argument of S_BIND_ACCEPTED is the SAP ID assigned to the client.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
+A-0043	Ed4 A.2.2.3	A-5	shall	That SAP ID equals the one in the S_BIND_REQUEST being answered.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
+A-0044	Ed4 A.2.2.3	A-6	shall	The MTU argument tells the client the largest U_PDU, in bytes, it may submit in S_UNIDATA_REQUEST.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
+A-0045	Ed4 A.2.2.3	A-6	shall	S_UNIDATA_REQUESTs whose U_PDU exceeds the MTU are rejected.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		See the over-MTU interp row.
+A-0046	Ed4 A.2.2.3	A-6	shall	U_PDUs received over the air are delivered to clients whatever their size; the MTU limit applies only to client submissions.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Received_data_cpdu_over_the_mtu_is_delivered	
+A-0047	Ed4 A.2.2.3	A-6	shall	A general-purpose node uses an MTU of 2048 bytes.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
 A-0048	Ed4 A.2.2.3	A-6	shall	A broadcast-only node has a configurable MTU.	na	our node is general-purpose, not broadcast-only			
 A-0049	Ed4 A.2.2.3	A-6	shall	A broadcast-only node's MTU does not exceed 4096 bytes.	na	our node is general-purpose, not broadcast-only			
-A-0050	Ed4 A.2.2.4	A-6	shall	S_BIND_REJECTED is the SIS's negative response to S_BIND_REQUEST.	yes				
-A-0051	Ed4 A.2.2.4	A-6	shall	The Reason argument of S_BIND_REJECTED states why the bind failed.	yes				
-A-0052	Ed4 A.2.2.4	A-6	shall	Bind reject reasons: 1 Not Enough Resources, 2 Invalid SAP ID, 3 SAP ID already allocated, 4 ARQ Mode unsupportable during Broadcast Session.	yes				Reason 4 is never sent by us (no exclusive broadcast session).
-A-0053	Ed4 A.2.2.4	A-6	shall	These bind reject values are the ones carried in the Annex S encoding.	yes				Ed4 S.5.6.
-A-0054	Ed4 A.2.2.5	A-6	shall	The SIS uses S_UNBIND_INDICATION to declare a client off-line on its own initiative.	yes				
+A-0050	Ed4 A.2.2.4	A-6	shall	S_BIND_REJECTED is the SIS's negative response to S_BIND_REQUEST.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
+A-0051	Ed4 A.2.2.4	A-6	shall	The Reason argument of S_BIND_REJECTED states why the bind failed.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
+A-0052	Ed4 A.2.2.4	A-6	shall	Bind reject reasons: 1 Not Enough Resources, 2 Invalid SAP ID, 3 SAP ID already allocated, 4 ARQ Mode unsupportable during Broadcast Session.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Reason 4 is never sent by us (no exclusive broadcast session).
+A-0053	Ed4 A.2.2.4	A-6	shall	These bind reject values are the ones carried in the Annex S encoding.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Ed4 S.5.6.
+A-0054	Ed4 A.2.2.5	A-6	shall	The SIS uses S_UNBIND_INDICATION to declare a client off-line on its own initiative.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
 A-0055	Ed4 A.2.2.5	A-7	info	A client declared off-line must send a new S_BIND_REQUEST to come back.	yes				Text points to "A.2.1.1" for the bind; that is stale, the bind is A.2.2.1.
-A-0056	Ed4 A.2.2.5	A-7	shall	The Reason argument of S_UNBIND_INDICATION says why the client was taken off-line.	yes				
-A-0057	Ed4 A.2.2.5	A-7	info	Unbind reasons: 1 Reserved, 2 Inactivity (no answer to keep-alive), 3 Too many invalid primitives, 4 Reserved, 5 ARQ Mode Unsupportable during Broadcast, 6 SIS service or session terminating (label garbled).	yes				Ed1 meanings of 1 (pre-empted by higher ranked client) and 4 (too many expedited requests) dropped with rank and expedited data.
-A-0058	Ed4 A.2.2.5	A-7	shall	These unbind reason values are the ones carried in the Annex S encoding.	yes				Ed4 S.5.7.
+A-0056	Ed4 A.2.2.5	A-7	shall	The Reason argument of S_UNBIND_INDICATION says why the client was taken off-line.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
+A-0057	Ed4 A.2.2.5	A-7	info	Unbind reasons: 1 Reserved, 2 Inactivity (no answer to keep-alive), 3 Too many invalid primitives, 4 Reserved, 5 ARQ Mode Unsupportable during Broadcast, 6 SIS service or session terminating (label garbled).	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Ed1 meanings of 1 (pre-empted by higher ranked client) and 4 (too many expedited requests) dropped with rank and expedited data.
+A-0058	Ed4 A.2.2.5	A-7	shall	These unbind reason values are the ones carried in the Annex S encoding.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Ed4 S.5.7.
 A-0059	Ed4 A.2.2.5	A-7	interp	The label of unbind reason 6 is printed run together ("SIS ServiceSession Terminating"). Reading: reason 6 means the node's SIS service is shutting down; the node sends it to every bound client before closing their connections on shutdown.	yes				Not in plan 4.4.
-A-0060	Ed4 A.2.2.5	A-7	interp	Unbind reasons 1 and 4 are Reserved in Ed4. Reading: the node never sends them; the client library treats any unknown or reserved reason as a generic unbind.	yes				
-A-0061	Ed4 A.2.2.6	A-7	shall	Bound clients submit U_PDUs for delivery with S_UNIDATA_REQUEST.	yes				
-A-0062	Ed4 A.2.2.6	A-7	shall	The Priority argument is the priority of the U_PDU.	yes				
-A-0063	Ed4 A.2.2.6	A-7	shall	Priority takes values 0 to 15, 0 lowest and 15 highest.	yes				Ed1 did not say which end was highest.
-A-0064	Ed4 A.2.2.6	A-7	shall	All HF sublayers make a best effort to give queued higher-priority U_PDUs precedence over lower-priority ones.	yes				
-A-0065	Ed4 A.2.2.6	A-8	shall	The Destination SAP ID argument names the receiving client's SAP.	yes				
-A-0066	Ed4 A.2.2.6	A-8	shall	The Destination Node Address argument is the HF subnetwork address of the node the receiving client is bound to.	yes				May be a group address for non-ARQ only (Ed4 S.5.16.1).
-A-0067	Ed4 A.2.2.6	A-8	shall	The Delivery Mode (Service Type) argument has four elements: transmission mode, delivery confirmation, delivery order and minimum retransmissions.	yes				Annex S adds a fifth subfield, the Extended Field (Ed4 S.5.16.2).
-A-0068	Ed4 A.2.2.6	A-8	info	Delivery Mode may be DEFAULT, meaning the Service Type given at bind; any other value overrides the bind default for this U_PDU.	yes				Encoded as Transmission Mode 0 (Ed4 S.5.16.2).
-A-0069	Ed4 A.2.2.6	A-8	shall	The transmission mode, ARQ or non-ARQ, is specified, with a non-ARQ submode when non-ARQ is chosen.	yes				
+A-0060	Ed4 A.2.2.5	A-7	interp	Unbind reasons 1 and 4 are Reserved in Ed4. Reading: the node never sends them; the client library treats any unknown or reserved reason as a generic unbind.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
+A-0061	Ed4 A.2.2.6	A-7	shall	Bound clients submit U_PDUs for delivery with S_UNIDATA_REQUEST.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+A-0062	Ed4 A.2.2.6	A-7	shall	The Priority argument is the priority of the U_PDU.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+A-0063	Ed4 A.2.2.6	A-7	shall	Priority takes values 0 to 15, 0 lowest and 15 highest.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	Ed1 did not say which end was highest.
+A-0064	Ed4 A.2.2.6	A-7	shall	All HF sublayers make a best effort to give queued higher-priority U_PDUs precedence over lower-priority ones.	yes				Priority precedence is P6-2; P3-1 only carries the priority.
+A-0065	Ed4 A.2.2.6	A-8	shall	The Destination SAP ID argument names the receiving client's SAP.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+A-0066	Ed4 A.2.2.6	A-8	shall	The Destination Node Address argument is the HF subnetwork address of the node the receiving client is bound to.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Group_destination_keeps_its_flag_and_override_sets_retransmissions	May be a group address for non-ARQ only (Ed4 S.5.16.1).
+A-0067	Ed4 A.2.2.6	A-8	shall	The Delivery Mode (Service Type) argument has four elements: transmission mode, delivery confirmation, delivery order and minimum retransmissions.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Annex S adds a fifth subfield, the Extended Field (Ed4 S.5.16.2).
+A-0068	Ed4 A.2.2.6	A-8	info	Delivery Mode may be DEFAULT, meaning the Service Type given at bind; any other value overrides the bind default for this U_PDU.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Encoded as Transmission Mode 0 (Ed4 S.5.16.2).
+A-0069	Ed4 A.2.2.6	A-8	shall	The transmission mode, ARQ or non-ARQ, is specified, with a non-ARQ submode when non-ARQ is chosen.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
 A-0070	Ed4 A.2.2.6	A-8	info	Non-ARQ has two submodes: error-free-only delivery (the default) and delivery-with-errors.	yes				We support error-free-only.
 A-0071	Ed4 A.2.2.6	A-8	info	The delivery-with-errors submode is optional and belongs to the NON-ARQ WITH ERRORS profile option.	no	option NON-ARQ WITH ERRORS not in CSMA Fixed Frequency (main Table 2)			
-A-0072	Ed4 A.2.2.6	A-8	may	A client may ask for no delivery confirmation, node-to-node, client-to-client, or both.	yes				Annex S can only carry one type per request (next rows).
-A-0073	Ed4 A.2.2.6	A-8	shall	Explicit delivery confirmation is requested only together with ARQ delivery.	yes				Client duty; node handling of violations in S interp rows.
+A-0072	Ed4 A.2.2.6	A-8	may	A client may ask for no delivery confirmation, node-to-node, client-to-client, or both.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Annex S can only carry one type per request (next rows).
+A-0073	Ed4 A.2.2.6	A-8	shall	Explicit delivery confirmation is requested only together with ARQ delivery.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Client duty; node handling of violations in S interp rows.
 A-0074	Ed4 A.2.2.6	A-8	info	Node-to-node confirmation reuses the DTS ARQ acknowledgement and adds no SIS peer traffic; client-to-client confirmation needs SIS peer S_PDUs and adds overhead.	yes				
 A-0075	Ed4 A.2.2.6	A-8	should	Client-to-client confirmation should be used only when it is critical for the client to know its data reached the destination client.	yes				Client guidance (note); repeated in Ed4 S.5.3 p.S-12.
-A-0076	Ed4 A.2.2.6	A-8	info	Annex A allows both confirmation types together, but the Annex S encoding allows only one per request.	yes				Ed4 S Fig S-6 value 11 is "not defined".
-A-0077	Ed4 A.2.2.6	A-8	shall	A client asks for either in-order delivery (as submitted) or delivery in the order received at the destination node.	yes				
-A-0078	Ed4 A.2.2.6	A-8	shall	In-order delivery is not requested for the non-ARQ service.	yes				New in Ed4 (A.5 item 6). Node handling of violations in S interp rows.
+A-0076	Ed4 A.2.2.6	A-8	info	Annex A allows both confirmation types together, but the Annex S encoding allows only one per request.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Ed4 S Fig S-6 value 11 is "not defined".
+A-0077	Ed4 A.2.2.6	A-8	shall	A client asks for either in-order delivery (as submitted) or delivery in the order received at the destination node.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Arq_request_is_held_for_the_soft_link_with_client_confirm_flag	
+A-0078	Ed4 A.2.2.6	A-8	shall	In-order delivery is not requested for the non-ARQ service.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		New in Ed4 (A.5 item 6). Node handling of violations in S interp rows.
 A-0079	Ed4 A.2.2.6	A-9	should	Avoid in-order delivery and handle ordering inside the application, because DTS in-order delivery couples different clients and can lose data needlessly.	yes				Client guidance ("recommended").
-A-0080	Ed4 A.2.2.6	A-9	shall	The Minimum Number of Retransmissions element is valid only when the transmission mode is a non-ARQ type.	yes				
-A-0081	Ed4 A.2.2.6	A-9	shall	For non-ARQ, the subnetwork retransmits each U_PDU the requested number of times.	yes				
-A-0082	Ed4 A.2.2.6	A-9	info	If no retransmission count is given, the U_PDU is sent once.	yes				
-A-0083	Ed4 A.2.2.6	A-9	interp	"Retransmit the number of times specified" plus "0 means sent once" [Ed4 A.2.2.6 p.A-9; S.5.3 p.S-12; S.5.16.2 p.S-20]. Reading: a count of N gives N+1 transmissions of the U_PDU in total.	yes				Cross-check with the Annex C non-ARQ repetition procedure in the C matrix.
-A-0084	Ed4 A.2.2.6	A-9	shall	The TimeToLive argument is the longest time the U_PDU may stay in the subnetwork before delivery.	yes				Field unit and range in Ed4 S.5.12 (2 s, max 648000).
-A-0085	Ed4 A.2.2.6	A-9	shall	A U_PDU whose TTL is exceeded is discarded.	yes				
-A-0086	Ed4 A.2.2.6	A-9	shall	TTL 0 means an infinite TTL: the subnetwork keeps trying to deliver.	yes				Conflicts with the TTD rule below; see interp.
-A-0087	Ed4 A.2.2.6	A-9	shall	The subnetwork has a default maximum TTL.	yes				
-A-0088	Ed4 A.2.2.6	A-9	shall	The default maximum TTL is configurable and implementation-dependent.	yes				
-A-0089	Ed4 A.2.2.6	A-9	shall	On accepting S_UNIDATA_REQUEST, the SIS at once computes the TimeToDie as current time plus TTL, or plus the default maximum when TTL is 0.	yes				
-A-0090	Ed4 A.2.2.6	A-9	shall	The TTD travels with the U_PDU through the subnetwork.	yes				TTD is absolute; TTL is relative to submission.
-A-0091	Ed4 A.2.2.6	A-9	interp	TTL 0 is "infinite" yet the same paragraph computes the TTD from the default maximum when TTL is 0 [Ed4 A.2.2.6 p.A-9]; the field maximum is 648000 x 2 s, about 15 days [Ed4 S Fig S-15, p.S-15]. Reading: TTL 0 = the configured default maximum, which we set to the field maximum.	yes				Plan 4.4.
-A-0092	Ed4 A.2.2.6	A-9	shall	The Size of U_PDU argument is the size of the U_PDU in this request.	yes				
-A-0093	Ed4 A.2.2.6	A-9	shall	The final U_PDU argument is the data the client submits.	yes				
+A-0080	Ed4 A.2.2.6	A-9	shall	The Minimum Number of Retransmissions element is valid only when the transmission mode is a non-ARQ type.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Group_destination_keeps_its_flag_and_override_sets_retransmissions	
+A-0081	Ed4 A.2.2.6	A-9	shall	For non-ARQ, the subnetwork retransmits each U_PDU the requested number of times.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+A-0082	Ed4 A.2.2.6	A-9	info	If no retransmission count is given, the U_PDU is sent once.	yes				P3-1 carries the count to the DTS; sending is P3-4.
+A-0083	Ed4 A.2.2.6	A-9	interp	"Retransmit the number of times specified" plus "0 means sent once" [Ed4 A.2.2.6 p.A-9; S.5.3 p.S-12; S.5.16.2 p.S-20]. Reading: a count of N gives N+1 transmissions of the U_PDU in total.	yes				Cross-check with the Annex C non-ARQ repetition procedure in the C matrix. P3-1 carries the count to the DTS; the repeats are P3-4.
+A-0084	Ed4 A.2.2.6	A-9	shall	The TimeToLive argument is the longest time the U_PDU may stay in the subnetwork before delivery.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Ttl_zero_uses_the_default_and_a_large_field_is_capped	Field unit and range in Ed4 S.5.12 (2 s, max 648000).
+A-0085	Ed4 A.2.2.6	A-9	shall	A U_PDU whose TTL is exceeded is discarded.	yes				P3-1 fixes the TTD; discarding on expiry is the DTS (P3-4) and receipt (P6-1).
+A-0086	Ed4 A.2.2.6	A-9	shall	TTL 0 means an infinite TTL: the subnetwork keeps trying to deliver.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Ttl_zero_uses_the_default_and_a_large_field_is_capped	Conflicts with the TTD rule below; see interp.
+A-0087	Ed4 A.2.2.6	A-9	shall	The subnetwork has a default maximum TTL.	yes		src/M0LTE.S5066.Core/Runtime/NodeConfig.cs, src/M0LTE.S5066.Core/Runtime/ConfigReader.cs	SisCasTests.Ttl_zero_uses_the_default_and_a_large_field_is_capped	
+A-0088	Ed4 A.2.2.6	A-9	shall	The default maximum TTL is configurable and implementation-dependent.	yes		src/M0LTE.S5066.Core/Runtime/NodeConfig.cs, src/M0LTE.S5066.Core/Runtime/ConfigReader.cs	SisCasTests.Ttl_zero_uses_the_default_and_a_large_field_is_capped	
+A-0089	Ed4 A.2.2.6	A-9	shall	On accepting S_UNIDATA_REQUEST, the SIS at once computes the TimeToDie as current time plus TTL, or plus the default maximum when TTL is 0.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+A-0090	Ed4 A.2.2.6	A-9	shall	The TTD travels with the U_PDU through the subnetwork.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	TTD is absolute; TTL is relative to submission.
+A-0091	Ed4 A.2.2.6	A-9	interp	TTL 0 is "infinite" yet the same paragraph computes the TTD from the default maximum when TTL is 0 [Ed4 A.2.2.6 p.A-9]; the field maximum is 648000 x 2 s, about 15 days [Ed4 S Fig S-15, p.S-15]. Reading: TTL 0 = the configured default maximum, which we set to the field maximum.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Ttl_zero_uses_the_default_and_a_large_field_is_capped	Plan 4.4.
+A-0092	Ed4 A.2.2.6	A-9	shall	The Size of U_PDU argument is the size of the U_PDU in this request.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+A-0093	Ed4 A.2.2.6	A-9	shall	The final U_PDU argument is the data the client submits.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
 A-0094	Ed4 A.2.2.7	A-9	shall	The SIS issues S_UNIDATA_REQUEST_CONFIRM to acknowledge successful delivery of a submitted U_PDU.	yes				
 A-0095	Ed4 A.2.2.7	A-9	shall	S_UNIDATA_REQUEST_CONFIRM is issued only when the client asked for delivery confirmation, at bind or for that U_PDU.	yes				
 A-0096	Ed4 A.2.2.7	A-10	shall	The confirm's Destination Node Address equals that of the request it answers.	yes				Shall number (3) missing in the source.
@@ -102,28 +102,28 @@ A-0100	Ed4 A.2.2.7	A-10	may	Depending on implementation, the returned copy may b
 A-0101	Ed4 A.2.2.7	A-10	shall	A partial copy consists of U_PDU_response_frag_size bytes taken from the start of the U_PDU.	yes				
 A-0102	Ed4 A.2.2.7	A-10	shall	U_PDU_response_frag_size is configurable.	yes				
 A-0103	Ed4 A.2.2.7	A-10	info	Confirms carry no request identifier; clients identify the U_PDU from destination, SAP and the returned bytes, which usually suffices.	yes				Plan 10.2 matching rule. Ed1 said the client "shall" be able to identify it; Ed4 says "usually".
-A-0104	Ed4 A.2.2.8	A-10	shall	The SIS issues S_UNIDATA_REQUEST_REJECTED to tell a client a submitted U_PDU was not delivered.	yes				
+A-0104	Ed4 A.2.2.8	A-10	shall	The SIS issues S_UNIDATA_REQUEST_REJECTED to tell a client a submitted U_PDU was not delivered.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
 A-0105	Ed4 A.2.2.8	A-10	shall	S_UNIDATA_REQUEST_REJECTED is issued when the client asked for delivery confirmation and delivery failed.	yes				
-A-0106	Ed4 A.2.2.8	A-10	shall	S_UNIDATA_REQUEST_REJECTED is also issued whenever a client submits a U_PDU larger than the MTU.	yes				See over-MTU interp row.
-A-0107	Ed4 A.2.2.8	A-11	shall	Reject reasons: 1 TTL Expired, 2 Destination SAP ID not bound, 3 Destination node not responding, 4 U_PDU larger than MTU, 5 Tx Mode not specified, 6 Broadcast Not Allowed, 7 Address Not Known, 8 No ALE Mapping for Address, 9 Soft Link Terminated for higher priority link, 10 Soft Link Terminated to share channel, 11 Idle Soft Link Terminated, 12 Rejected due to EMCON state, 13 Data Buffers Full, 14 Address not Routable, 15 Other.	yes				We never send 8 (no ALE) or 14 (no Annex R). Reasons 1 to 5 were in Ed1; A.5 item 4 says new ones were added.
-A-0108	Ed4 A.2.2.8	A-11	shall	These reject reason values are the ones carried in the Annex S encoding.	yes				Ed4 S.5.15.
-A-0109	Ed4 A.2.2.8	A-11	shall	The reject's Destination Node Address equals that of the request it answers.	yes				Shall number missing in the source.
-A-0110	Ed4 A.2.2.8	A-11	shall	The reject's Destination SAP ID equals that of the request it answers.	yes				
-A-0111	Ed4 A.2.2.8	A-11	shall	The reject's size argument is the size of the U_PDU, or U_PDU part, it carries.	yes				
+A-0106	Ed4 A.2.2.8	A-10	shall	S_UNIDATA_REQUEST_REJECTED is also issued whenever a client submits a U_PDU larger than the MTU.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		See over-MTU interp row.
+A-0107	Ed4 A.2.2.8	A-11	shall	Reject reasons: 1 TTL Expired, 2 Destination SAP ID not bound, 3 Destination node not responding, 4 U_PDU larger than MTU, 5 Tx Mode not specified, 6 Broadcast Not Allowed, 7 Address Not Known, 8 No ALE Mapping for Address, 9 Soft Link Terminated for higher priority link, 10 Soft Link Terminated to share channel, 11 Idle Soft Link Terminated, 12 Rejected due to EMCON state, 13 Data Buffers Full, 14 Address not Routable, 15 Other.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		We never send 8 (no ALE) or 14 (no Annex R). Reasons 1 to 5 were in Ed1; A.5 item 4 says new ones were added.
+A-0108	Ed4 A.2.2.8	A-11	shall	These reject reason values are the ones carried in the Annex S encoding.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Ed4 S.5.15.
+A-0109	Ed4 A.2.2.8	A-11	shall	The reject's Destination Node Address equals that of the request it answers.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Shall number missing in the source.
+A-0110	Ed4 A.2.2.8	A-11	shall	The reject's Destination SAP ID equals that of the request it answers.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
+A-0111	Ed4 A.2.2.8	A-11	shall	The reject's size argument is the size of the U_PDU, or U_PDU part, it carries.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
 A-0112	Ed4 A.2.2.8	A-11	may	As with the confirm, the reject may carry only a partial copy of the U_PDU.	yes				
 A-0113	Ed4 A.2.2.8	A-12	shall	A partial copy in a reject consists of U_PDU_response_frag_size bytes from the start of the U_PDU.	yes				
 A-0114	Ed4 A.2.2.8	A-12	shall	U_PDU_response_frag_size for rejects is configurable.	yes				One setting serves confirms and rejects (our choice, same parameter name).
-A-0115	Ed4 A.2.2.8	A-10	interp	Over-MTU U_PDUs: A.2.2.3 and A.2.2.8 always reject [pp.A-6, A-10], but A.3.2.3 notifies only when delivery confirmation was requested [p.A-22]. Reading: always send S_UNIDATA_REQUEST_REJECTED reason 4; A.2.2.8 is the more specific rule.	yes				Plan 4.4.
-A-0116	Ed4 A.2.2.9	A-12	shall	The SIS delivers each received U_PDU to its client with S_UNIDATA_INDICATION.	yes				
-A-0117	Ed4 A.2.2.9	A-12	shall	The indication's Priority is the U_PDU's priority.	yes				
-A-0118	Ed4 A.2.2.9	A-12	shall	The indication's Destination SAP ID is the SAP of the client receiving it.	yes				
-A-0119	Ed4 A.2.2.9	A-12	shall	The indication's Destination Node Address is the address the sender put on the U_PDU: normally the local node, or a group address the local node subscribes to.	yes				
-A-0120	Ed4 A.2.2.9	A-12	info	Group addresses and their member nodes are defined by configuration.	yes				Node needs a configured group-membership list; no protocol for joining groups exists in A or S.
-A-0121	Ed4 A.2.2.9	A-12	shall	The indication's Transmission Mode is the mode the U_PDU was sent and received in: ARQ, non-ARQ, or non-ARQ with errors.	yes				We only ever report ARQ or non-ARQ.
-A-0122	Ed4 A.2.2.9	A-12	shall	The indication's Source SAP ID is the SAP of the sending client.	yes				
-A-0123	Ed4 A.2.2.9	A-12	shall	The indication's Source Node Address is the node address of the sending client.	yes				
-A-0124	Ed4 A.2.2.9	A-12	shall	The indication's size argument is the size of the delivered U_PDU.	yes				
-A-0125	Ed4 A.2.2.9	A-13	shall	The four error-description arguments are absent from the indication unless the transmission mode is non-ARQ with errors.	yes				We always omit them.
+A-0115	Ed4 A.2.2.8	A-10	interp	Over-MTU U_PDUs: A.2.2.3 and A.2.2.8 always reject [pp.A-6, A-10], but A.3.2.3 notifies only when delivery confirmation was requested [p.A-22]. Reading: always send S_UNIDATA_REQUEST_REJECTED reason 4; A.2.2.8 is the more specific rule.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Plan 4.4.
+A-0116	Ed4 A.2.2.9	A-12	shall	The SIS delivers each received U_PDU to its client with S_UNIDATA_INDICATION.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Received_data_cpdu_is_delivered_to_the_bound_client	
+A-0117	Ed4 A.2.2.9	A-12	shall	The indication's Priority is the U_PDU's priority.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Received_data_cpdu_is_delivered_to_the_bound_client	
+A-0118	Ed4 A.2.2.9	A-12	shall	The indication's Destination SAP ID is the SAP of the client receiving it.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Received_data_cpdu_is_delivered_to_the_bound_client	
+A-0119	Ed4 A.2.2.9	A-12	shall	The indication's Destination Node Address is the address the sender put on the U_PDU: normally the local node, or a group address the local node subscribes to.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Received_data_cpdu_is_delivered_to_the_bound_client	
+A-0120	Ed4 A.2.2.9	A-12	info	Group addresses and their member nodes are defined by configuration.	yes		src/M0LTE.S5066.Core/Runtime/NodeConfig.cs, src/M0LTE.S5066.Core/Runtime/ConfigReader.cs	SisCasTests.Reads_the_p3_1_settings	Node needs a configured group-membership list; no protocol for joining groups exists in A or S.
+A-0121	Ed4 A.2.2.9	A-12	shall	The indication's Transmission Mode is the mode the U_PDU was sent and received in: ARQ, non-ARQ, or non-ARQ with errors.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Arq_reception_reports_transmission_mode_1	We only ever report ARQ or non-ARQ.
+A-0122	Ed4 A.2.2.9	A-12	shall	The indication's Source SAP ID is the SAP of the sending client.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Received_data_cpdu_is_delivered_to_the_bound_client	
+A-0123	Ed4 A.2.2.9	A-12	shall	The indication's Source Node Address is the node address of the sending client.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Received_data_cpdu_is_delivered_to_the_bound_client	
+A-0124	Ed4 A.2.2.9	A-12	shall	The indication's size argument is the size of the delivered U_PDU.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Received_data_cpdu_is_delivered_to_the_bound_client	
+A-0125	Ed4 A.2.2.9	A-13	shall	The four error-description arguments are absent from the indication unless the transmission mode is non-ARQ with errors.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Received_data_cpdu_is_delivered_to_the_bound_client	We always omit them.
 A-0126	Ed4 A.2.2.9	A-13	shall	The four error-description arguments are present when the transmission mode is non-ARQ with errors.	no	option NON-ARQ WITH ERRORS not in CSMA Fixed Frequency (main Table 2)			
 A-0127	Ed4 A.2.2.9	A-13	shall	Number of Blocks in Error equals the count of data blocks received in error and passed up.	no	option NON-ARQ WITH ERRORS not in CSMA Fixed Frequency (main Table 2)			
 A-0128	Ed4 A.2.2.9	A-13	shall	Number of Blocks in Error gives the number of pairs in the block-error array.	no	option NON-ARQ WITH ERRORS not in CSMA Fixed Frequency (main Table 2)			
@@ -131,42 +131,42 @@ A-0129	Ed4 A.2.2.9	A-13	shall	Each block-error pair holds the location of an err
 A-0130	Ed4 A.2.2.9	A-13	shall	Number of Non-Received Blocks equals the count of blocks missing from the U_PDU.	no	option NON-ARQ WITH ERRORS not in CSMA Fixed Frequency (main Table 2)			
 A-0131	Ed4 A.2.2.9	A-13	shall	Number of Non-Received Blocks gives the number of pairs in the non-received array.	no	option NON-ARQ WITH ERRORS not in CSMA Fixed Frequency (main Table 2)			
 A-0132	Ed4 A.2.2.9	A-13	shall	Each non-received pair holds the location of a missing block in the U_PDU and its size.	no	option NON-ARQ WITH ERRORS not in CSMA Fixed Frequency (main Table 2)			
-A-0133	Ed4 A.2.2.9	A-13	shall	The final argument of the indication holds the received user data.	yes				
-A-0134	Ed4 A.3	A-13	shall	Peer SIS sublayers communicate by exchanging S_PDUs.	yes				
-A-0135	Ed4 A.3	A-13	shall	Peer-to-peer S_PDU exchange is used for client data, including its confirmation.	yes				
-A-0136	Ed4 A.3	A-13	shall	Setting up or ending soft link or broadcast sessions needs no explicit SIS peer exchange.	yes				
+A-0133	Ed4 A.2.2.9	A-13	shall	The final argument of the indication holds the received user data.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Received_data_cpdu_is_delivered_to_the_bound_client	
+A-0134	Ed4 A.3	A-13	shall	Peer SIS sublayers communicate by exchanging S_PDUs.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+A-0135	Ed4 A.3	A-13	shall	Peer-to-peer S_PDU exchange is used for client data, including its confirmation.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+A-0136	Ed4 A.3	A-13	shall	Setting up or ending soft link or broadcast sessions needs no explicit SIS peer exchange.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
 A-0137	Ed4 A.3.1	A-14	info	Three S_PDU types are currently defined; more may be added later.	yes				Same paragraph also says "eight S_PDU types" (editorial leftover from Ed3).
 A-0138	Ed4 A.3.1	A-14	shall	Every S_PDU starts with a common first field, TYPE.	yes				
 A-0139	Ed4 A.3.1	A-14	shall	TYPE values: 0 DATA, 1 DATA DELIVERY CONFIRM, 2 DATA DELIVERY FAIL, 3 to 7 reserved.	yes				TYPE is the high nibble of byte 0 (Figs A-3, A-6, A-8).
 A-0140	Ed4 A.3.1	A-14	info	Types 3 to 7 were used by Edition 3 and are reserved in Edition 4.	yes				Ed3 hard link S_PDUs are referenced from A.4.1 (Ed3 A.3.1.4 to A.3.1.7).
 A-0141	Ed4 A.3.1	A-14	interp	Handling of a received S_PDU of reserved type (3 to 15) is NOT STATED. Reading: discard it without reply and log it; this covers Ed3 hard link S_PDUs, which we do not support.	yes				Not in plan 4.4. The S_PDU codec reports types 3 to 15 as invalid_field.
-A-0142	Ed4 A.3.1	A-14	shall	The meaning and encoding of the other fields of each S_PDU follow its own subsection.	yes				
-A-0143	Ed4 A.3.1.1	A-15	shall	The SIS sends client data to its peer in a DATA S_PDU.	yes				
-A-0144	Ed4 A.3.1.1	A-15	shall	The DATA S_PDU is encoded per Figures A-2, A-3 and A-4 and the text.	yes				
-A-0145	Ed4 A.3.1.1	A-15	shall	A DATA S_PDU has two parts, the S_PCI first and then the client U_PDU.	yes				Shalls (3) to (5).
-A-0146	Ed4 A.3.1.1	A-16	shall	The first S_PCI field is the 4-bit TYPE, value 0, in byte 0 bits 7 to 4.	yes				Bit positions from Fig A-3, p.A-15.
-A-0147	Ed4 A.3.1.1	A-16	shall	The second S_PCI field is the 4-bit PRIORITY, in byte 0 bits 3 to 0.	yes				
-A-0148	Ed4 A.3.1.1	A-16	shall	PRIORITY equals the Priority argument of the client's S_UNIDATA_REQUEST.	yes				
-A-0149	Ed4 A.3.1.1	A-16	shall	The third S_PCI field is the 4-bit SOURCE SAP ID of the sending client, in byte 1 bits 7 to 4.	yes				
-A-0150	Ed4 A.3.1.1	A-16	shall	The fourth S_PCI field is the 4-bit DESTINATION SAP ID of the receiving client, in byte 1 bits 3 to 0.	yes				
-A-0151	Ed4 A.3.1.1	A-16	info	S_PDUs carry no node addresses; lower sublayers convey source and destination.	yes				
-A-0152	Ed4 A.3.1.1	A-16	shall	DESTINATION SAP ID equals the Destination SAP ID argument of the client's request.	yes				
-A-0153	Ed4 A.3.1.1	A-16	shall	The fifth S_PCI field is the 1-bit CLIENT DELIVERY CONFIRM REQUIRED flag (1 yes, 0 no), in byte 2 bit 7.	yes				
-A-0154	Ed4 A.3.1.1	A-16	shall	The CLIENT DELIVERY CONFIRM REQUIRED flag follows the U_PDU's delivery mode, or the bind default when the request used DEFAULT.	yes				Set to 1 only for client-to-client confirmation.
-A-0155	Ed4 A.3.1.1	A-16	shall	The sixth S_PCI field is the 1-bit VALID TTD flag (1 yes, 0 no), in byte 2 bit 6, saying whether a valid TTD is present.	yes				
-A-0156	Ed4 A.3.1.1	A-16	shall	The seventh S_PCI field is two unused bits reserved for future use, byte 2 bits 5 and 4.	yes				Shall numbers (14) and (15) are used twice in this section.
-A-0157	Ed4 A.3.1.1	A-16	interp	The value of the two reserved S_PCI bits is NOT STATED for S_PDUs. Reading: send 0 and ignore on receipt, as Annex S does for NOT USED bits [Ed4 S.5.2, p.S-10].	yes				
-A-0158	Ed4 A.3.1.1	A-16	shall	The eighth and last S_PCI field is the TTD (TimeToDie) of the U_PDU.	yes				
-A-0159	Ed4 A.3.1.1	A-16	shall	The first four TTD bits (byte 2 bits 3 to 0) have meaning only when VALID TTD is 1.	yes				Without TTD these bits are NOT USED (Fig A-4).
-A-0160	Ed4 A.3.1.1	A-16	shall	The other 16 TTD bits (bytes 3 and 4) are present only when VALID TTD is 1, so the S_PCI is 5 bytes with a TTD and 3 bytes without.	yes				
-A-0161	Ed4 A.3.1.1	A-16	info	The TTD is the Julian day-of-year modulo 16 and the GMT time in seconds after which an undelivered S_PDU is discarded; Julian day 1 is 1 January, up to 365 or 366.	yes				
-A-0162	Ed4 A.3.1.1	A-16	shall	The Julian day modulo 16 goes in the first four TTD bits, byte 2 bits 3 to 0.	yes				
-A-0163	Ed4 A.3.1.1	A-16	shall	The GMT seconds value loses its least significant bit, and the 16 remaining high bits go in TTD bytes 3 and 4, most significant first.	yes				Resolution 2 s. MSB-first per Fig A-3.
-A-0164	Ed4 A.3.1.1	A-16	info	When VALID TTD is 1 the full 20-bit TTD is present and the receiver must honour it, discarding the U_PDU if the TTD passes before delivery.	yes				
-A-0165	Ed4 A.3.1.1	A-16	info	When VALID TTD is 0 the last two TTD bytes are absent and the receiver must not use a TTD; it delivers without regard to time.	yes				
-A-0166	Ed4 A.3.1.1	A-16	interp	"GMT in seconds" has no stated origin. Reading: seconds since 00:00 UTC of the TTD's Julian day (0 to 86399), so the 16-bit field holds that value divided by 2 (0 to 43199).	yes				Not in plan 4.4.
-A-0167	Ed4 A.3.1.1	A-16	interp	The TTD day is only day-of-year modulo 16, and day numbers restart at 1 after 365 or 366; how a receiver resolves it is NOT STATED. Reading: resolve the 4-bit day and the seconds to the instant T, later than 1 day before now and no later than 15 days after now, whose day-of-year modulo 16 matches; if two dates match (possible only across a year end) take the earlier; if none matches, the TTD has passed. Deliver only if T is later than now.	yes				Not in plan 4.4. 15 days is the TTL field maximum (648000 x 2 s). Fixed in review: the earlier reading (nearest match from 8 days back to 15 ahead) turned a TTD 15 days ahead into yesterday, so a maximum-TTL U_PDU would be discarded on arrival.
-A-0168	Ed4 A.3.1.1	A-16	interp	Whether the sender sets VALID TTD is not fixed. Reading: every DATA S_PDU we send carries VALID TTD = 1 with the TTD computed at acceptance, since every accepted U_PDU has a finite TTD under the TTL 0 reading.	yes				Our choice; costs 2 bytes per S_PDU.
+A-0142	Ed4 A.3.1	A-14	shall	The meaning and encoding of the other fields of each S_PDU follow its own subsection.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+A-0143	Ed4 A.3.1.1	A-15	shall	The SIS sends client data to its peer in a DATA S_PDU.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+A-0144	Ed4 A.3.1.1	A-15	shall	The DATA S_PDU is encoded per Figures A-2, A-3 and A-4 and the text.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+A-0145	Ed4 A.3.1.1	A-15	shall	A DATA S_PDU has two parts, the S_PCI first and then the client U_PDU.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	Shalls (3) to (5).
+A-0146	Ed4 A.3.1.1	A-16	shall	The first S_PCI field is the 4-bit TYPE, value 0, in byte 0 bits 7 to 4.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	Bit positions from Fig A-3, p.A-15.
+A-0147	Ed4 A.3.1.1	A-16	shall	The second S_PCI field is the 4-bit PRIORITY, in byte 0 bits 3 to 0.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+A-0148	Ed4 A.3.1.1	A-16	shall	PRIORITY equals the Priority argument of the client's S_UNIDATA_REQUEST.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+A-0149	Ed4 A.3.1.1	A-16	shall	The third S_PCI field is the 4-bit SOURCE SAP ID of the sending client, in byte 1 bits 7 to 4.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+A-0150	Ed4 A.3.1.1	A-16	shall	The fourth S_PCI field is the 4-bit DESTINATION SAP ID of the receiving client, in byte 1 bits 3 to 0.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+A-0151	Ed4 A.3.1.1	A-16	info	S_PDUs carry no node addresses; lower sublayers convey source and destination.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+A-0152	Ed4 A.3.1.1	A-16	shall	DESTINATION SAP ID equals the Destination SAP ID argument of the client's request.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+A-0153	Ed4 A.3.1.1	A-16	shall	The fifth S_PCI field is the 1-bit CLIENT DELIVERY CONFIRM REQUIRED flag (1 yes, 0 no), in byte 2 bit 7.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Arq_request_is_held_for_the_soft_link_with_client_confirm_flag	
+A-0154	Ed4 A.3.1.1	A-16	shall	The CLIENT DELIVERY CONFIRM REQUIRED flag follows the U_PDU's delivery mode, or the bind default when the request used DEFAULT.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Arq_request_is_held_for_the_soft_link_with_client_confirm_flag	Set to 1 only for client-to-client confirmation.
+A-0155	Ed4 A.3.1.1	A-16	shall	The sixth S_PCI field is the 1-bit VALID TTD flag (1 yes, 0 no), in byte 2 bit 6, saying whether a valid TTD is present.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+A-0156	Ed4 A.3.1.1	A-16	shall	The seventh S_PCI field is two unused bits reserved for future use, byte 2 bits 5 and 4.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Shall numbers (14) and (15) are used twice in this section.
+A-0157	Ed4 A.3.1.1	A-16	interp	The value of the two reserved S_PCI bits is NOT STATED for S_PDUs. Reading: send 0 and ignore on receipt, as Annex S does for NOT USED bits [Ed4 S.5.2, p.S-10].	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
+A-0158	Ed4 A.3.1.1	A-16	shall	The eighth and last S_PCI field is the TTD (TimeToDie) of the U_PDU.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+A-0159	Ed4 A.3.1.1	A-16	shall	The first four TTD bits (byte 2 bits 3 to 0) have meaning only when VALID TTD is 1.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Without TTD these bits are NOT USED (Fig A-4).
+A-0160	Ed4 A.3.1.1	A-16	shall	The other 16 TTD bits (bytes 3 and 4) are present only when VALID TTD is 1, so the S_PCI is 5 bytes with a TTD and 3 bytes without.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+A-0161	Ed4 A.3.1.1	A-16	info	The TTD is the Julian day-of-year modulo 16 and the GMT time in seconds after which an undelivered S_PDU is discarded; Julian day 1 is 1 January, up to 365 or 366.	yes		src/M0LTE.S5066.Core/Sis/TtdCalendar.cs	SisCasTests.Ttd_is_day_of_year_mod_16_and_half_seconds	
+A-0162	Ed4 A.3.1.1	A-16	shall	The Julian day modulo 16 goes in the first four TTD bits, byte 2 bits 3 to 0.	yes		src/M0LTE.S5066.Core/Sis/TtdCalendar.cs	SisCasTests.Ttd_is_day_of_year_mod_16_and_half_seconds	
+A-0163	Ed4 A.3.1.1	A-16	shall	The GMT seconds value loses its least significant bit, and the 16 remaining high bits go in TTD bytes 3 and 4, most significant first.	yes		src/M0LTE.S5066.Core/Sis/TtdCalendar.cs	SisCasTests.Ttd_is_day_of_year_mod_16_and_half_seconds	Resolution 2 s. MSB-first per Fig A-3.
+A-0164	Ed4 A.3.1.1	A-16	info	When VALID TTD is 1 the full 20-bit TTD is present and the receiver must honour it, discarding the U_PDU if the TTD passes before delivery.	yes				TTD on receipt is P6-1.
+A-0165	Ed4 A.3.1.1	A-16	info	When VALID TTD is 0 the last two TTD bytes are absent and the receiver must not use a TTD; it delivers without regard to time.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
+A-0166	Ed4 A.3.1.1	A-16	interp	"GMT in seconds" has no stated origin. Reading: seconds since 00:00 UTC of the TTD's Julian day (0 to 86399), so the 16-bit field holds that value divided by 2 (0 to 43199).	yes		src/M0LTE.S5066.Core/Sis/TtdCalendar.cs	SisCasTests.Ttd_is_day_of_year_mod_16_and_half_seconds	Not in plan 4.4.
+A-0167	Ed4 A.3.1.1	A-16	interp	The TTD day is only day-of-year modulo 16, and day numbers restart at 1 after 365 or 366; how a receiver resolves it is NOT STATED. Reading: resolve the 4-bit day and the seconds to the instant T, later than 1 day before now and no later than 15 days after now, whose day-of-year modulo 16 matches; if two dates match (possible only across a year end) take the earlier; if none matches, the TTD has passed. Deliver only if T is later than now.	yes				Not in plan 4.4. 15 days is the TTL field maximum (648000 x 2 s). Fixed in review: the earlier reading (nearest match from 8 days back to 15 ahead) turned a TTD 15 days ahead into yesterday, so a maximum-TTL U_PDU would be discarded on arrival. TTD on receipt is P6-1.
+A-0168	Ed4 A.3.1.1	A-16	interp	Whether the sender sets VALID TTD is not fixed. Reading: every DATA S_PDU we send carries VALID TTD = 1 with the TTD computed at acceptance, since every accepted U_PDU has a finite TTD under the TTL 0 reading.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	Our choice; costs 2 bytes per S_PDU.
 A-0169	Ed4 A.3.1.2	A-17	shall	A DATA DELIVERY CONFIRM S_PDU is sent after a U_PDU, received in a DATA S_PDU with CLIENT DELIVERY CONFIRM REQUIRED = 1, is delivered to its client.	yes				
 A-0170	Ed4 A.3.1.2	A-17	shall	The DATA DELIVERY CONFIRM goes to the peer SIS that originated the DATA S_PDU.	yes				
 A-0171	Ed4 A.3.1.2	A-17	shall	The first part of a DATA DELIVERY CONFIRM is its S_PCI.	yes				
@@ -208,10 +208,10 @@ A-0206	Ed4 A.3.2.1.4	A-21	info	Data the DTS rejects comes back as D_UNIDATA_REQU
 A-0207	Ed4 A.3.2.1.4	A-21	shall	When such a rejection is caused by soft link termination, its reason matches the reason the SIS gave for closing the link.	yes				
 A-0208	Ed4 A.3.2.1.4	A-21	info	Balancing fast link switching against letting transfers finish is an implementation choice.	yes				
 A-0209	Ed4 A.3.2.1.4	A-21	info	Multicast ALE needs the channel to itself, so all soft links close before multicast or broadcast data is sent.	no	MULTICAST ALE not in CSMA Fixed Frequency (main Table 2)			
-A-0210	Ed4 A.3.2.2	A-22	shall	Starting or ending a Broadcast Data Exchange Session needs no explicit SIS peer exchange.	yes				Text points to "A.1.1.3" and "A.1.1"; those are stale, the sections are A.1.5 and A.1.3.
+A-0210	Ed4 A.3.2.2	A-22	shall	Starting or ending a Broadcast Data Exchange Session needs no explicit SIS peer exchange.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Text points to "A.1.1.3" and "A.1.1"; those are stale, the sections are A.1.5 and A.1.3.
 A-0211	Ed4 A.3.2.2	A-22	shall	When local management first configures exclusive broadcast operation, the SIS sends S_UNBIND_INDICATION with reason ARQ Mode Unsupportable during Broadcast to every client bound for ARQ.	no	no exclusive broadcast configuration offered (general-purpose node)			
 A-0212	Ed4 A.3.2.2	A-22	shall	While exclusive broadcast is configured, binds asking for ARQ are rejected with the same reason.	no	no exclusive broadcast configuration offered (general-purpose node)			
-A-0213	Ed4 A.3.2.3	A-22	shall	Once any session exists, sublayers with client data exchange DATA S_PDUs using this protocol and the session's service characteristics.	yes				
+A-0213	Ed4 A.3.2.3	A-22	shall	Once any session exists, sublayers with client data exchange DATA S_PDUs using this protocol and the session's service characteristics.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
 A-0214	Ed4 A.3.2.3	A-22	shall	The SIS discards any submitted U_PDU larger than the MTU given in S_BIND_ACCEPTED.	yes				
 A-0215	Ed4 A.3.2.3	A-22	shall	If an over-MTU U_PDU asked for client or node delivery confirmation, the SIS sends the client S_UNIDATA_REQUEST_REJECTED with reason U_PDU Larger than MTU.	yes				Our reading extends this to every over-MTU U_PDU (interp at A.2.2.8).
 A-0216	Ed4 A.3.2.3	A-22	info	The sender takes accepted U_PDUs and their service attributes from its queues by priority and other implementation-dependent criteria.	yes				
@@ -231,10 +231,10 @@ A-0229	Ed4 A.3.2.3	A-24	shall	That reject's REASON is derived from the DATA DELI
 A-0230	Ed4 A.3.2.3	A-24	shall	Client confirmation: if the wait ends with no response, the client gets S_UNIDATA_REQUEST_REJECTED with reason Destination Node Not Responding.	yes				
 A-0231	Ed4 A.3.2.3	A-24	info	After these steps the sending protocol for that DATA S_PDU is complete.	yes				
 A-0232	Ed4 A.3.2.3	A-23	interp	The confirmation wait times are configurable with no default, and a U_PDU can also reach its TTD while waiting. Reading: a U_PDU whose TTD passes before it is handed to the CAS is rejected with reason 1 (TTL Expired) when confirmation was requested; the configurable wait starts when the DATA S_PDU is passed to the CAS and its expiry gives reason 3.	yes				Not in plan 4.4.
-A-0233	Ed4 A.3.2.3	A-24	shall	The receiving SIS accepts DATA S_PDUs from the CAS through C_Primitives, per Annex B.	yes				
-A-0234	Ed4 A.3.2.3	A-24	shall	The receiving SIS extracts the U_PDU, Destination SAP ID and other service attributes from the DATA S_PDU.	yes				
-A-0235	Ed4 A.3.2.3	A-24	shall	If no client is bound to the Destination SAP ID, the receiver discards the U_PDU.	yes				
-A-0236	Ed4 A.3.2.3	A-24	shall	Otherwise the receiver delivers the U_PDU to the client on that SAP with S_UNIDATA_INDICATION.	yes				Shall number (24) absent in the source.
+A-0233	Ed4 A.3.2.3	A-24	shall	The receiving SIS accepts DATA S_PDUs from the CAS through C_Primitives, per Annex B.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Received_data_cpdu_is_delivered_to_the_bound_client	
+A-0234	Ed4 A.3.2.3	A-24	shall	The receiving SIS extracts the U_PDU, Destination SAP ID and other service attributes from the DATA S_PDU.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Received_data_cpdu_is_delivered_to_the_bound_client	
+A-0235	Ed4 A.3.2.3	A-24	shall	If no client is bound to the Destination SAP ID, the receiver discards the U_PDU.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Invalid_or_undeliverable_receptions_are_discarded	
+A-0236	Ed4 A.3.2.3	A-24	shall	Otherwise the receiver delivers the U_PDU to the client on that SAP with S_UNIDATA_INDICATION.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	SisCasTests.Received_data_cpdu_is_delivered_to_the_bound_client	Shall number (24) absent in the source.
 A-0237	Ed4 A.3.2.3	A-24	shall	If CLIENT DELIVERY CONFIRM REQUIRED is 1, the receiver provides delivery confirmation as below.	yes				
 A-0238	Ed4 A.3.2.3	A-24	shall	A client was bound: the receiver sends a DATA DELIVERY CONFIRM S_PDU to the sender.	yes				
 A-0239	Ed4 A.3.2.3	A-24	shall	No client was bound: the receiver sends a DATA DELIVERY FAIL S_PDU to the sender.	yes				Reason 1.
@@ -249,3 +249,4 @@ A-0247	Ed4 A.4.2	A-27	info	The EXPEDITED DATA profile option follows Edition 3 A
 A-0248	Ed4 A.4.2	A-27	info	The CAS does not distinguish normal from expedited data; expedited information passes to Annex C.	no	deprecated option EXPEDITED DATA (main Table 1)			
 A-0249	Ed4 A.5	A-27	info	Rank is removed in Edition 4, including the Edition 3 rule limiting management messages to rank 15 clients.	yes				The node must not gate S_MANAGEMENT_MSG on rank.
 A-0250	Ed4 A.5	A-28	info	Edition 4 changes: SIS protocol moved to Annex S, hard links and expedited data deprecated, rank removed, new reject reasons, queueing model clarified for ALE, in-order forbidden with non-ARQ.	yes				
+A-0251	Ed4 A.3.1.1	A-16	interp	A TTD needs a UTC day and time [Ed4 A.2.2.6, p.A-9; A.3.1.1, p.A-16], but the sans-IO core has no clock. Reading: configuration gives the UTC year, day-of-year and seconds-of-day of core time 0 (time.epoch_year, time.epoch_day, time.epoch_second); a request's TTD is its acceptance time plus the TTL, converted with Gregorian calendar arithmetic; the result is rounded down to a whole second and then to an even second by dropping the least significant bit (A-0163), so the encoded TTD is never later than the TTL allows.	yes		src/M0LTE.S5066.Core/Sis/TtdCalendar.cs	SisCasTests.Ttd_is_day_of_year_mod_16_and_half_seconds	Added by P3-1; core-architecture.md section 3.1 and section 10 item 12.
