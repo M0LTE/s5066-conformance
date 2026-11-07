@@ -39,6 +39,9 @@
     "max_links": null,
     "link_request_timeout_ms": null,
     "link_request_retries": null,
-    "first_data_timeout_ms": null
+    "first_data_timeout_ms": null,
+    "break_timeout_ms": null,
+    "break_retries": null,
+    "clean_close_timeout_ms": null
   }
 }
