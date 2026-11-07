@@ -35,7 +35,8 @@ IFRAME_TYPES = {0, 2, 4, 7, 8, 9, 11}
 ED4_ONLY_TYPES = set(range(9, 15))
 INTERLEAVERS = {"ultra_short", "very_short", "short", "medium", "long", "very_long"}
 ERROR_KINDS = {"truncated", "bad_sync", "header_crc", "bad_header_size",
-               "bad_address_size", "trailing_bytes", "invalid_field"}
+               "bad_address_size", "trailing_bytes", "invalid_field",
+               "bad_version", "bad_size", "unknown_type", "deprecated_type", "bad_length"}
 
 # Registered D_PDU type-specific field sets: name -> (kind, max) where kind is "bool" or "int".
 DPDU_FIELDS = {
@@ -273,8 +274,165 @@ def check_t1(path, err, ctx):
             check_crc_case(err, where, c, b, kind)
         elif kind == "dpdu":
             check_dpdu_case(err, where, c, b)
+        elif kind in ("sis_frame", "sis_stream"):
+            check_sis_case(err, where, c, b, kind)
         else:
             err.add(where, "unregistered kind %r" % (kind,))
+
+
+# ---- SIS primitives (corpus-format.md section 3.5)
+
+SIS_DEPRECATED = set(range(6, 14)) | set(range(24, 28))
+
+
+def sis_service_type(hi, lo_nibble):
+    return {"tx_mode": hi >> 4, "confirm": (hi >> 2) & 3, "order": (hi >> 1) & 1,
+            "extended": hi & 1, "min_retx": lo_nibble}
+
+
+def sis_addr(b):
+    v = int.from_bytes(b, "big") & 0x0FFFFFFF
+    return {"address": dotted(v), "group": bool(b[0] & 0x10), "size": b[0] >> 5}
+
+
+def sis_body(t, d):
+    """Decode a body (type byte first) of a known type. Returns a value, or None for a length mismatch."""
+    n = len(d)
+    if t == 1 and n == 4:
+        return {"primitive": "S_BIND_REQUEST", "sap": d[1] >> 4, "service_type": sis_service_type(d[2], d[3] >> 4)}
+    if t == 2 and n == 1:
+        return {"primitive": "S_UNBIND_REQUEST"}
+    if t == 3 and n == 4:
+        return {"primitive": "S_BIND_ACCEPTED", "sap": d[1] >> 4, "mtu": int.from_bytes(d[2:4], "big")}
+    if t == 4 and n == 2:
+        return {"primitive": "S_BIND_REJECTED", "reason": d[1]}
+    if t == 5 and n == 2:
+        return {"primitive": "S_UNBIND_INDICATION", "reason": d[1]}
+    if t == 14 and n == 3:
+        return {"primitive": "S_SUBNET_AVAILABILITY", "node_status": d[1], "reason": d[2]}
+    if t in (15, 16, 17) and n == 1:
+        return {"primitive": {15: "S_DATA_FLOW_ON", 16: "S_DATA_FLOW_OFF", 17: "S_KEEP_ALIVE"}[t]}
+    if t in (18, 19) and n >= 2:
+        return {"primitive": "S_MANAGEMENT_MSG_REQUEST" if t == 18 else "S_MANAGEMENT_MSG_INDICATION",
+                "msg_type": d[1], "body": d[2:].hex()}
+    if t == 20 and n >= 12 and n == 12 + int.from_bytes(d[10:12], "big"):
+        return {"primitive": "S_UNIDATA_REQUEST", "priority": d[1] >> 4, "dest_sap": d[1] & 15,
+                "dest_address": sis_addr(d[2:6]), "delivery_mode": sis_service_type(d[6], d[7] >> 4),
+                "ttl": ((d[7] & 15) << 16) | int.from_bytes(d[8:10], "big"), "u_pdu": d[12:].hex()}
+    if t == 21 and n >= 13 and n == 13 + int.from_bytes(d[11:13], "big"):
+        return {"primitive": "S_UNIDATA_INDICATION", "priority": d[1] >> 4, "dest_sap": d[1] & 15,
+                "dest_address": sis_addr(d[2:6]), "tx_mode": d[6] >> 4, "src_sap": d[6] & 15,
+                "src_address": sis_addr(d[7:11]), "u_pdu": d[13:].hex()}
+    if t in (22, 23) and n >= 8 and n == 8 + int.from_bytes(d[6:8], "big"):
+        v = {"primitive": "S_UNIDATA_REQUEST_CONFIRM" if t == 22 else "S_UNIDATA_REQUEST_REJECTED"}
+        if t == 23:
+            v["reason"] = d[1] >> 4
+        v.update({"dest_sap": d[1] & 15, "dest_address": sis_addr(d[2:6]), "u_pdu": d[8:].hex()})
+        return v
+    return None
+
+
+def sis_next(b, off):
+    """One step of the reference decoder at b[off:], where a preamble is expected.
+
+    Returns ("need",), ("error", kind, resume_offset) or ("value", obj, end)."""
+    r = b[off:]
+    if not r:
+        return ("need",)
+    if r[0] != 0x90:
+        return ("error", "bad_sync", off + 1)
+    if len(r) < 2:
+        return ("need",)
+    if r[1] != 0xEB:
+        return ("error", "bad_sync", off + 1)
+    if len(r) < 5:
+        return ("need",)
+    if r[2] != 0:
+        return ("error", "bad_version", off + 1)
+    size = int.from_bytes(r[3:5], "big")
+    if size == 0:
+        return ("error", "bad_size", off + 1)
+    if len(r) < 5 + size:
+        return ("need",)
+    end = off + 5 + size
+    body = r[5:5 + size]
+    t = body[0]
+    if t in SIS_DEPRECATED:
+        return ("error", "deprecated_type", end)
+    if t == 0 or t > 23:
+        return ("error", "unknown_type", end)
+    v = sis_body(t, body)
+    if v is None:
+        return ("error", "bad_length", end)
+    return ("value", v, end)
+
+
+def sis_stream_events(chunks):
+    buf = b""
+    off = 0
+    events = []
+    skipping = False
+    for ch in chunks:
+        buf += ch
+        while off < len(buf):
+            if skipping:
+                i = buf.find(b"\x90\xeb", off)
+                if i < 0:
+                    off = len(buf) - 1 if buf[-1:] == b"\x90" else len(buf)
+                    break
+                off = i
+                skipping = False
+            res = sis_next(buf, off)
+            if res[0] == "need":
+                break
+            if res[0] == "value":
+                events.append(res[1])
+            else:
+                events.append({"error": res[1]})
+                skipping = res[1] in ("bad_sync", "bad_version", "bad_size")
+            off = res[2]
+    return events
+
+
+def check_sis_case(err, where, c, b, kind):
+    if "peer_edition" in c:
+        err.add(where, "peer_edition is only for dpdu")
+    if kind == "sis_frame":
+        res = sis_next(b, 0) if len(b) >= 2 else ("need",)
+        if res[0] == "need":
+            exp = ("error", "truncated")
+        elif res[0] == "error":
+            exp = ("error", res[1])
+        elif res[2] != len(b):
+            exp = ("error", "trailing_bytes")
+        else:
+            exp = ("value", res[1])
+        if "error" in c:
+            if exp != ("error", c["error"]):
+                err.add(where, "reference decode gives %r, case says error %s" % (exp, c["error"]))
+        elif exp[0] == "error":
+            err.add(where, "bytes decode to error %s" % exp[1])
+        elif exp[1] != c["value"]:
+            err.add(where, "value disagrees with the bytes")
+        return
+    v = c.get("value")
+    if c.get("dir") != "decode" or not isinstance(v, dict):
+        err.add(where, "sis_stream cases are decode only and have a value")
+        return
+    check_keys(err, where, v, ("chunks", "events"))
+    ch = v.get("chunks")
+    if not isinstance(ch, list) or not all(is_hex(x) for x in ch):
+        err.add(where, "chunks must be a list of hex strings")
+        return
+    chunks = [bytes.fromhex(x) for x in ch]
+    if b"".join(chunks) != b:
+        err.add(where, "chunks must concatenate to bytes")
+        return
+    got = sis_stream_events(chunks)
+    if got != v.get("events"):
+        err.add(where, "events disagree with the reference decode")
+    if sis_stream_events([bytes([x]) for x in b]) != got or sis_stream_events([b]) != got:
+        err.add(where, "reference decode depends on chunking")
 
 
 def check_crc_case(err, where, c, b, kind):
