@@ -1,0 +1,26 @@
+{"scenario":"dts-arq-ed3-no-padding","rows":["C-0367","C-0055","C-0044","C-0054","C-0419","C-0415","C-0401","C-0398","C-0445","C-0447","C-1079","C-0369","C-0882","C-0886","C-1154","C-0194","C-0200","C-0658","C-0730","B-0228","B-0408"],"source":"Ed4 C.4.14, p.C-53; C.3, pp.C-7 to C-8; C.6, Table C-4 notes, p.C-67","description":"Towards a peer recorded Ed3 the spare space of an ARQ transmission takes copies of the ED3-ACK-ONLY but no PADDING, and the only EOWs sent are ones defined for all editions.","config":{"local_address":"0.0.1.2","csma":{"mode":"jitter"},"modem":{"preamble_ms":600,"flush_ms":150,"waveforms":[{"wn":2,"interleaver":"long","block_bytes":35,"block_ms":4800}]},"cas":{"max_links":4,"link_request_timeout_ms":60000,"link_request_retries":2,"first_data_timeout_ms":120000},"dts":{"ack_wait_ms":60000}},"note":"Conn 1 binds SAP 9 for ARQ. At 2000 the peer 0.0.1.3 calls with Ed4 clear, so it is recorded Ed3 (B-0228, B-0408); our accept, Ed4 clear, goes out at 52000 (25 bytes in one 35-byte block: the 10 spare bytes are zero filled, no PADDING towards an Ed3 peer, C-0367) and the link is made with the 8-bit family when it ends at 57550. At 61000 the peer\u0027s ED3-DATA-ONLY, TX FSN 0, \u0027ping\u0027 from SAP 5, carrying EOW 0xE00: type 14, RESERVED (Table C-4), which this node does not recognise. It is delivered (cas.first_data stops, S_UNIDATA_INDICATION) and owes an acknowledgement (C-0658, C-0730), and an UNRECOGNIZED-TYPE-ERROR EOW naming type 14 is owed to the peer (C-0445, C-0447). At 83000 the ED3-ACK-ONLY (type 1: RX LWE 1, no SELECTIVE ACKS, 12 bytes, EOT 10) carries that EOW, 0x30E: UNRECOGNIZED-TYPE-ERROR is an EOW for all editions, so it may go to an Ed3 peer (C-0401, C-0415), and it goes once (C-1079). Fill (C-0886, C-1154): 23 bytes of the block are spare. One copy of the ACK-ONLY goes (C-0369, C-0882), with EOW 0, EMPTY (C-0398), not the Ed4 CAPABILITY EOW, since Ed4 EOWs are not sent to a peer known Ed3 (C-0044, C-0054, C-0419); a second copy (12 bytes) does not fit in the 11 left. Those 11 bytes would hold exactly one PADDING D_PDU, but PADDING goes only to Ed4 peers (C-0367, C-0055), so they are zero filled: the transmit output is the 24 bytes of the two ACK-ONLYs. Fixture: preamble 600, flush 150, 35 bytes and 4800 ms a block, so a one-block transmission lasts 5550 ms, EOT ceil(4950 / 500) = 10 (C-0104, C-1043). Addresses 0.0.1.2 and 0.0.1.3 take address size 3 (C-0133): a type 1 is 12 bytes plus its SELECTIVE ACKS, a PADDING D_PDU 11 bytes. Seed 0 draws uniform(16) = 15, 4: contention waits 45000, 12000 ms (K-0080). "}
+{"t":0,"in":"sis_connect","conn":1}
+{"t":0,"in":"sis_bytes","conn":1,"bytes":"90eb00000401901000"}
+{"out":"sis_bytes","conn":1,"bytes":"90eb00000403900800"}
+{"t":1000,"in":"burst_started"}
+{"t":2000,"in":"bytes_received","bytes":"90eb80000a6f10210300010000010000000a8bb210aa9c741e"}
+{"t":3000,"in":"burst_ended","reason":"eom","wn":2,"interleaver":"long","k":7,"snr_tenth_db":60,"blocks":1}
+{"out":"timer_start","name":"csma.vdcd_end","ms":4000}
+{"t":7000,"in":"timer_expired","name":"csma.vdcd_end"}
+{"out":"timer_start","name":"csma.cont_wait","ms":45000}
+{"t":52000,"in":"timer_expired","name":"csma.cont_wait"}
+{"out":"transmit","bytes":"90eb80000a6f10310200010000010000000a5cf6205439e93c","wn":2,"interleaver":"long","k":7,"eom":true}
+{"t":57550,"in":"transmit_done"}
+{"out":"link_state","peer":"0.0.1.3","state":"linked"}
+{"out":"timer_start","name":"cas.first_data/0.0.1.3","ms":120000}
+{"t":60000,"in":"burst_started"}
+{"t":61000,"in":"bytes_received","bytes":"90eb0e001469102103ec0a004da200005940000070696e671ca45ae5"}
+{"out":"timer_cancel","name":"cas.first_data/0.0.1.3"}
+{"out":"sis_bytes","conn":1,"bytes":"90eb0000111509e000010215e0000103000470696e67"}
+{"t":62000,"in":"burst_ended","reason":"eom","wn":2,"interleaver":"long","k":7,"snr_tenth_db":60,"blocks":1}
+{"out":"timer_start","name":"csma.vdcd_end","ms":9000}
+{"t":71000,"in":"timer_expired","name":"csma.vdcd_end"}
+{"out":"timer_start","name":"csma.cont_wait","ms":12000}
+{"t":83000,"in":"timer_expired","name":"csma.cont_wait"}
+{"out":"transmit","bytes":"90eb130e0a6710310201f36290eb10000a6710310201ef75","wn":2,"interleaver":"long","k":7,"eom":true}
+{"t":88550,"in":"transmit_done"}
