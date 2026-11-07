@@ -103,7 +103,7 @@ T2_OUTPUTS = {
 }
 BURST_END_REASONS = {"eom", "signal_lost", "terminated"}
 # Registered names (corpus-format.md section 4.6). Empty until the first scenario needs one.
-REGISTERED_TIMERS = {"csma.lbt_wait", "csma.cont_wait", "csma.vdcd_end"}
+REGISTERED_TIMERS = {"csma.lbt_wait", "csma.cont_wait", "csma.vdcd_end", "dts.reception_window"}
 REGISTERED_LINK_STATES = set()
 
 
