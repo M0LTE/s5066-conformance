@@ -26,7 +26,7 @@ B-0024	Ed4 B.2.2.1	B-5	info	Link-make error: timer expired after the last PHYSIC
 B-0025	Ed4 B.2.2.1	B-5	info	Local link-make error reasons that can occur without ALE: Maximum Physical Links In Use; Link not allowed due to EMCON	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs	tests/M0LTE.S5066.Core.Tests/CasLinkTests.cs	
 B-0026	Ed4 B.2.2.1	B-5	info	Local link-make error reasons for ALE: ALE Call Timeout, ALE Call Rejected, Duplex ALE Timeout, Physical Link Prevents Broadcast	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
 B-0027	Ed4 B.2.2.1	B-5	info	Broadcast-only rejection indicates a misconfiguration to be fixed	yes				
-B-0028	Ed4 B.2.2.1	B-5	info	On Maximum Physical Links In Use, SIS holds off linking to that peer until another physical link closes	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	tests/M0LTE.S5066.Core.Tests/CasLinkTests.cs	
+B-0028	Ed4 B.2.2.1	B-5	info	On Maximum Physical Links In Use, SIS holds off linking to that peer until another physical link closes	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs	tests/M0LTE.S5066.Core.Tests/CasLinkTests.cs; T3 ThreeNodeTests	
 B-0029	Ed4 B.2.2.1	B-5	info	On any other link-make error, SIS rejects all S_PDUs queued for that link and the client may resubmit	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
 B-0030	Ed4 B.2.2.2	B-5	info	C_UNIDATA_REQUEST is unacknowledged, so there are no peer errors for it	yes				
 B-0031	Ed4 B.2.2.2	B-5	info	The only DTS cause for rejecting a valid C_UNIDATA_REQUEST is TTL expiry	yes				
