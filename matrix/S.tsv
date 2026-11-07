@@ -1,0 +1,159 @@
+id	source	page	strength	requirement	applies	reason	impl	tests	notes
+S-0001	Ed4 S.1.1	S-1	info	Annex S gathers the Edition 3 primitive encoding (Ed3 A.3), the local services (Ed3 A.2) and the raw socket server (Ed3 F.16) into one access protocol.	yes				
+S-0002	Ed4 S.1.1	S-1	info	Hard link and expedited data encodings are dealt with in S.6.1 and S.6.2 as deprecated options.	no	deprecated options HARD LINKS and EXPEDITED DATA (main Table 1)			
+S-0003	Ed4 S.1.2	S-2	info	SAP IDs run from 0 to 15, so at most 16 clients attach to one node's SIS.	yes				
+S-0004	Ed4 S.1.2	S-2	info	There can be one client per SAP, which lets independent clients share the channel.	yes				
+S-0005	Ed4 S.1.2	S-2	shall	The Annex S access mechanism is mandatory, even though Annex A allows any access mechanism, so that servers and applications interoperate.	yes				"is mandatory" wording; Ed4 A.1.2 p.A-1 allows other mechanisms in addition.
+S-0006	Ed4 S.2	S-3	info	The SIS Access Protocol is local between application and node, has no end-to-end effect, and frames each primitive so it maps directly onto a TCP stream.	yes				
+S-0007	Ed4 S.2	S-3	shall	The default SIS port is decimal 5066 (IANA registered).	yes				
+S-0008	Ed4 S.2	S-3	should	Clients and subnetworks should be configurable to use another valid port as the default.	yes				
+S-0009	Ed4 S.2	S-3	shall	The server listens on the default SIS port for client connections.	yes				Listen address is our choice (localhost by default, plan 10.1); authentication NOT STATED.
+S-0010	Ed4 S.2	S-3	shall	The server accepts sixteen simultaneous connections so every SAP can be served.	yes				
+S-0011	Ed4 S.2	S-3	shall	Primitives are sent with no separators or framing beyond the generic S_Primitive elements of this annex.	yes				
+S-0012	Ed4 S.2	S-4	shall	No other messages pass between client and subnetwork on this connection.	yes				
+S-0013	Ed4 S.2	S-4	may	Implementation-dependent management traffic may be carried inside S_MANAGEMENT_MSG_REQUEST and S_MANAGEMENT_MSG_INDICATION.	yes				Plan 10.1: node information via S_MANAGEMENT_MSG.
+S-0014	Ed4 S.2	S-4	should	Implementation-dependent client and subnetwork communication over another socket is outside the standard and is not recommended.	yes				The operator status page (plan 10.3) is not a client interface; client-facing node information goes through S_MANAGEMENT_MSG.
+S-0015	Ed4 S.2	S-3	interp	Behaviour for a seventeenth or later connection is NOT STATED. Reading: accept at least sixteen connections; the one-client-per-SAP limit is enforced at bind (reject reason 3 for a SAP in use), not by refusing TCP connections.	yes				Not in plan 4.4.
+S-0016	Ed4 S.2	S-3	interp	Closing the TCP connection is the over-TCP form of a client "physically disconnecting" [Ed4 A.2.2.2, p.A-5]. Reading: a closed connection unbinds its client and frees its SAP at once, with no S_UNBIND_INDICATION.	yes				Not in plan 4.4.
+S-0017	Ed4 S.3	S-4	info	The main purpose of the protocol is client access to the Annex A core SIS services.	yes				
+S-0018	Ed4 S.4	S-4	info	Local management and flow control primitives (table printed as "Table A-1"): SIS to client S_SUBNET_AVAILABILITY, S_DATA_FLOW_ON, S_DATA_FLOW_OFF, S_MANAGEMENT_MSG_INDICATION; client to SIS S_MANAGEMENT_MSG_REQUEST; S_KEEP_ALIVE both ways.	yes				Table label duplicates Annex A's Table A-1 (editorial).
+S-0019	Ed4 S.4.1	S-5	shall	The SIS issues S_DATA_FLOW_ON and S_DATA_FLOW_OFF to control the client's transfer of U_PDUs.	yes				
+S-0020	Ed4 S.4.1	S-5	shall	On S_DATA_FLOW_OFF the client stops sending U_PDUs.	yes				Client duty (client library).
+S-0021	Ed4 S.4.1	S-5	shall	Once the client has received S_DATA_FLOW_ON, it is allowed to send U_PDUs again.	yes				Client duty.
+S-0022	Ed4 S.4.1	S-5	may	The SIS may use these primitives or other mechanisms to throttle local clients.	yes				
+S-0023	Ed4 S.4.1	S-5	may	U_PDUs a client sends after being sent S_DATA_FLOW_OFF may be discarded with no acknowledgement, indication or warning.	yes				See interp below for our choice.
+S-0024	Ed4 S.4.1	S-5	shall	A client never controls the flow of data from the subnetwork, explicitly or implicitly.	yes				Client duty: always keep reading the socket.
+S-0025	Ed4 S.4.1	S-5	shall	Every client is ready at all times to accept data the node receives for it.	yes				Client duty.
+S-0026	Ed4 S.4.1	S-5	may	The node may disconnect a client that does not accept data.	yes				
+S-0027	Ed4 S.4.1	S-5	interp	The flow state after bind is NOT STATED. Reading: flow is on once S_BIND_ACCEPTED is sent; the node sends no S_DATA_FLOW_ON at bind and sends S_DATA_FLOW_OFF only when it needs to throttle.	yes				Not in plan 4.4.
+S-0028	Ed4 S.4.1	S-5	interp	S.4.1 lets the node silently discard U_PDUs sent after S_DATA_FLOW_OFF. Reading: the node keeps reading the socket; such a U_PDU is discarded, and if it asked for delivery confirmation the client gets S_UNIDATA_REQUEST_REJECTED with reason 13 (Data Buffers Full).	yes				Our choice within the may.
+S-0029	Ed4 S.4.1	S-5	interp	How the node detects a client that is not reading is NOT STATED. Reading: if data queued for a client cannot be written to its connection within a fixed bound, the node closes the connection, which unbinds the client and frees its SAP.	yes				Bound fixed in code, documented; no setting (no-unrequested-settings rule).
+S-0030	Ed4 S.4.2	S-5	shall	A client sends a management message to the subnetwork with S_MANAGEMENT_MSG_REQUEST.	yes				
+S-0031	Ed4 S.4.2	S-5	info	The content of the management message is implementation-dependent and not specified (for example commands such as go to EMCON, or requests for statistics).	yes				
+S-0032	Ed4 S.4.2	S-5	shall	A minimally compliant subnetwork can receive S_MANAGEMENT_MSG_REQUEST, with no duty to act on it.	yes				
+S-0033	Ed4 S.4.2	S-5	shall	Management coordination between peer nodes over the air uses the UNIDATA primitives, not this primitive.	yes				
+S-0034	Ed4 S.4.3	S-6	shall	The subnetwork sends a management message to a client with S_MANAGEMENT_MSG_INDICATION.	yes				
+S-0035	Ed4 S.4.3	S-6	info	The content of the management indication is implementation-dependent and not specified.	yes				We publish our encoding (plan 10.1).
+S-0036	Ed4 S.4.3	S-6	shall	A minimally compliant client can receive S_MANAGEMENT_MSG_INDICATION, with no duty to act on it.	yes				Client duty.
+S-0037	Ed4 S.4.3	S-6	may	The indication may answer a request or be sent unprompted.	yes				
+S-0038	Ed4 S.4.3	S-6	interp	MSG TYPE and MSG BODY encodings are implementation-dependent [Ed4 S.4.2, S.4.3, S.5.11]. Reading: the node answers its own published request types (node information such as own address, per-peer rate and SNR); a request with an unknown MSG TYPE is ignored without reply and does not count as an invalid primitive.	yes				Plan 10.1.
+S-0039	Ed4 S.4.4	S-6	may	Either client or SIS may send S_KEEP_ALIVE, for example when idle, to check the connection is alive.	yes				
+S-0040	Ed4 S.4.4	S-6	info	A minimally compliant client or SIS need not generate S_KEEP_ALIVE except to answer one.	yes				
+S-0041	Ed4 S.4.4	S-6	shall	A received S_KEEP_ALIVE is answered with S_KEEP_ALIVE within 10 seconds.	yes				Shall number (1) missing in the source.
+S-0042	Ed4 S.4.4	S-6	shall	If the answer cannot be sent within 10 seconds, none is sent.	yes				
+S-0043	Ed4 S.4.4	S-6	shall	No more than one S_KEEP_ALIVE is sent to the same destination in any 120 seconds.	yes				
+S-0044	Ed4 S.4.4	S-6	interp	The 10 s answer duty and the 120 s sending limit clash when a peer sends keep-alives more often than every 120 s. Reading: an answer is always sent (within 10 s) and the 120 s limit governs only unprompted keep-alives; unprompted ones are also spaced at least 120 s from any keep-alive already sent to that destination.	yes				Not in plan 4.4.
+S-0045	Ed4 S.4.4	S-6	interp	The trigger for unbind reason 2 (Inactivity, no answer to keep-alive) [Ed4 A.2.2.5, p.A-7] is NOT STATED. Reading: the node sends no unprompted keep-alives and relies on TCP connection state; it never sends unbind reason 2. The client library may probe the node within the 120 s limit.	yes				Not in plan 4.4.
+S-0046	Ed4 S.4.5	S-7	may	S_SUBNET_AVAILABILITY may be sent at any time to all or some clients when the node's status changes (for example EMCON, or bandwidth reserved for others).	yes				
+S-0047	Ed4 S.4.5	S-7	info	The content of S_SUBNET_AVAILABILITY is implementation-dependent.	yes				Contradicted by the value tables on the same page; see interp.
+S-0048	Ed4 S.4.5	S-7	shall	A minimally compliant client can receive S_SUBNET_AVAILABILITY, with no duty to act on it.	yes				Client duty.
+S-0049	Ed4 S.4.5	S-7	info	Node Status values: 0 OFF, 1 ON, 2 Receive-Only, 3 Half-Duplex, 4 Full-Duplex, 5 Transmit-Only.	yes				
+S-0050	Ed4 S.4.5	S-7	shall	For any node status except ON, the Reason argument gives the cause, coded 0 unspecified, 1 Local Node in EMCON, 2 Reserved.	yes				
+S-0051	Ed4 S.4.5	S-7	shall	The Node Status values above are the ones used in the Annex S encoding.	yes				Source says "represent the reason" for status values (editorial).
+S-0052	Ed4 S.4.5	S-7	shall	The Reason values above are the ones used in the Annex S encoding.	yes				
+S-0053	Ed4 S.4.5	S-7	interp	S.4.5 prints Node Status and Reason value tables that "shall" be used [p.S-7], while S.4.5 and S.5.8 call the content implementation-dependent [pp.S-7, S-14]. Reading: the node sends only the S.4.5 values; the client library accepts any value and treats unknown ones as unspecified.	yes				Not in plan 4.4.
+S-0054	Ed4 S.5	S-7	shall	Primitives are encoded as given in the text and figures of S.5.	yes				
+S-0055	Ed4 S.5.1	S-8	shall	Unless stated otherwise, argument values are encoded into their fields per CCITT V.42 8.1.2.3.	yes				
+S-0056	Ed4 S.5.1	S-8	shall	In a field within one octet, the lowest-numbered bit is the least significant.	yes				
+S-0057	Ed4 S.5.1	S-8	shall	In a field spanning octets, significance falls as octet number rises: multi-byte values are sent most significant byte first.	yes				Big-endian; the preamble is the one exception (S.5.2).
+S-0058	Ed4 S.5.1	S-8	shall	Each 4-byte address field carries the 3.5-byte address plus the size information of S.5.16.1.	yes				
+S-0059	Ed4 S.5.1	S-8	shall	The address's lowest-order bit sits in the field's lowest-order position (normally bit 0 of the highest-numbered byte), matching the D_PDU address mapping of C.3.2.6.	yes				Right-aligned. Conflicts with Fig S-19; see interp at S.5.16.1.
+S-0060	Ed4 S.5.2	S-8	shall	Every primitive is the sequence: 2-byte preamble, 1-byte version, 2-byte size, then the primitive body.	yes				Fig S-3. Source refers to "Figure A-1(a)", the Ed3 number (editorial).
+S-0061	Ed4 S.5.2	S-9	shall	The preamble is the 16-bit Maury-Styles sequence 0xEB90, sent least significant bit first.	yes				
+S-0062	Ed4 S.5.2	S-9	shall	Preamble byte 0 holds the low-order bits of the sequence: 0x90.	yes				Fig S-4.
+S-0063	Ed4 S.5.2	S-9	shall	Preamble byte 1 holds the high-order bits of the sequence: 0xEB.	yes				So the wire bytes are 90 EB.
+S-0064	Ed4 S.5.2	S-9	info	The preamble byte order is an exception to the general field rule of S.5.1.	yes				
+S-0065	Ed4 S.5.2	S-9	shall	The byte after the preamble is the version number.	yes				
+S-0066	Ed4 S.5.2	S-9	shall	The version number is 0x00 for this edition.	yes				Same as Ed1 and Ed3; no in-band edition signal.
+S-0067	Ed4 S.5.2	S-10	shall	The next two bytes give the size in bytes of the primitive body that follows (type byte onward), excluding preamble, version and size.	yes				
+S-0068	Ed4 S.5.2	S-10	shall	The size's least significant bit is in the low-order bit of the low-order byte: byte 3 is the high byte, byte 4 the low byte.	yes				Shall number (8) missing in the source.
+S-0069	Ed4 S.5.2	S-9	info	The primitive body is at least one byte (size >= 1).	yes				Fig S-3.
+S-0070	Ed4 S.5.2	S-10	shall	Bits of each byte are transmitted least significant first, per CCITT V.42 8.1.2.2.	yes				No effect over a TCP byte stream.
+S-0071	Ed4 S.5.2	S-10	shall	Byte 5, the first body byte, is the primitive type number.	yes				Shall number (12) missing; (13) used twice.
+S-0072	Ed4 S.5.2	S-10	shall	Remaining body bytes follow in order, each least significant bit first, as defined for each primitive.	yes				
+S-0073	Ed4 S.5.2	S-10	shall	Bits marked NOT USED are sent as 0 unless a primitive says otherwise.	yes				
+S-0074	Ed4 S.5.2	S-10	interp	Handling of received NOT USED bits that are not 0 is NOT STATED. Reading: ignore them.	yes				
+S-0075	Ed4 S.5.2	S-9	interp	Handling of a bad preamble, a non-zero version or a zero size is NOT STATED. Reading: count one invalid primitive, then scan forward byte by byte for the next 90 EB preamble and resume there.	yes				Not in plan 4.4.
+S-0076	Ed4 S.5.2	S-10	interp	Handling of a primitive whose size does not match its type's layout (for example a U_PDU size field that disagrees with the frame size) is NOT STATED. Reading: skip the framed body by its size field and count one invalid primitive; an S_UNIDATA_REQUEST whose U_PDU merely exceeds the MTU is instead rejected with reason 4.	yes				Not in plan 4.4.
+S-0077	Ed4 S.5.2	S-10	interp	"Too many invalid primitives" (unbind reason 3) has no stated threshold [Ed4 A.2.2.5, p.A-7]. Reading: after 10 invalid primitives on one connection with no valid primitive in between, the node sends S_UNBIND_INDICATION reason 3 (if bound) and closes the connection.	yes				Fixed constant, no setting. Unknown type numbers, deprecated types and primitives in the wrong direction count as invalid.
+S-0078	Ed4 S.5.3	S-10	shall	S_BIND_REQUEST body is 4 bytes: byte 5 type 1; byte 6 SAP ID (bits 7 to 4) and RANK (bits 3 to 0); byte 7 Service Type bits 11 to 4; byte 8 Service Type bits 3 to 0 in bits 7 to 4, bits 3 to 0 NOT USED.	yes				Fig S-5.
+S-0079	Ed4 S.5.3	S-11	shall	The 12-bit Service Type has five subfields: Transmission Mode (byte 7 bits 7 to 4), Delivery Confirmation (byte 7 bits 3 to 2), Delivery Order (byte 7 bit 1), Extended Field (byte 7 bit 0), Minimum Number of Retransmissions (byte 8 bits 7 to 4).	yes				Fig S-6, read from rendered page.
+S-0080	Ed4 S.5.3	S-11	info	Transmission Mode values: 0 ignore service type field, 1 ARQ, 2 non-ARQ (for example broadcast), 3 non-ARQ with errors, 4 and up to be defined.	yes				We accept only 1 and 2 at bind (interp below).
+S-0081	Ed4 S.5.3	S-11	info	Delivery Confirmation values: 00 none, 01 node delivery, 10 client delivery, 11 not defined.	yes				
+S-0082	Ed4 S.5.3	S-11	info	Delivery Order values: 0 in-order delivery, 1 as they arrive.	yes				
+S-0083	Ed4 S.5.3	S-11	info	Extended Field values: 0 no extended field, 1 extended field follows.	yes				
+S-0084	Ed4 S.5.3	S-11	info	Minimum Number of Retransmissions is used only when Transmission Mode is a non-ARQ subtype and is "don't care" otherwise.	yes				4-bit field, 0 to 15.
+S-0085	Ed4 S.5.3	S-11	shall	The Service Type gives the client's requested default service.	yes				
+S-0086	Ed4 S.5.3	S-11	shall	The Service Type applies to every U_PDU the client submits until it unbinds, unless overridden by a U_PDU's Delivery Mode.	yes				
+S-0087	Ed4 S.5.3	S-11	shall	The only way a client changes its default service type is to unbind and then bind again.	yes				Client duty; node rejects a second bind on a bound connection (interp below).
+S-0088	Ed4 S.5.3	S-11	should	RANK, an Edition 3 field unused in Edition 4, is sent as 0 and ignored on receipt.	yes				
+S-0089	Ed4 S.5.3	S-11	shall	The Service Type states ARQ or non-ARQ, with a non-ARQ submode when non-ARQ.	yes				
+S-0090	Ed4 S.5.3	S-11	shall	Transmission Mode 0 is invalid in a bind.	yes				
+S-0091	Ed4 S.5.3	S-11	shall	The client requests exactly one delivery confirmation mode: none, node-to-node or client-to-client.	yes				
+S-0092	Ed4 S.5.3	S-12	shall	Explicit delivery confirmation is requested only with ARQ.	yes				Same rule as Ed4 A.2.2.6.
+S-0093	Ed4 S.5.3	S-12	shall	The client requests in-order delivery or delivery in arrival order.	yes				A.2.2.6 forbids in-order with non-ARQ.
+S-0094	Ed4 S.5.3	S-12	shall	The Extended Field is set to 0; its use is undefined.	yes				
+S-0095	Ed4 S.5.3	S-12	shall	Minimum Number of Retransmissions is valid only when Transmission Mode is non-ARQ.	yes				
+S-0096	Ed4 S.5.3	S-12	shall	For non-ARQ, the subnetwork retransmits each U_PDU the given number of times.	yes				N+1 transmissions in total (interp in A matrix at A.2.2.6).
+S-0097	Ed4 S.5.3	S-12	may	The retransmission count may be 0, meaning the U_PDU is sent once.	yes				
+S-0098	Ed4 S.5.3	S-11	interp	The node's response to an invalid bind Service Type is NOT STATED, and no bind reject reason fits [Ed4 A.2.2.4, p.A-6]. Reading: reject with S_BIND_REJECTED reason 1 (Not Enough Resources) when Transmission Mode is 0, 3 or 4 and up, Delivery Confirmation is 11, confirmation is asked with non-ARQ, or Extended Field is 1. Non-ARQ with in-order delivery is accepted and treated as arrival order, since Ed3 clients could send it.	yes				Not in plan 4.4. Mode 3 is the unsupported NON-ARQ WITH ERRORS option.
+S-0099	Ed4 S.5.3	S-10	interp	A second S_BIND_REQUEST on a connection that is already bound is NOT STATED. Reading: reject it with S_BIND_REJECTED reason 3 (SAP ID already allocated) and keep the existing binding.	yes				Not in plan 4.4.
+S-0100	Ed4 S.5.3	S-10	interp	Primitives received before a successful bind are NOT STATED beyond "cannot be serviced" [Ed4 A.2.2.1, p.A-4]. Reading: S_UNIDATA_REQUEST before bind is discarded and counts as an invalid primitive; S_KEEP_ALIVE and S_MANAGEMENT_MSG_REQUEST are handled normally before bind.	yes				Not in plan 4.4.
+S-0101	Ed4 S.5.4	S-12	shall	S_UNBIND_REQUEST body is 1 byte: type 2.	yes				Fig S-7.
+S-0102	Ed4 S.5.4	S-12	interp	Whether the node closes the TCP connection after S_UNBIND_REQUEST or S_UNBIND_INDICATION is NOT STATED. Reading: keep it open so the client may bind again [Ed4 A.2.2.2, p.A-5]; only on shutdown (unbind reason 6) or the invalid-primitive limit does the node close it.	yes				Not in plan 4.4.
+S-0103	Ed4 S.5.5	S-13	shall	S_BIND_ACCEPTED body is 4 bytes: byte 5 type 3; byte 6 SAP ID (bits 7 to 4), bits 3 to 0 NOT USED; bytes 7 and 8 MTU, most significant byte first.	yes				Fig S-8. MTU 2048 (A.2.2.3).
+S-0104	Ed4 S.5.6	S-13	shall	S_BIND_REJECTED body is 2 bytes: byte 5 type 4; byte 6 REASON.	yes				Fig S-9.
+S-0105	Ed4 S.5.6	S-13	shall	The REASON takes a value from Annex A A.2.2.4.	yes				
+S-0106	Ed4 S.5.7	S-13	shall	S_UNBIND_INDICATION body is 2 bytes: byte 5 type 5; byte 6 REASON.	yes				Fig S-10.
+S-0107	Ed4 S.5.7	S-13	shall	The REASON takes a value from Annex A A.2.2.5.	yes				
+S-0108	Ed4 S.5.8	S-14	shall	S_SUBNET_AVAILABILITY body is 3 bytes: byte 5 type 14; byte 6 NODE STATUS; byte 7 REASON.	yes				Fig S-11.
+S-0109	Ed4 S.5.8	S-14	info	The encoding of NODE STATUS and REASON is implementation-dependent.	yes				See interp at S.4.5.
+S-0110	Ed4 S.5.9	S-14	shall	S_DATA_FLOW_ON and S_DATA_FLOW_OFF bodies are 1 byte each, the type number; S_DATA_FLOW_ON is 15.	yes				Fig S-12.
+S-0111	Ed4 S.5.9	S-14	interp	Fig S-12 prints S_DATA_FLOW_OFF as type 15, the same as S_DATA_FLOW_ON. Reading: S_DATA_FLOW_OFF is 16, as in Ed1 Fig A-17, since Annex S says the protocol is unchanged from Edition 3 [Ed4 S.7, p.S-21].	yes				Plan 4.4.
+S-0112	Ed4 S.5.10	S-14	shall	S_KEEP_ALIVE body is 1 byte: type 17.	yes				Fig S-13 caption wrongly names the flow primitives (editorial).
+S-0113	Ed4 S.5.11	S-15	shall	S_MANAGEMENT_MSG_REQUEST (type 18) and S_MANAGEMENT_MSG_INDICATION (type 19) are variable length: byte 5 type; byte 6 MSG TYPE; bytes 7 onward MSG BODY.	yes				Fig S-14. Body length follows from the frame size.
+S-0114	Ed4 S.5.11	S-15	info	MSG TYPE and MSG BODY encodings are implementation-dependent.	yes				
+S-0115	Ed4 S.5.12	S-15	shall	S_UNIDATA_REQUEST is variable length: byte 5 type 20; byte 6 PRIORITY (bits 7 to 4) and DESTINATION SAP ID (bits 3 to 0); bytes 7 to 10 DESTINATION NODE ADDRESS; byte 11 DELIVERY MODE bits 11 to 4; byte 12 DELIVERY MODE bits 3 to 0 (bits 7 to 4) and TTL bits 19 to 16 (bits 3 to 0); bytes 13 and 14 TTL bits 15 to 0; bytes 15 and 16 U_PDU size; bytes 17 onward the U_PDU.	yes				Fig S-15, read from rendered page.
+S-0116	Ed4 S.5.12	S-15	info	TTL is 20 bits in units of 2 seconds, maximum field value 648000 (about 15 days), with its LSB at the LSB of byte 14.	yes				
+S-0117	Ed4 S.5.12	S-15	info	The U_PDU in S_UNIDATA_REQUEST may be zero bytes long (size >= 0).	yes				
+S-0118	Ed4 S.5.12	S-16	shall	Node address fields are encoded per S.5.16.1.	yes				
+S-0119	Ed4 S.5.12	S-16	interp	S.5.12 refers to SOURCE and DESTINATION NODE ADDRESS fields, but Fig S-15 has no source address. Reading: the request carries only a destination address; the source is the local node's address.	yes				Not in plan 4.4.
+S-0120	Ed4 S.5.12	S-16	shall	The DELIVERY MODE field is encoded per S.5.16.2.	yes				
+S-0121	Ed4 S.5.12	S-15	interp	Handling of a TTL field above 648000 (the 20-bit field can hold up to 1048575) is NOT STATED. Reading: treat it as 648000.	yes				Not in plan 4.4.
+S-0122	Ed4 S.5.13	S-16	shall	S_UNIDATA_INDICATION is variable length: byte 5 type 21; byte 6 PRIORITY (bits 7 to 4) and DESTINATION SAP ID (bits 3 to 0); bytes 7 to 10 DESTINATION NODE ADDRESS; byte 11 TRANSMISSION MODE (bits 7 to 4) and SOURCE SAP ID (bits 3 to 0); bytes 12 to 15 SOURCE NODE ADDRESS; bytes 16 and 17 U_PDU size N; then the U_PDU (from byte 18 when no error fields are present).	yes				Fig S-16, read from rendered page.
+S-0123	Ed4 S.5.13	S-16	shall	The error fields (2-byte errored-block count K, K pairs of 2-byte pointer and 2-byte size, 2-byte non-received count L, L such pairs) are present only when the transmission mode is non-ARQ with errors, and are omitted otherwise.	yes				We always omit them.
+S-0124	Ed4 S.5.13	S-16	info	When present, the error fields sit between the U_PDU size and the U_PDU.	no	option NON-ARQ WITH ERRORS not in CSMA Fixed Frequency (main Table 2)			
+S-0125	Ed4 S.5.13	S-17	shall	Source and destination node address fields are encoded per S.5.16.1.	yes				
+S-0126	Ed4 S.5.13	S-17	shall	The TRANSMISSION MODE field is encoded per S.5.16.3.	yes				
+S-0127	Ed4 S.5.14	S-17	shall	S_UNIDATA_REQUEST_CONFIRM is variable length: byte 5 type 22; byte 6 NOT USED (bits 7 to 4) and DESTINATION SAP ID (bits 3 to 0); bytes 7 to 10 DESTINATION NODE ADDRESS; bytes 11 and 12 size of the confirmed U_PDU or part; bytes 13 onward that U_PDU or part.	yes				Fig S-17.
+S-0128	Ed4 S.5.14	S-17	shall	The destination address field is encoded per S.5.16.1.	yes				
+S-0129	Ed4 S.5.15	S-18	shall	S_UNIDATA_REQUEST_REJECTED is variable length: byte 5 type 23; byte 6 REASON (bits 7 to 4) and DESTINATION SAP ID (bits 3 to 0); bytes 7 to 10 DESTINATION NODE ADDRESS; bytes 11 and 12 size of the rejected U_PDU or part; bytes 13 onward that U_PDU or part.	yes				Fig S-18. REASON is 4 bits, values 1 to 15.
+S-0130	Ed4 S.5.15	S-18	shall	The destination address field is encoded per S.5.16.1.	yes				
+S-0131	Ed4 S.5.15	S-18	shall	The REASON takes a value from Annex A A.2.2.8.	yes				
+S-0132	Ed4 S.5.16	S-18	info	S.5.16 adds detail on arguments common to several primitives.	yes				
+S-0133	Ed4 S.5.16.1	S-18	shall	Node addresses are encoded in formats that are multiples of 4 bits, per Fig S-19.	yes				Applies to all UNIDATA primitives.
+S-0134	Ed4 S.5.16.1	S-19	info	Address field layout (Fig S-19): first byte bits 7 to 5 the address size in half-bytes (up to 7), bit 4 the group flag (0 individual, 1 group), then 28 address bits; only the first SIZE half-bytes are valid and the rest are don't care.	yes				Rendered page checked.
+S-0135	Ed4 S.5.16.1	S-19	shall	Group addresses appear only as the destination of non-ARQ PDUs.	yes				
+S-0136	Ed4 S.5.16.1	S-19	shall	ARQ destination SAPs and addresses, and source SAPs and addresses of all PDUs, are individual.	yes				
+S-0137	Ed4 S.5.16.1	S-19	interp	Address alignment: S.5.1 places the address LSB at bit 0 of the last byte (right-aligned) [p.S-8], but Fig S-19 says only the first SIZE half-bytes are valid [p.S-19]. Reading: send right-aligned with SIZE = 7 and unused nibbles 0, so both readings agree; decode right-aligned.	yes				Plan 4.4.
+S-0138	Ed4 S.5.16.1	S-19	interp	The node's response to an S_UNIDATA_REQUEST that sends ARQ (explicitly or by default) to a group address is NOT STATED. Reading: reject with S_UNIDATA_REQUEST_REJECTED reason 6 (Broadcast Not Allowed), whether or not confirmation was requested.	yes				Not in plan 4.4.
+S-0139	Ed4 S.5.16.2	S-19	shall	The DELIVERY MODE argument is encoded per Fig S-20: the same 12-bit subfield layout as the bind Service Type.	yes				Bytes 11 and 12 of S_UNIDATA_REQUEST.
+S-0140	Ed4 S.5.16.2	S-19	shall	With DELIVERY MODE DEFAULT, the U_PDU uses the Service Type from the client's S_BIND_REQUEST.	yes				
+S-0141	Ed4 S.5.16.2	S-19	shall	A non-DEFAULT DELIVERY MODE overrides the bind Service Type for that U_PDU.	yes				
+S-0142	Ed4 S.5.16.2	S-19	shall	Transmission Mode 0 in DELIVERY MODE means DEFAULT.	yes				
+S-0143	Ed4 S.5.16.2	S-19	shall	When DELIVERY MODE is DEFAULT, all its other subfields are ignored.	yes				
+S-0144	Ed4 S.5.16.2	S-19	info	Per-U_PDU delivery confirmation may be none, node-to-node or client-to-client.	yes				
+S-0145	Ed4 S.5.16.2	S-20	may	A client may ask per U_PDU for in-order delivery or delivery in arrival order.	yes				In-order is forbidden with non-ARQ (Ed4 A.2.2.6).
+S-0146	Ed4 S.5.16.2	S-20	shall	The DELIVERY MODE Extended Field is set to 0.	yes				
+S-0147	Ed4 S.5.16.2	S-20	shall	Minimum Number of Retransmissions is valid only when Transmission Mode is a non-ARQ type or subtype.	yes				
+S-0148	Ed4 S.5.16.2	S-20	shall	For non-ARQ, the subnetwork retransmits each U_PDU the given number of times.	yes				N+1 in total (A matrix interp).
+S-0149	Ed4 S.5.16.2	S-20	may	The retransmission count may be 0, meaning the U_PDU is sent once.	yes				
+S-0150	Ed4 S.5.16.2	S-20	interp	The node's response to an invalid non-DEFAULT DELIVERY MODE is NOT STATED. Reading: reject with S_UNIDATA_REQUEST_REJECTED reason 5 (Tx Mode not specified), whether or not confirmation was requested, when Transmission Mode is 3 or 4 and up, Delivery Confirmation is 11, confirmation is asked with non-ARQ, or Extended Field is 1. Non-ARQ with in-order is accepted and sent as arrival order.	yes				Not in plan 4.4. Mirrors the bind interp at S.5.3.
+S-0151	Ed4 S.5.16.3	S-21	shall	The TRANSMISSION MODE in S_UNIDATA_INDICATION is encoded per Fig S-21, in byte 11 bits 7 to 4.	yes				
+S-0152	Ed4 S.5.16.3	S-20	info	Indication Transmission Mode values: 0 not used, 1 ARQ, 2 non-ARQ (broadcast), 3 non-ARQ with errors, 4 and up to be defined.	yes				We send only 1 or 2.
+S-0153	Ed4 S.5.16.3	S-21	info	The low four bits of that byte carry the SOURCE SAP ID.	yes				
+S-0154	Ed4 S.6	S-21	info	Hard links and expedited data are optional, deprecated, specified by reference to Edition 3, and expected to be removed.	yes				
+S-0155	Ed4 S.6.1	S-21	info	HARD LINKS option primitives are encoded per Edition 3 Annex A section A.3; Rank may be needed.	no	deprecated option HARD LINKS (main Table 1)			Plan 4.3: types 6 to 13 received are invalid primitives.
+S-0156	Ed4 S.6.2	S-21	info	EXPEDITED DATA option primitives are encoded per Edition 3 Annex A section A.3.	no	deprecated option EXPEDITED DATA (main Table 1)			Plan 4.3: types 24 to 27 received are invalid primitives.
+S-0157	Ed4 S.6	S-21	interp	A received deprecated primitive (hard link types 6 to 13, expedited types 24 to 27) is not covered by Ed4. Reading: treat it as an invalid primitive; repeated ones lead to unbind reason 3.	yes				Plan 4.3 last row.
+S-0158	Ed4 S.7	S-21	info	The access protocol is unchanged from Edition 3; Annex S does not specify the hard link and expedited protocol elements, which exist only in Edition 3.	yes				Basis for the FLOW_OFF = 16 reading.
