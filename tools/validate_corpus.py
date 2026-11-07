@@ -276,11 +276,13 @@ def check_t1(path, err, ctx):
             check_dpdu_case(err, where, c, b)
         elif kind in ("sis_frame", "sis_stream"):
             check_sis_case(err, where, c, b, kind)
+        elif kind in ("cpdu", "spdu"):
+            check_pdu_case(err, where, c, b, kind)
         else:
             err.add(where, "unregistered kind %r" % (kind,))
 
 
-# ---- SIS primitives (corpus-format.md section 3.5)
+# ---- SIS primitives (corpus-format.md section 3.7)
 
 SIS_DEPRECATED = set(range(6, 14)) | set(range(24, 28))
 
@@ -663,6 +665,175 @@ def check_dpdu_value(err, where, c, peer):
             err.add(where, "segment_crc_ok must be a boolean")
         elif not v["segment_crc_ok"] and c.get("dir") != "decode":
             err.add(where, "segment_crc_ok false is only allowed in decode cases")
+
+
+# C_PDU and S_PDU kinds (corpus-format.md sections 3.5 and 3.6). The reference
+# codecs below are written from the Annex B and Annex A figures, independently of
+# any implementation.
+
+CPDU_FIELDS = {
+    0: {"s_pdu": "hex"},
+    1: {"short": "bool", "ed4": "bool", "link": "bool"},
+    2: {"short": "bool", "ed4": "bool", "link": "bool"},
+    3: {"reason": 15},
+    4: {"reason": 15},
+    5: {},
+    6: {"reason": 7, "priority": 255},
+    7: {}, 8: {}, 9: {},
+    10: {"reason": 7},
+}
+CPDU_ENCODABLE = set(range(0, 7))
+
+SPDU_FIELDS = {
+    0: {"priority": 15, "src_sap": 15, "dst_sap": 15, "client_confirm": "bool", "u_pdu": "hex"},
+    1: {"priority": 15, "src_sap": 15, "dst_sap": 15, "u_pdu": "hex"},
+    2: {"reason": 15, "src_sap": 15, "dst_sap": 15, "u_pdu": "hex"},
+}
+SPDU_TTD_KEYS = {"day_mod16": 15, "half_seconds": 65535}
+
+
+def cpdu_decode(b):
+    if len(b) < 1:
+        return "error", "truncated"
+    t = b[0] >> 4
+    if t == 0:
+        return "value", {"type": 0, "s_pdu": b[1:].hex()}
+    if t >= 11:
+        return "error", "invalid_field"
+    if t == 6:
+        if len(b) < 2:
+            return "error", "truncated"
+        if len(b) > 2:
+            return "error", "trailing_bytes"
+        return "value", {"type": 6, "reason": b[0] & 7, "priority": b[1]}
+    if len(b) > 1:
+        return "error", "trailing_bytes"
+    lo = b[0] & 15
+    if t in (1, 2):
+        return "value", {"type": t, "short": bool(lo & 4), "ed4": bool(lo & 2), "link": bool(lo & 1)}
+    if t in (3, 4):
+        return "value", {"type": t, "reason": lo}
+    if t == 10:
+        return "value", {"type": 10, "reason": lo & 7}
+    return "value", {"type": t}
+
+
+def cpdu_encode(v):
+    t = v["type"]
+    if t == 0:
+        return bytes([0]) + bytes.fromhex(v["s_pdu"])
+    if t in (1, 2):
+        return bytes([(t << 4) | (v["short"] << 2) | (v["ed4"] << 1) | int(v["link"])])
+    if t in (3, 4):
+        return bytes([(t << 4) | v["reason"]])
+    if t == 5:
+        return bytes([0x50])
+    if t == 6:
+        return bytes([0x60 | v["reason"], v["priority"]])
+    raise ValueError(t)
+
+
+def spdu_decode(b):
+    if len(b) < 1:
+        return "error", "truncated"
+    t = b[0] >> 4
+    if t > 2:
+        return "error", "invalid_field"
+    if len(b) < 2 or (t == 0 and len(b) < 3):
+        return "error", "truncated"
+    sap = {"src_sap": b[1] >> 4, "dst_sap": b[1] & 15}
+    if t == 0:
+        v = {"type": 0, "priority": b[0] & 15, **sap, "client_confirm": bool(b[2] & 0x80)}
+        rest = b[3:]
+        if b[2] & 0x40:
+            if len(b) < 5:
+                return "error", "truncated"
+            v["ttd"] = {"day_mod16": b[2] & 15, "half_seconds": (b[3] << 8) | b[4]}
+            rest = b[5:]
+        v["u_pdu"] = rest.hex()
+        return "value", v
+    if t == 1:
+        return "value", {"type": 1, "priority": b[0] & 15, **sap, "u_pdu": b[2:].hex()}
+    return "value", {"type": 2, "reason": b[0] & 15, **sap, "u_pdu": b[2:].hex()}
+
+
+def spdu_encode(v):
+    t = v["type"]
+    sap = (v["src_sap"] << 4) | v["dst_sap"]
+    u = bytes.fromhex(v["u_pdu"])
+    if t == 0:
+        out = bytes([v["priority"], sap])
+        ttd = v.get("ttd")
+        b2 = (0x80 if v["client_confirm"] else 0) | (0x40 if ttd else 0)
+        if ttd:
+            return out + bytes([b2 | ttd["day_mod16"], ttd["half_seconds"] >> 8, ttd["half_seconds"] & 255]) + u
+        return out + bytes([b2]) + u
+    if t == 1:
+        return bytes([0x10 | v["priority"], sap]) + u
+    return bytes([0x20 | v["reason"], sap]) + u
+
+
+def check_pdu_value(err, where, c, kind):
+    v = c["value"]
+    fields = CPDU_FIELDS if kind == "cpdu" else SPDU_FIELDS
+    t = v.get("type")
+    if t not in fields:
+        err.add(where, "type %r has no registered field set" % (t,))
+        return
+    spec = fields[t]
+    opt = ("ttd",) if kind == "spdu" and t == 0 else ()
+    check_keys(err, where, v, ("type",) + tuple(spec), opt)
+    for k, kt in spec.items():
+        if k in v:
+            if kt == "hex":
+                ok = is_hex(v[k])
+            elif kt == "bool":
+                ok = isinstance(v[k], bool)
+            else:
+                ok = is_int(v[k], 0, kt)
+            if not ok:
+                err.add(where, "field %s has a bad value" % k)
+    if "ttd" in v:
+        check_keys(err, where, v["ttd"] if isinstance(v["ttd"], dict) else {}, tuple(SPDU_TTD_KEYS))
+        if not isinstance(v["ttd"], dict) or not all(
+                is_int(v["ttd"].get(k), 0, m) for k, m in SPDU_TTD_KEYS.items()):
+            err.add(where, "ttd needs day_mod16 0 to 15 and half_seconds 0 to 65535")
+
+
+def check_pdu_case(err, where, c, b, kind):
+    if "peer_edition" in c:
+        err.add(where, "peer_edition is only for dpdu")
+    d = c.get("dir")
+    before = len(err.items)
+    if "value" in c:
+        check_pdu_value(err, where, c, kind)
+        v = c["value"]
+        if kind == "cpdu" and d != "decode" and v.get("type") not in CPDU_ENCODABLE:
+            err.add(where, "C_PDU types 7 to 10 are decode only")
+        if kind == "cpdu" and v.get("type") in (1, 2) and v.get("short") and not v.get("ed4") and d != "decode":
+            err.add(where, "Short without Ed4 is decode only")
+        if kind == "cpdu" and v.get("type") == 0 and v.get("s_pdu") == "" and d != "decode":
+            err.add(where, "a DATA C_PDU with no S_PDU is decode only")
+        if kind == "cpdu" and v.get("type") in (1, 2) and v.get("link") and d != "decode":
+            err.add(where, "LINK set is decode only")
+        if d in ("encode", "both") and len(err.items) == before:
+            try:
+                enc = cpdu_encode(v) if kind == "cpdu" else spdu_encode(v)
+            except (KeyError, ValueError, TypeError):
+                return
+            if enc != b:
+                err.add(where, "bytes disagree with the reference encoder: %s" % enc.hex())
+    res, out = (cpdu_decode if kind == "cpdu" else spdu_decode)(b)
+    if "error" in c:
+        if res != "error":
+            err.add(where, "bytes decode to a value, case says error %s" % c["error"])
+        elif out != c["error"]:
+            err.add(where, "check order gives %s, case says error %s" % (out, c["error"]))
+    elif res != "value":
+        err.add(where, "bytes decode to error %s" % out)
+    elif out != c["value"]:
+        diff = sorted(k for k in set(out) | set(c["value"]) if out.get(k) != c["value"].get(k))
+        err.add(where, "value disagrees with the bytes in: %s" % ", ".join(diff))
 
 
 # ---------------------------------------------------------------- T2

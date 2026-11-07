@@ -139,7 +139,7 @@ A-0137	Ed4 A.3.1	A-14	info	Three S_PDU types are currently defined; more may be 
 A-0138	Ed4 A.3.1	A-14	shall	Every S_PDU starts with a common first field, TYPE.	yes				
 A-0139	Ed4 A.3.1	A-14	shall	TYPE values: 0 DATA, 1 DATA DELIVERY CONFIRM, 2 DATA DELIVERY FAIL, 3 to 7 reserved.	yes				TYPE is the high nibble of byte 0 (Figs A-3, A-6, A-8).
 A-0140	Ed4 A.3.1	A-14	info	Types 3 to 7 were used by Edition 3 and are reserved in Edition 4.	yes				Ed3 hard link S_PDUs are referenced from A.4.1 (Ed3 A.3.1.4 to A.3.1.7).
-A-0141	Ed4 A.3.1	A-14	interp	Handling of a received S_PDU of reserved type (3 to 15) is NOT STATED. Reading: discard it without reply and log it; this covers Ed3 hard link S_PDUs, which we do not support.	yes				Not in plan 4.4.
+A-0141	Ed4 A.3.1	A-14	interp	Handling of a received S_PDU of reserved type (3 to 15) is NOT STATED. Reading: discard it without reply and log it; this covers Ed3 hard link S_PDUs, which we do not support.	yes				Not in plan 4.4. The S_PDU codec reports types 3 to 15 as invalid_field.
 A-0142	Ed4 A.3.1	A-14	shall	The meaning and encoding of the other fields of each S_PDU follow its own subsection.	yes				
 A-0143	Ed4 A.3.1.1	A-15	shall	The SIS sends client data to its peer in a DATA S_PDU.	yes				
 A-0144	Ed4 A.3.1.1	A-15	shall	The DATA S_PDU is encoded per Figures A-2, A-3 and A-4 and the text.	yes				
