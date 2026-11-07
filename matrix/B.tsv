@@ -10,8 +10,8 @@ B-0008	Ed4 B.1 (Changes in This Edition)	B-1	info	Towards peers that do not supp
 B-0009	Ed4 B.2	B-2	info	The CAS to SIS interface implementation is not mandated; a conceptual model is used to describe it	yes				
 B-0010	Ed4 B.2	B-2	shall	The interface lets SIS ask CAS to make or break a physical link with a given node address	yes				
 B-0011	Ed4 B.2	B-2	shall	The interface lets CAS notify SIS of changes in physical link status	yes				
-B-0012	Ed4 B.2	B-2	shall	The interface lets CAS accept S_PDUs from SIS	yes				
-B-0013	Ed4 B.2	B-2	shall	The interface lets CAS deliver S_PDUs to SIS	yes				
+B-0012	Ed4 B.2	B-2	shall	The interface lets CAS accept S_PDUs from SIS	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+B-0013	Ed4 B.2	B-2	shall	The interface lets CAS deliver S_PDUs to SIS	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs	SisCasTests.Received_data_cpdu_is_delivered_to_the_bound_client	
 B-0014	Ed4 B.2	B-2	shall	Control information that SIS passes for CAS management must not be derived from client data or U_PDU contents inside S_PDUs	yes				Client data may be encrypted or in any format
 B-0015	Ed4 B.2	B-2 to B-3	info	CAS does not queue traffic; the DTS queues, and SIS queues in some modes	yes				
 B-0016	Ed4 B.2	B-3	may	The interface may derive CAS control information from S_PDU contents (never from encapsulated U_PDUs); the annex strongly discourages this	yes				Our choice: do not use it; see the following should row
@@ -40,7 +40,7 @@ B-0038	Ed4 B.4	B-6 to B-7	info	Two peer access models exist: Multiple Simultaneo
 B-0039	Ed4 B.4	B-7	shall	Every node on a channel uses the same peer access model	yes				All our nodes use Multiple Simultaneous Peer Access
 B-0040	Ed4 B.4	B-7	info	A profile must state which access model(s) it supports	yes				CSMA Fixed Frequency uses MULTIPLE ACCESS (main Table 2, p.13)
 B-0041	Ed4 B.5	B-7	info	Multiple Simultaneous Peer Access: a node may send to several peers at once over the broadcast channel; channel access is controlled by the MAC (Annex K CSMA or Annex L WTRP)	yes				We use Annex K
-B-0042	Ed4 B.5	B-7	info	In this model CAS hands data for every destination straight to the DTS	yes				
+B-0042	Ed4 B.5	B-7	info	In this model CAS hands data for every destination straight to the DTS	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
 B-0043	Ed4 B.5	B-7	info	Support for this model is optional and signalled by the MULTIPLE ACCESS profile option	yes				Mandatory in our profile (main Table 2, p.13)
 B-0044	Ed4 B.6	B-7	shall	Single Peer Access is used where ALE links the peers	no	Single Peer Access model not used; our profile is MULTIPLE ACCESS (main Table 2, p.13)			
 B-0045	Ed4 B.6	B-7	shall	When ALE mode is used it is configured on all nodes using the channel	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
@@ -110,11 +110,11 @@ B-0108	Ed4 B.7.1	B-14	shall	Unless stated otherwise, a field inside one octet ha
 B-0109	Ed4 B.7.1	B-14	shall	Unless stated otherwise, a field spanning octets has bit significance falling as octet number rises, with the lowest-numbered bit as the least significant bit (CCITT V.42 8.1.2.3)	yes				
 B-0110	Ed4 B.7.1	B-14	shall	Unless stated otherwise, NOT USED bit-fields are encoded as 0	yes				
 B-0111	Ed4 B.7.1.1, Figure B-1	B-14	info	DATA C_PDU layout: octet 0 bits 7 to 4 Type = 0, bits 3 to 0 not used; the S_PDU follows from octet 1	yes				
-B-0112	Ed4 B.7.1.1	B-15	shall	A DATA C_PDU carries one S_PDU to the peer node	yes				
-B-0113	Ed4 B.7.1.1	B-15	shall	The DATA C_PDU Type goes in the first 4-bit field and its value is 0	yes				
-B-0114	Ed4 B.7.1.1	B-15	shall	After the first octet, the DATA C_PDU holds the S_PDU and nothing else	yes				
-B-0115	Ed4 B.7.1.1	B-15	shall	A DATA C_PDU is sent with the lower sublayer's normal (not expedited) data delivery service	yes				Ed1 allowed expedited; Ed4 deprecates EXPEDITED DATA (main Table 1)
-B-0116	Ed4 B.7.1.1	B-15	shall	The DATA C_PDU gets the same delivery mode (ARQ or non-ARQ etc.) that SIS gave the S_PDU it carries	yes				
+B-0112	Ed4 B.7.1.1	B-15	shall	A DATA C_PDU carries one S_PDU to the peer node	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+B-0113	Ed4 B.7.1.1	B-15	shall	The DATA C_PDU Type goes in the first 4-bit field and its value is 0	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+B-0114	Ed4 B.7.1.1	B-15	shall	After the first octet, the DATA C_PDU holds the S_PDU and nothing else	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+B-0115	Ed4 B.7.1.1	B-15	shall	A DATA C_PDU is sent with the lower sublayer's normal (not expedited) data delivery service	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	Ed1 allowed expedited; Ed4 deprecates EXPEDITED DATA (main Table 1)
+B-0116	Ed4 B.7.1.1	B-15	shall	The DATA C_PDU gets the same delivery mode (ARQ or non-ARQ etc.) that SIS gave the S_PDU it carries	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
 B-0117	Ed4 B.7.1.2, Figure B-2	B-15	info	PHYSICAL LINK REQUEST layout, one octet: bits 7 to 4 Type = 1, bit 3 not used, bit 2 Short, bit 1 Ed4, bit 0 LINK	yes				
 B-0118	Ed4 B.7.1.2	B-15	shall	CAS sends a PHYSICAL LINK REQUEST to ask for a physical link to be made	yes				
 B-0119	Ed4 B.7.1.2	B-16	shall	The PHYSICAL LINK REQUEST is made up of the Type and LINK arguments	yes				Figure B-2 adds the Ed4 and Short bits; see interp row on argument lists
@@ -295,8 +295,8 @@ B-0293	Ed4 B.7.2.9	B-37	may	A receiver that kept CAS-1 state may accept with PHY
 B-0294	Ed4 B.7.2.9	B-37	may	A receiver may reject with PHYSICAL LINK RESUME REJECT via expedited ARQ, then treat it as a new ALE link	no	C_PDU types 7 to 9 and the resume procedure are ALE-only (B.7.2.9 is for a failed ALE link); ALE not in our profile (main Tables 1, 2)			
 B-0295	Ed4 B.7.2.9	B-38	info	On accept the initiator continues with the kept state; on reject it resets CAS-1 and ARQ state and treats the link as new	no	C_PDU types 7 to 9 and the resume procedure are ALE-only (B.7.2.9 is for a failed ALE link); ALE not in our profile (main Tables 1, 2)			
 B-0296	Ed4 B.7.2.9	B-38	info	A node with kept state whose new ALE link's first data is not PHYSICAL LINK RESUME resets its ARQ state	no	C_PDU types 7 to 9 and the resume procedure are ALE-only (B.7.2.9 is for a failed ALE link); ALE not in our profile (main Tables 1, 2)			
-B-0297	Ed4 B.8	B-38	shall	The sending CAS accepts S_PDUs from SIS, wraps each in a DATA C_PDU (adds the C_PCI) and passes it to the DTS for the peer	yes				
-B-0298	Ed4 B.8	B-38	shall	The receiving CAS takes DATA C_PDUs from the DTS, checks them for validity, removes the C_PCI and delivers the S_PDU to SIS	yes				Validity checks are not stated; see interp row
+B-0297	Ed4 B.8	B-38	shall	The sending CAS accepts S_PDUs from SIS, wraps each in a DATA C_PDU (adds the C_PCI) and passes it to the DTS for the peer	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs	SisCasTests.Non_arq_request_is_wrapped_in_data_cpdu_and_queued_with_its_attributes	
+B-0298	Ed4 B.8	B-38	shall	The receiving CAS takes DATA C_PDUs from the DTS, checks them for validity, removes the C_PCI and delivers the S_PDU to SIS	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs	SisCasTests.Received_data_cpdu_is_delivered_to_the_bound_client	Validity checks are not stated; see interp row
 B-0299	Ed4 B.9	B-38	info	Hard links are optional and deprecated, kept for Ed3 interop and likely to be removed	no	deprecated option HARD LINKS not implemented (main Table 1, p.11; plan 4.3)			
 B-0300	Ed4 B.9.1	B-38 to B-39	info	HARD LINKS profile option is specified by reference to Ed3 Annex A	no	deprecated option HARD LINKS not implemented (main Table 1, p.11; plan 4.3)			Text cites B.3.2, a stale reference
 B-0301	Ed4 B.10	B-39	info	Changes from Ed3: C_CHANNEL_AVAILABILITY removed, C_ errors listed, hard links and expedited data deprecated, Ed4 negotiation added	yes				No behaviour of its own
@@ -323,7 +323,7 @@ B-0321	Ed4 B.7.2.4 p.B-32; B.7.2.8 p.B-35	B-32	interp	Towards Ed3 peers clean cl
 B-0322	Ed4 B.7.2.4 p.B-32	B-32	interp	No limit on the time to reach clean state is given. Our reading: a configurable clean close timeout, after which the node proceeds to B.7.2.8 Step 1 anyway	yes				Proposed; keeps a stalled peer from holding a link open
 B-0323	Ed4 B.7.2.8 pp.B-35 to B-36	B-36	interp	Receipt of a type 4 from a node with no physical link to us is NOT STATED. Our reading: reply with type 5 anyway so the peer stops retrying (our earlier type 5 may have been lost)	yes				
 B-0324	Ed4 B.7.2.8 p.B-35	B-35	interp	Whether a type 4 is sent after D_CONNECTION_LOST is NOT STATED. Our reading: no; the link is declared broken locally, the DTS told with D_CONNECTION_TERMINATED and SIS with C_PHYSICAL_LINK_BROKEN	yes				
-B-0325	Ed4 B.8 p.B-38	B-38	interp	The validity checks on a received DATA C_PDU are NOT STATED. Our reading: Type nibble 0 and at least one S_PDU octet; the low nibble of octet 0 is ignored; anything else is discarded	yes				
+B-0325	Ed4 B.8 p.B-38	B-38	interp	The validity checks on a received DATA C_PDU are NOT STATED. Our reading: Type nibble 0 and at least one S_PDU octet; the low nibble of octet 0 is ignored; anything else is discarded	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs	SisCasTests.Invalid_or_undeliverable_receptions_are_discarded	
 B-0326	Ed4 B.6.2.4	B-9	info	Under 1:1 ALE every ALE connection to a peer comes with a CAS-1 link; in IMPLICIT mode the CAS-1 start-up exchange is not needed	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
 B-0327	Ed4 B.7.1.3	B-17	info	A node never asks for more than one physical link to a given node, so a PHYSICAL LINK ACCEPTED is matched to its request by the address it is sent to	yes				Basis for one link-setup state per peer address
 B-0328	Ed4 B.7.2.5	B-34	info	A peer is expected to end an ALE link only once it is in clean close state	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
