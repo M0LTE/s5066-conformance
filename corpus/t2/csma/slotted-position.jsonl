@@ -1,0 +1,21 @@
+{"scenario": "csma-slotted-position", "rows": ["K-0039", "K-0081", "K-0084", "K-0089", "K-0104", "K-0110", "K-0080"], "source": "Ed4 K.2.2, p.K-4; K.3.2.3, p.K-10", "description": "Slotted mode waits (NODE_SLOT_POSITION - 1) slots when the last transmission was not this node's, makes no PRNG draw, and a run-time change to jitter makes the next round draw.", "config": {"local_address": "0.0.1.2", "address_size": 4, "csma": {"mode": "slotted", "num_cont_slots": 4, "node_slot_position": 3}}, "note": "Conn 1 binds SAP 5 for non-ARQ (service type tx_mode 2, no confirmation) and gets S_BIND_ACCEPTED with MTU 2048 (A-0041, A-0047). The S_UNIDATA_REQUEST is priority 0 to SAP 5 at 0.0.1.3, DELIVERY MODE default, TTL 0, U_PDU \"hello\"; it asks for no confirmation, so it produces no SIS output (A-0095), and it is data queued for transmission (K-0096). Position 3 of 4 slots of 3000 ms: (3 - 1) x 3000 = 6000 ms (K-0081). The node has not transmitted, so the last transmission is never its own (K-0086). Slotted mode never draws, so after the change to jitter at 66000 the first csma.jitter draw of seed 0 is made: uniform(4) for seed 0 is 3 (0xe220a8397b1dcdaf mod 4), 9000 ms. A changed csma.mode applies to the next contention computation (core-architecture.md 7.3)."}
+{"t": 0, "in": "sis_connect", "conn": 1}
+{"t": 0, "in": "sis_bytes", "conn": 1, "bytes": "90eb00000401502000"}
+{"out": "sis_bytes", "conn": 1, "bytes": "90eb00000403500800"}
+{"t": 0, "in": "sis_bytes", "conn": 1, "bytes": "90eb0000111405e000010300000000000568656c6c6f"}
+{"out": "timer_start", "name": "csma.lbt_wait", "ms": 30000}
+{"t": 30000, "in": "timer_expired", "name": "csma.lbt_wait"}
+{"out": "timer_start", "name": "csma.cont_wait", "ms": 6000}
+{"t": 33000, "in": "burst_started"}
+{"out": "timer_cancel", "name": "csma.cont_wait"}
+{"t": 35000, "in": "burst_ended", "reason": "eom", "wn": 2, "interleaver": "long", "k": 7, "snr_tenth_db": 100, "blocks": 1}
+{"out": "timer_start", "name": "csma.lbt_wait", "ms": 30000}
+{"t": 65000, "in": "timer_expired", "name": "csma.lbt_wait"}
+{"out": "timer_start", "name": "csma.cont_wait", "ms": 6000}
+{"t": 66000, "in": "config", "set": {"csma": {"mode": "jitter"}}}
+{"t": 66000, "in": "burst_started"}
+{"out": "timer_cancel", "name": "csma.cont_wait"}
+{"t": 67000, "in": "burst_ended", "reason": "eom", "wn": 2, "interleaver": "long", "k": 7, "snr_tenth_db": 100, "blocks": 1}
+{"out": "timer_start", "name": "csma.lbt_wait", "ms": 30000}
+{"t": 97000, "in": "timer_expired", "name": "csma.lbt_wait"}
+{"out": "timer_start", "name": "csma.cont_wait", "ms": 9000}
