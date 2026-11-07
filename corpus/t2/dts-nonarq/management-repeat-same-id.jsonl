@@ -1,0 +1,22 @@
+{"scenario":"dts-nonarq-management-repeat-same-id","rows":["C-0296","C-0313","C-0314","C-0315","C-0316","C-1014","C-1015","C-1016","C-1074","C-0920","C-0921","C-1071","C-0919","C-0644","C-0604","C-0584","K-0067","K-0068","K-0080"],"source":"Ed4 C.4.10, pp.C-44 to C-45; C.7.6.1, p.C-118","description":"A repeated MANAGEMENT D_PDU (same frame ID) is acknowledged again but not acted on again; copies received while an acknowledgement is still queued add nothing.","config":{"local_address":"0.0.1.2","address_size":4,"csma":{"mode":"jitter"},"modem":{"preamble_ms":600,"flush_ms":150,"waveforms":[{"wn":2,"interleaver":"long","block_bytes":256,"block_ms":4800}]}},"note":"Conn 1 binds SAP 5 for non-ARQ (service type tx_mode 2, no confirmation) and gets S_BIND_ACCEPTED with MTU 2048 (A-0041, A-0047). Every MANAGEMENT D_PDU here is type 6 from 0.0.1.3 to 0.0.1.2, address size 4, EOT 10, VALID MESSAGE 1, ACK 0, frame ID 5, carrying EOW 0x158: ED3-BASIC-RATE (data rate 5, 2400 bps; interleaving 2, long; other parameters 0, a DRC request), an Ed3 stop/start data rate change request (C-0919). Burst 1, D_PDU at 2000 (end 7000): new (C-0315), so it is acknowledged and, as the procedure is not supported, refused with a WARNING reason 3, RECEIVED FRAME TYPE 6 (C-0920, C-0921, C-1071). Burst end 3000: csma.vdcd_end 4000; 7000: rule 1, CONT_WAIT 45000 (first draw of seed 0, slot 15); 52000: the acknowledgement (type 6, ACK 1, VALID MESSAGE 0, frame ID 5, EOW 0) then the WARNING (type 15), both EOT 10, one block, duration 5550. Burst 2 at 67550, D_PDUs at 68550 (end 73550): two copies of the same frame. The first equals RX MANAGEMENT FRAME ID, so it is a repeat (C-0316, C-1016): acknowledged again (C-0296), no WARNING; the second finds that acknowledgement still queued and adds nothing (C-1074). Burst end 69550: csma.vdcd_end 4000; at 73550 rule 1 again (the last transmission was received and addressed only to this node), CONT_WAIT with the second draw of seed 0, slot 4, 12000 ms; then one acknowledgement alone."}
+{"t":0,"in":"sis_connect","conn":1}
+{"t":0,"in":"sis_bytes","conn":1,"bytes":"90eb00000401502000"}
+{"out":"sis_bytes","conn":1,"bytes":"90eb00000403500800"}
+{"t":1000,"in":"burst_started"}
+{"t":2000,"in":"bytes_received","bytes":"90eb61580a88010201030205eb3f"}
+{"t":3000,"in":"burst_ended","reason":"eom","wn":2,"interleaver":"long","k":7,"snr_tenth_db":60,"blocks":1}
+{"out":"timer_start","name":"csma.vdcd_end","ms":4000}
+{"t":7000,"in":"timer_expired","name":"csma.vdcd_end"}
+{"out":"timer_start","name":"csma.cont_wait","ms":45000}
+{"t":52000,"in":"timer_expired","name":"csma.cont_wait"}
+{"out":"transmit","bytes":"90eb60000a88010301020105b40990ebf0000a870103010263fc3e","wn":2,"interleaver":"long","k":7,"eom":true}
+{"t":57550,"in":"transmit_done"}
+{"t":67550,"in":"burst_started"}
+{"t":68550,"in":"bytes_received","bytes":"90eb61580a88010201030205eb3f90eb61580a88010201030205eb3f"}
+{"t":69550,"in":"burst_ended","reason":"eom","wn":2,"interleaver":"long","k":7,"snr_tenth_db":60,"blocks":1}
+{"out":"timer_start","name":"csma.vdcd_end","ms":4000}
+{"t":73550,"in":"timer_expired","name":"csma.vdcd_end"}
+{"out":"timer_start","name":"csma.cont_wait","ms":12000}
+{"t":85550,"in":"timer_expired","name":"csma.cont_wait"}
+{"out":"transmit","bytes":"90eb60000a88010301020105b409","wn":2,"interleaver":"long","k":7,"eom":true}
+{"t":91100,"in":"transmit_done"}
