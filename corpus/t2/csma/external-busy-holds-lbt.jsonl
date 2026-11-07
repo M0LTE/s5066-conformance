@@ -1,0 +1,15 @@
+{"scenario": "csma-external-busy-holds-lbt", "rows": ["K-0006", "K-0073", "K-0066", "K-0070", "K-0075", "K-0077", "K-0087", "K-0120", "K-0079", "K-0080", "K-0084", "K-0096", "C-1050"], "source": "Ed4 K.1, p.K-1; K.3.2.2, p.K-9; K.3.2.3, Table 3, p.K-10", "description": "The external busy input is ORed into DCD: in LBT_WAIT it holds LBT_WAIT_TIMER like a burst, the channel is idle only once both the external input and DCD have cleared, and an idle the external input delays is DCD-determined, so the held timer restarts with lbt_wait_dcd_ms.", "config": {"local_address": "0.0.1.2", "csma": {"mode": "jitter"}}, "note": "Conn 1 binds SAP 5 for non-ARQ and gets S_BIND_ACCEPTED (A-0041, A-0047); its S_UNIDATA_REQUEST (priority 0 to SAP 5 at 0.0.1.3, U_PDU \"hello\", no confirmation) is data queued for transmission and produces no SIS output (A-0095, K-0096). The DTS keeps dts.ttd at the earliest TTD in its transmit queue (C-1050). The channel is idle at 0, no transmission has been heard, so LBT rule 2 gives lbt_wait_dcd_ms, 30000 ms (K-0070). channel_busy true at 10000 is a busy indication (K-0006): csma.lbt_wait is held (K-0077, K-0087). The burst from 11000 to 13000 gives no EOT; its end clears DCD but the external input is still busy, so the channel stays busy (K-0073). The external input clears at 15000, after DCD, so the idle is DCD-determined (K-0006) and the held timer takes lbt_wait_dcd_ms (K-0120). At 45000 its expiry starts CONT_WAIT with the first draw of seed 0, uniform(16) = 15, so 45000 ms (K-0080, prng.md 5)."}
+{"t": 0, "in": "sis_connect", "conn": 1}
+{"t": 0, "in": "sis_bytes", "conn": 1, "bytes": "90eb00000401502000"}
+{"out": "sis_bytes", "conn": 1, "bytes": "90eb00000403500800"}
+{"t": 0, "in": "sis_bytes", "conn": 1, "bytes": "90eb0000111405e000010300000000000568656c6c6f"}
+{"out": "timer_start", "name": "dts.ttd", "ms": 1296000000}
+{"out": "timer_start", "name": "csma.lbt_wait", "ms": 30000}
+{"t": 10000, "in": "channel_busy", "busy": true}
+{"out": "timer_cancel", "name": "csma.lbt_wait"}
+{"t": 11000, "in": "burst_started"}
+{"t": 13000, "in": "burst_ended", "reason": "signal_lost", "wn": 2, "interleaver": "long", "k": 7, "snr_tenth_db": null, "blocks": 0}
+{"t": 15000, "in": "channel_busy", "busy": false}
+{"out": "timer_start", "name": "csma.lbt_wait", "ms": 30000}
+{"t": 45000, "in": "timer_expired", "name": "csma.lbt_wait"}
+{"out": "timer_start", "name": "csma.cont_wait", "ms": 45000}
