@@ -120,4 +120,4 @@ Every place the core draws is registered here, with the matrix row that requires
 
 | Site | Draw | Defined by |
 |---|---|---|
-| `csma.jitter` | `uniform(csma.num_cont_slots)`, the slot count for the contention wait in jitter mode [Ed4 K.3.2.3, p.K-10; plan 7.2] | TODO (matrix row for K.3.2.3) |
+| `csma.jitter` | `uniform(csma.num_cont_slots)`, the slot count for the contention wait in jitter and ed3 mode [Ed4 K.3.2.3, p.K-10; plan 7.2]. One draw per entry into CONT_WAIT, made at the moment of entry, whether that follows a `csma.lbt_wait` expiry or a zero LBT wait within the same input. Slotted mode never draws. It is the only site in phases 3 to 6, so no ordering against other sites arises yet | K-0080, K-0084, K-0107 |

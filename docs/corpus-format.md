@@ -397,9 +397,10 @@ Timer names have the form `<sublayer>.<timer>`, optionally followed by `/<qualif
 
 Each timer name, and each `link_state` state name, is registered in a table in this section by the change that first uses it, with the matrix row that defines it. A trace using an unregistered name is invalid.
 
-| Timer name | Defined by |
-|---|---|
-| (none yet) | |
+| Timer name | Qualifier | Defined by |
+|---|---|---|
+| `csma.lbt_wait` | none | LBT_WAIT_TIMER: started on entry to LBT_WAIT from SENSE with the value of the LBT rules, and with `lbt_wait_dcd_ms` when the channel is idle again after a busy indication in LBT_WAIT or CONT_WAIT; cancelled while the channel is busy (K-0030, K-0066, K-0070, K-0077, K-0087, K-0089) |
+| `csma.cont_wait` | none | CONT_WAIT_TIMER: started on entry to CONT_WAIT with the contention wait; cancelled when the round is lost or the queue empties (K-0031, K-0079 to K-0082, K-0089, K-0091) |
 
 | Link state | Defined by |
 |---|---|
