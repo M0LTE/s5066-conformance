@@ -100,12 +100,13 @@ A kind is added to this table, and to the validator, in the same change that add
 | `dpdu` | Section 3.3 | One whole D_PDU from its first sync byte to its last CRC byte. |
 | `cpdu` | Section 3.5 | One whole CAS C_PDU. |
 | `spdu` | Section 3.6 | One whole SIS peer S_PDU. |
+| `eow` | Section 3.8 | The 12-bit EOW as 2 bytes: the EOW type, then the contents byte. |
+| `address` | Section 3.9 | The m-byte address field. |
+| `speed_interleaver` | `{"interleaver": 0-7, "speed": 0-31}` | The one speed and interleaver byte [Ed4 Figure C-49, p.C-72]: interleaver in bits 7-5, speed in bits 4-0. |
 | `sis_frame` | Section 3.7 | One whole SIS Access Protocol frame, from the first preamble byte to the last body byte. |
 | `sis_stream` | Section 3.7 | A byte stream made of several frames, junk and partial frames, with the events a streaming decoder gives. |
 
 For `crc16` and `crc32`, `register` is the final value of the Annex C shift-register code example after all bytes of `data` [Ed4 C.4.2.8, p.C-18; C.4.2.11, p.C-21], and `bytes` is that register sent least significant byte first [Ed4 pp.C-18, C-22]. These kinds are `encode` only.
-
-Kinds planned for phase 1 and not yet registered: `eow`, `address`, `speed_interleaver`.
 
 ### 3.3 The `dpdu` value
 
@@ -122,7 +123,7 @@ Kinds planned for phase 1 and not yet registered: `eow`, `address`, `speed_inter
 | `address_size` | The size-of-address field m, 1 to 7 [Ed4 C.4.2.4, p.C-13]. It is part of the value because the sender chooses it: leading zero nibbles may be dropped. |
 | `dst`, `src` | Destination and source addresses. Each must fit in 4m bits. The m-byte address field holds the 8m-bit number (dst x 2^(4m)) + src, most significant byte first [Ed4 C.4.2.6, Figures C-4(a) and C-4(b), pp.C-14 to C-15]. |
 | `fields` | The type-specific header fields, below. |
-| `segment` | I and I+C frame types only (0, 2, 4, 7, 8, 9, 11, and 10 or 13 when they carry data): the segmented C_PDU bytes. |
+| `segment` | I and I+C frame types only (0, 2, 4, 7, 8, 9, 11): the segmented C_PDU bytes. Types 10 and 13 never use it (see above and the type 13 row). |
 | `segment_crc_ok` | Present exactly when `segment` is. On decode, whether the CRC-32 matched. Must be `true` in `encode` and `both` cases. |
 
 Not in the value, because they follow from it: the sync bytes, the size-of-header field, the size-of-segment field, and both CRCs. An encoder computes them; a decoder checks them.
@@ -135,28 +136,47 @@ Multi-byte fields (EOW, the type 7 and 8 C_PDU ID split across two places, C_PDU
 - `ed4`: decode as from an Ed4 peer.
 - `ed3`: decode as from an Ed3 peer. Types 9 to 14 are then undefined: `fields` is `{"undefined": true, "type_specific": hex}` holding the bytes between the address field and the header CRC, and there is no `segment`. Any bytes after the header CRC are `trailing_bytes`. Undefined-type cases are `decode` only.
 
-`peer_edition` `any` may only be used when the bytes carry type 0 to 8 or 15.
+`peer_edition` `any` may only be used when the bytes carry type 0 to 8 or 15. Types 9 to 14 use `ed4` (or `ed3` for the undefined reading).
 
-Size-of-header values h (h counts the four fixed bytes, the type-specific part and the header CRC, not the address [Ed4 C.4.2.5, p.C-14]). A value not allowed here is `bad_header_size`:
+Size-of-header values h (h counts the four fixed bytes, the type-specific part and the header CRC, not the address [Ed4 C.4.2.5, p.C-14]). A value outside the range allowed here is `bad_header_size`. Ranges come from the figures (a fixed part plus a variable ack, extension or management field of a stated maximum length, in a 5-bit field):
 
 | Type | Allowed h |
 |---|---|
-| 0, 3 | exactly 9 [Fig C-9, p.C-23; Fig C-19, p.C-36] |
+| 0, 3, 4 | exactly 9 [Fig C-9, p.C-23; Fig C-19, p.C-36; Fig C-21, p.C-40] |
+| 9, 12 | exactly 10 [Fig C-10, p.C-24; Fig C-20, p.C-37] |
 | 7, 8 | exactly 15 [Fig C-24, p.C-46; Fig C-33, p.C-51] |
+| 14 | exactly 6 [Fig C-35, p.C-53] |
 | 15 | exactly 7 [Fig C-36, p.C-54] |
-| 10, `ed4` | at least 10 [Fig C-12, p.C-28] |
-| 9 to 14, `ed3` (undefined) | at least 6, the four fixed bytes and the CRC. The standard gives an undefined type no size; this minimum is ours. |
+| 1, 5 | 7 to 23: 7 plus 0 to 16 ack bytes [Fig C-11, p.C-27; Fig C-22, p.C-42] |
+| 2 | 10 to 26: 10 plus 0 to 16 ack bytes [Fig C-17, p.C-33] |
+| 6 | 8 to 31: 8 plus 0 to 23 extended bytes [Fig C-23, p.C-43] |
+| 10 | 10 to 31 [Fig C-12, p.C-28], and consistent with the ack length (see below) |
+| 11 | 13 to 31: 13 plus 0 to 18 ack bytes [Fig C-18, p.C-34] |
+| 13 | 7 to 31 [Fig C-34, p.C-52] |
+| 9 to 14, `ed3` (undefined) | at least 6, the four fixed bytes and the CRC. The standard gives an undefined type no size; this minimum is ours (C-1021). |
 
-Types 1, 2, 4, 5, 6, and 9 and 11 to 14 under `ed4`, have no registered size yet and cannot appear in a case until a row is added here and in the validator.
+Type 10 has a one-byte ack length aa in the header. With aa up to 21 the ack data sits in the header and h = 10 + aa; with aa over 21 the header has no ack data, h = 10, and aa bytes of ack data follow the header CRC, then a CRC-32 over them [Ed4 C.4.5.5, pp.C-31 to C-32; C-0235]. Any other combination is `bad_header_size`. The value holds `ack_data` (aa is its length, so it is not a field) and, in the long form only, `ack_data_crc_ok`, which must be `true` in `encode` and `both` cases.
 
-Registered `fields` sets (a type not listed here cannot appear in a case until its set is registered):
+Registered `fields` sets (all integers are 0 up to the maximum shown; booleans are `true` or `false`; `hexN` is a hex string of at most N bytes). A type not listed has no fields beyond those here.
 
 | Type | Fields (Annex C figure) |
 |---|---|
-| 0 | `c_pdu_start`, `c_pdu_end`, `deliver_in_order`, `drop_c_pdu`, `tx_win_uwe`, `tx_win_lwe` (booleans), `tx_fsn` (0 to 255) [Ed4 Fig C-9, p.C-23] |
-| 3 | `full_reset_cmnd`, `reset_tx_win_rqst`, `reset_rx_win_cmnd`, `reset_ack` (booleans), `new_rx_lwe` (0 to 255), `reset_frame_id` (0 to 255) [Ed4 Fig C-19, p.C-36] |
-| 7, 8 | `c_pdu_id` (0 to 4095), `deliver_in_order`, `group_address` (booleans), `c_pdu_size`, `c_pdu_segment_offset`, `c_pdu_reception_window` (0 to 65535) [Ed4 Fig C-24, p.C-46; Fig C-33, p.C-51] |
-| 15 | `received_frame_type` (0 to 15), `reason` (0 to 15) [Ed4 Fig C-36, p.C-54] |
+| 0 | `c_pdu_start`, `c_pdu_end`, `deliver_in_order`, `drop_c_pdu`, `tx_win_uwe`, `tx_win_lwe` (booleans), `tx_fsn` (255) [Ed4 Fig C-9, p.C-23] |
+| 9 | as type 0 but `tx_fsn` is 0 to 65535, high byte first [Ed4 Fig C-10, p.C-24; C-0134] |
+| 1, 5 | `rx_lwe` (255), `selective_acks` (hex16) [Ed4 Fig C-11, p.C-27; Fig C-22, p.C-42] |
+| 2 | type 0 flags and `tx_fsn` (255), then `rx_lwe` (255), `selective_acks` (hex16) [Ed4 Fig C-17, p.C-33] |
+| 10 | `rx_lwe` (65535), `encoding` (1), `offset` (127), `ack_data` (hex255), and `ack_data_crc_ok` (boolean) exactly when `ack_data` is over 21 bytes [Ed4 Fig C-12, p.C-28] |
+| 11 | type 0 flags, `tx_fsn` (65535), `rx_lwe` (65535), `encoding` (1), `selective_acks` (hex18) [Ed4 Fig C-18, p.C-34] |
+| 3 | `full_reset_cmnd`, `reset_tx_win_rqst`, `reset_rx_win_cmnd`, `reset_ack` (booleans), `new_rx_lwe` (255), `reset_frame_id` (255) [Ed4 Fig C-19, p.C-36] |
+| 12 | as type 3 but `new_rx_lwe` is 0 to 65535 [Ed4 Fig C-20, p.C-37] |
+| 4 | `c_pdu_start`, `c_pdu_end` (booleans), `c_pdu_id` (15), `tx_fsn` (255) [Ed4 Fig C-21, p.C-40] |
+| 6 | `extended_message`, `valid_message`, `ack` (booleans), `management_frame_id` (255), `extended_data` (hex23) [Ed4 Fig C-23, p.C-43]. The flag is carried as it is on the wire; the codec does not require it to agree with the length of `extended_data` (C-1023) |
+| 7, 8 | `c_pdu_id` (4095), `deliver_in_order`, `group_address` (booleans), `c_pdu_size`, `c_pdu_segment_offset`, `c_pdu_reception_window` (65535) [Ed4 Fig C-24, p.C-46; Fig C-33, p.C-51] |
+| 13 | `extended_type` (255), `extended_header` (hex24): the bytes after the extended type up to the header CRC [Ed4 Fig C-34, p.C-52]. We implement no extended type, so a decoded type 13 is always an unrecognised extension, and the value is its header. Whether data follows the header depends on the extended type, so bytes after the header CRC are not part of the value and are not `trailing_bytes`; a receiver reading a stream resumes the sync search after the header CRC (C-0365). A case with such bytes is `decode` only |
+| 14 | none, `{}` [Ed4 Fig C-35, p.C-53] |
+| 15 | `received_frame_type` (15), `reason` (15) [Ed4 Fig C-36, p.C-54] |
+
+`encoding` is the Encoding bit: 0 bitmap, 1 run length encoding (C-0227, C-0228). Types 1, 2, 5, 10 and 11 carry the acknowledgement bytes opaquely; the bitmap and run-length structure is tested with the selective ARQ work, not here.
 
 D_PDU decode check order. The decoder stops at the first failing step:
 
@@ -167,11 +187,11 @@ D_PDU decode check order. The decoder stops at the first failing step:
 5. Size of header is not allowed for the type under `peer_edition` (the table above): `bad_header_size`.
 6. Fewer bytes than 2 + (size of header) + (size of address): `truncated`.
 7. Header CRC mismatch: `header_crc`.
-8. For a type with a segment, fewer bytes than the header plus the size of segment plus 4: `truncated`.
+8. Type 10 only: the header size is inconsistent with the ack length (section above): `bad_header_size`. Then, for a type with a segment, fewer bytes than the header plus the size of segment plus 4: `truncated`; for a type 10 long form, fewer bytes than the header plus aa plus 4: `truncated`.
 9. A field value the codec cannot represent: `invalid_field`.
-10. Bytes left over: `trailing_bytes`.
+10. Bytes left over: `trailing_bytes`. Type 13 is the exception (the type 13 row above).
 
-Fields marked NOT USED in the standard are not in the value; encoders write them as zero [Ed4 C.4.2, p.C-12]. What a receiver does with a NOT USED bit that is one is NOT STATED. Until an `interp` row decides (ignore it, or `invalid_field`), no case may carry a NOT USED bit set to one, and the validator rejects one that does.
+Fields marked NOT USED in the standard (type 3 and 12 flag byte bits 7-4, type 6 bits 7-3, type 11 Encoding byte bits 6-0) are not in the value; encoders write them as zero [Ed4 C.4.2, p.C-12]. What a receiver does with a NOT USED bit that is one is NOT STATED. Until an `interp` row decides (ignore it, or `invalid_field`), no case may carry a NOT USED bit set to one, and the validator rejects one that does.
 
 ### 3.4 Example
 
@@ -260,6 +280,36 @@ The U_PDU size fields are not in the value; the encoder computes them and the de
 - A bad version or zero size gives its event, then the scan restarts at the byte after the first preamble byte. The bytes that scan passes over give no further event.
 - A deprecated type, an unknown type or a body of the wrong length is reported once the whole body has arrived, and the body is then skipped by its size field. That counts as a whole frame, so junk after it is a new run.
 - A frame that has not fully arrived gives no event. A final lone `90` is held in case it starts a preamble. There is no end-of-input event.
+
+### 3.8 The `eow` value
+
+```json
+{"type": 8, "fields": {"speed": 6, "interleaver": 3}}
+```
+
+`type` is the EOW type 0 to 15 [Ed4 Table C-4, p.C-66], `bytes` is 2 bytes: the type (0 to 15), then the contents byte [Ed4 C.4.2.2, pp.C-12 to C-13; Fig C-45, p.C-67]. In a D_PDU the 12 bits are split across header bytes 0 and 1 (C-0102); that is the `dpdu` kind's job. Fields by type (bit positions are in the contents byte):
+
+| Type | Fields |
+|---|---|
+| 0 EMPTY | none [C.6.1, p.C-68] |
+| 1 ED3-BASIC-RATE | `data_rate` (bits 7-4), `interleaving` (3-2), `other_parameters` (1-0) [Fig C-46, p.C-68] |
+| 3 UNRECOGNIZED-TYPE-ERROR | `unrecognized_eow_type` (bits 3-0) [Fig C-47, p.C-70] |
+| 4 ED3-CAPABILITY | booleans, bit 7 down to bit 0: `drc_capable`, `stanag_4529`, `ms110_75_2400`, `extended_rate`, `full_duplex`, `split_frequency`, `non_arcs_ale`, `arcs` [Table C-8, p.C-71] |
+| 8 MAX-SPEED, 9 LOW-SPEED, 12 SPEED-USED | `speed` (bits 4-0), `interleaver` (bits 7-5) [Fig C-49, p.C-72] |
+| 10 MAX-SEGMENT | `max_segment` (8 bits, in units of 4 bytes) [C.6.7, p.C-74] |
+| 11 SENDER-APPROACH | `eow12_needed` (bit 3), `strategy` (bits 2-1), `fixed` (bit 0) [Fig C-52, p.C-74] |
+| 15 CAPABILITY | `duplex` (bit 1), `ed4` (bit 0) [Fig C-53, p.C-75] |
+| 2, 5, 6, 7, 13, 14 | `contents` (255): not structured by us; treated as unrecognised on receipt (C-0421, C-0411) |
+
+Reserved bits are zero in every case here (C-1020, C-0094): a receiver ignores them. A `decode` of a type above 15 cannot arise from 2 bytes in the corpus; a decoder given a first byte over 15 reports `invalid_field`, and given other than 2 bytes `truncated` or `trailing_bytes`.
+
+### 3.9 The `address` value
+
+```json
+{"address_size": 2, "dst": "0.0.0.5", "src": "0.0.0.100"}
+```
+
+`bytes` is the m-byte address field alone, as in section 3.3. A length of 0, or over 7, is `bad_address_size`. The group flag of types 7 and 8 is a field of those D_PDUs and is not part of this kind (C-0122).
 
 ## 4. T2 scenario traces
 

@@ -38,17 +38,44 @@ ERROR_KINDS = {"truncated", "bad_sync", "header_crc", "bad_header_size",
                "bad_address_size", "trailing_bytes", "invalid_field",
                "bad_version", "bad_size", "unknown_type", "deprecated_type", "bad_length"}
 
-# Registered D_PDU type-specific field sets: name -> (kind, max) where kind is "bool" or "int".
+# Registered D_PDU type-specific field sets: name -> "bool", "hex<N>" (at most N bytes) or a max int.
+_DATA = {"c_pdu_start": "bool", "c_pdu_end": "bool", "deliver_in_order": "bool",
+         "drop_c_pdu": "bool", "tx_win_uwe": "bool", "tx_win_lwe": "bool"}
+_RESET = {"full_reset_cmnd": "bool", "reset_tx_win_rqst": "bool", "reset_rx_win_cmnd": "bool",
+          "reset_ack": "bool"}
 DPDU_FIELDS = {
-    0: {"c_pdu_start": "bool", "c_pdu_end": "bool", "deliver_in_order": "bool",
-        "drop_c_pdu": "bool", "tx_win_uwe": "bool", "tx_win_lwe": "bool", "tx_fsn": 255},
-    3: {"full_reset_cmnd": "bool", "reset_tx_win_rqst": "bool", "reset_rx_win_cmnd": "bool",
-        "reset_ack": "bool", "new_rx_lwe": 255, "reset_frame_id": 255},
+    0: dict(_DATA, tx_fsn=255),
+    1: {"rx_lwe": 255, "selective_acks": "hex16"},
+    2: dict(_DATA, tx_fsn=255, rx_lwe=255, selective_acks="hex16"),
+    3: dict(_RESET, new_rx_lwe=255, reset_frame_id=255),
+    4: {"c_pdu_start": "bool", "c_pdu_end": "bool", "c_pdu_id": 15, "tx_fsn": 255},
+    5: {"rx_lwe": 255, "selective_acks": "hex16"},
+    6: {"extended_message": "bool", "valid_message": "bool", "ack": "bool",
+        "management_frame_id": 255, "extended_data": "hex23"},
     7: {"c_pdu_id": 4095, "deliver_in_order": "bool", "group_address": "bool",
         "c_pdu_size": 65535, "c_pdu_segment_offset": 65535, "c_pdu_reception_window": 65535},
+    9: dict(_DATA, tx_fsn=65535),
+    10: {"rx_lwe": 65535, "encoding": 1, "offset": 127, "ack_data": "hex255"},  # + ack_data_crc_ok when long
+    11: dict(_DATA, tx_fsn=65535, rx_lwe=65535, encoding=1, selective_acks="hex18"),
+    12: dict(_RESET, new_rx_lwe=65535, reset_frame_id=255),
+    13: {"extended_type": 255, "extended_header": "hex24"},
+    14: {},
     15: {"received_frame_type": 15, "reason": 15},
 }
 DPDU_FIELDS[8] = DPDU_FIELDS[7]
+
+# EOW (corpus-format.md section 3.8): type -> field spec; types not listed carry only "contents".
+EOW_FIELDS = {
+    0: {}, 1: {"data_rate": 15, "interleaving": 3, "other_parameters": 3},
+    3: {"unrecognized_eow_type": 15},
+    4: {n: "bool" for n in ("drc_capable", "stanag_4529", "ms110_75_2400", "extended_rate",
+                            "full_duplex", "split_frequency", "non_arcs_ale", "arcs")},
+    8: {"speed": 31, "interleaver": 7}, 9: {"speed": 31, "interleaver": 7},
+    10: {"max_segment": 255}, 11: {"eow12_needed": "bool", "strategy": 3, "fixed": "bool"},
+    12: {"speed": 31, "interleaver": 7}, 15: {"duplex": "bool", "ed4": "bool"},
+}
+EOW_CAP = ("drc_capable", "stanag_4529", "ms110_75_2400", "extended_rate",
+           "full_duplex", "split_frequency", "non_arcs_ale", "arcs")
 
 # T2 inputs: name -> (class, {key: type}).
 T2_INPUTS = {
@@ -274,6 +301,8 @@ def check_t1(path, err, ctx):
             check_crc_case(err, where, c, b, kind)
         elif kind == "dpdu":
             check_dpdu_case(err, where, c, b)
+        elif kind in ("eow", "address", "speed_interleaver"):
+            check_small_case(err, where, c, b, kind)
         elif kind in ("sis_frame", "sis_stream"):
             check_sis_case(err, where, c, b, kind)
         elif kind in ("cpdu", "spdu"):
@@ -502,14 +531,22 @@ def check_crc_case(err, where, c, b, kind):
         err.add(where, "bytes must be the register least significant byte first")
 
 
-# Size-of-header field h (corpus-format.md section 3.3): fixed values, and minimums.
-DPDU_FIXED_H = {0: 9, 3: 9, 7: 15, 8: 15, 15: 7}
-DPDU_ED4_MIN_H = {10: 10}
+# Size-of-header field h (corpus-format.md section 3.3): (minimum, maximum) per type.
+DPDU_H = {0: (9, 9), 1: (7, 23), 2: (10, 26), 3: (9, 9), 4: (9, 9), 5: (7, 23), 6: (8, 31),
+          7: (15, 15), 8: (15, 15), 9: (10, 10), 10: (10, 31), 11: (13, 31), 12: (10, 10),
+          13: (7, 31), 14: (6, 6), 15: (7, 7)}
 UNDEFINED_MIN_H = 6
+SEG_TYPES = {0, 2, 4, 7, 8, 9, 11}
 
 
 def dotted(a):
     return "%d.%d.%d.%d" % ((a >> 24) & 15, (a >> 16) & 255, (a >> 8) & 255, a & 255)
+
+
+def _data_flags(x, n_lo):
+    return {"c_pdu_start": bool(x & 0x80), "c_pdu_end": bool(x & 0x40),
+            "deliver_in_order": bool(x & 0x20), "drop_c_pdu": bool(x & 0x10),
+            "tx_win_uwe": bool(x & 8), "tx_win_lwe": bool(x & 4)}, ((x & 3) << 8) | n_lo
 
 
 def ref_decode(b, peer):
@@ -526,14 +563,12 @@ def ref_decode(b, peer):
     if m == 0:
         return "error", "bad_address_size"
     undefined = peer == "ed3" and t in ED4_ONLY_TYPES
+    if peer == "any" and t in ED4_ONLY_TYPES:
+        return "unsupported", "type %d is not valid under peer_edition any" % t
     if undefined:
         ok = h >= UNDEFINED_MIN_H
-    elif peer == "ed4" and t in DPDU_ED4_MIN_H:
-        ok = h >= DPDU_ED4_MIN_H[t]
-    elif t in DPDU_FIXED_H and not (peer == "any" and t in ED4_ONLY_TYPES):
-        ok = h == DPDU_FIXED_H[t]
     else:
-        return "unsupported", "no registered header size for type %d under %s" % (t, peer)
+        ok = DPDU_H[t][0] <= h <= DPDU_H[t][1]
     if not ok:
         return "error", "bad_header_size"
     end = 2 + h + m
@@ -547,33 +582,85 @@ def ref_decode(b, peer):
     ts = b[6 + m:end - 2]
     rest = b[end:]
     n = None
+    long_ack = None
+    f = {}
     if undefined:
-        v["fields"] = {"undefined": True, "type_specific": ts.hex()}
-    elif t == 0:
-        x = ts[0]
-        v["fields"] = {"c_pdu_start": bool(x & 0x80), "c_pdu_end": bool(x & 0x40),
-                       "deliver_in_order": bool(x & 0x20), "drop_c_pdu": bool(x & 0x10),
-                       "tx_win_uwe": bool(x & 8), "tx_win_lwe": bool(x & 4), "tx_fsn": ts[2]}
-        n = ((x & 3) << 8) | ts[1]
-    elif t == 3:
+        f = {"undefined": True, "type_specific": ts.hex()}
+    elif t in (0, 9, 2, 11):
+        f, n = _data_flags(ts[0], ts[1])
+        if t == 0:
+            f["tx_fsn"] = ts[2]
+        elif t == 9:
+            f["tx_fsn"] = int.from_bytes(ts[2:4], "big")
+        elif t == 2:
+            f["tx_fsn"] = ts[2]
+            f["rx_lwe"] = ts[3]
+            f["selective_acks"] = ts[4:].hex()
+        else:
+            f["tx_fsn"] = int.from_bytes(ts[2:4], "big")
+            f["rx_lwe"] = int.from_bytes(ts[4:6], "big")
+            if ts[6] & 0x7F:
+                return "unsupported", "NOT USED bits set (corpus-format.md section 3.3)"
+            f["encoding"] = ts[6] >> 7
+            f["selective_acks"] = ts[7:].hex()
+    elif t in (1, 5):
+        f = {"rx_lwe": ts[0], "selective_acks": ts[1:].hex()}
+    elif t in (3, 12):
         if ts[0] & 0xF0:
             return "unsupported", "NOT USED bits set (corpus-format.md section 3.3)"
         x = ts[0]
-        v["fields"] = {"full_reset_cmnd": bool(x & 8), "reset_tx_win_rqst": bool(x & 4),
-                       "reset_rx_win_cmnd": bool(x & 2), "reset_ack": bool(x & 1),
-                       "new_rx_lwe": ts[1], "reset_frame_id": ts[2]}
+        f = {"full_reset_cmnd": bool(x & 8), "reset_tx_win_rqst": bool(x & 4),
+             "reset_rx_win_cmnd": bool(x & 2), "reset_ack": bool(x & 1)}
+        if t == 3:
+            f.update(new_rx_lwe=ts[1], reset_frame_id=ts[2])
+        else:
+            f.update(new_rx_lwe=int.from_bytes(ts[1:3], "big"), reset_frame_id=ts[3])
+    elif t == 4:
+        x = ts[0]
+        f = {"c_pdu_start": bool(x & 0x80), "c_pdu_end": bool(x & 0x40),
+             "c_pdu_id": (x >> 2) & 15, "tx_fsn": ts[2]}
+        n = ((x & 3) << 8) | ts[1]
+    elif t == 6:
+        if ts[0] & 0xF8:
+            return "unsupported", "NOT USED bits set (corpus-format.md section 3.3)"
+        f = {"extended_message": bool(ts[0] & 4), "valid_message": bool(ts[0] & 2),
+             "ack": bool(ts[0] & 1), "management_frame_id": ts[1], "extended_data": ts[2:].hex()}
     elif t in (7, 8):
         x = ts[0]
-        v["fields"] = {"c_pdu_id": ((x >> 4) << 8) | ts[2], "deliver_in_order": bool(x & 8),
-                       "group_address": bool(x & 4),
-                       "c_pdu_size": int.from_bytes(ts[3:5], "big"),
-                       "c_pdu_segment_offset": int.from_bytes(ts[5:7], "big"),
-                       "c_pdu_reception_window": int.from_bytes(ts[7:9], "big")}
+        f = {"c_pdu_id": ((x >> 4) << 8) | ts[2], "deliver_in_order": bool(x & 8),
+             "group_address": bool(x & 4),
+             "c_pdu_size": int.from_bytes(ts[3:5], "big"),
+             "c_pdu_segment_offset": int.from_bytes(ts[5:7], "big"),
+             "c_pdu_reception_window": int.from_bytes(ts[7:9], "big")}
         n = ((x & 3) << 8) | ts[1]
+    elif t == 10:
+        aa = ts[3]
+        f = {"rx_lwe": int.from_bytes(ts[0:2], "big"), "encoding": ts[2] >> 7, "offset": ts[2] & 127}
+        if aa <= 21:
+            if len(ts) != 4 + aa:
+                return "error", "bad_header_size"
+            f["ack_data"] = ts[4:].hex()
+        else:
+            if len(ts) != 4:
+                return "error", "bad_header_size"
+            long_ack = aa
+    elif t == 13:
+        # No extended type is implemented, so every one is unrecognised and its format after the
+        # header CRC is unknown: the value is the header only, and later bytes are not reported (C-0365).
+        f = {"extended_type": ts[0], "extended_header": ts[1:].hex()}
+        rest = b""
+    elif t == 14:
+        f = {}
     elif t == 15:
-        v["fields"] = {"received_frame_type": ts[0] >> 4, "reason": ts[0] & 15}
-    else:
-        return "unsupported", "no registered field set for type %d" % t
+        f = {"received_frame_type": ts[0] >> 4, "reason": ts[0] & 15}
+    v["fields"] = f
+    if long_ack is not None:
+        if len(rest) < long_ack + 4:
+            return "error", "truncated"
+        ack = rest[:long_ack]
+        f["ack_data"] = ack.hex()
+        f["ack_data_crc_ok"] = crc(ack, 0xF3A4E550) == int.from_bytes(rest[long_ack:long_ack + 4], "little")
+        rest = rest[long_ack + 4:]
     if n is not None:
         if len(rest) < n + 4:
             return "error", "truncated"
@@ -584,6 +671,102 @@ def ref_decode(b, peer):
     if rest:
         return "error", "trailing_bytes"
     return "value", v
+
+
+def ref_decode_small(b, kind):
+    if kind == "address":
+        m = len(b)
+        if m < 1 or m > 7:
+            return "error", "bad_address_size"
+        a = int.from_bytes(b, "big")
+        return "value", {"address_size": m, "dst": dotted(a >> (4 * m)),
+                         "src": dotted(a & ((1 << (4 * m)) - 1))}
+    if kind == "speed_interleaver":
+        if len(b) != 1:
+            return "error", "truncated" if len(b) < 1 else "trailing_bytes"
+        return "value", {"interleaver": b[0] >> 5, "speed": b[0] & 31}
+    if len(b) < 2:
+        return "error", "truncated"
+    if len(b) > 2:
+        return "error", "trailing_bytes"
+    if b[0] > 15:
+        return "error", "invalid_field"
+    t, c = b[0], b[1]
+    if t == 0:
+        f = {}
+    elif t == 1:
+        f = {"data_rate": c >> 4, "interleaving": (c >> 2) & 3, "other_parameters": c & 3}
+    elif t == 3:
+        f = {"unrecognized_eow_type": c & 15}
+    elif t == 4:
+        f = {n: bool(c & (0x80 >> k)) for k, n in enumerate(EOW_CAP)}
+    elif t in (8, 9, 12):
+        f = {"speed": c & 31, "interleaver": c >> 5}
+    elif t == 10:
+        f = {"max_segment": c}
+    elif t == 11:
+        f = {"eow12_needed": bool(c & 8), "strategy": (c >> 1) & 3, "fixed": bool(c & 1)}
+    elif t == 15:
+        f = {"duplex": bool(c & 2), "ed4": bool(c & 1)}
+    else:
+        f = {"contents": c}
+    return "value", {"type": t, "fields": f}
+
+
+def hex_ok(v, nmax):
+    return is_hex(v) and len(v) // 2 <= nmax
+
+
+def check_spec(err, where, f, spec):
+    for k, kt in spec.items():
+        if k not in f:
+            continue
+        if kt == "bool":
+            ok = isinstance(f[k], bool)
+        elif isinstance(kt, str):
+            ok = hex_ok(f[k], int(kt[3:]))
+        else:
+            ok = is_int(f[k], 0, kt)
+        if not ok:
+            err.add(where, "field %s has a bad value" % k)
+
+
+def check_small_case(err, where, c, b, kind):
+    if "peer_edition" in c:
+        err.add(where, "peer_edition is only for dpdu")
+    res, out = ref_decode_small(b, kind)
+    if "error" in c:
+        if res != "error" or out != c["error"]:
+            err.add(where, "reference decode gives %s, case says error %s"
+                    % (out if res == "error" else "a value", c["error"]))
+        return
+    v = c["value"]
+    if kind == "address":
+        check_keys(err, where, v, ("address_size", "dst", "src"))
+        m = v.get("address_size")
+        if not is_int(m, 1, 7):
+            err.add(where, "address_size must be 1 to 7")
+            return
+        for k in ("dst", "src"):
+            a = addr_value(v.get(k))
+            if a is None or a >= 1 << (4 * m):
+                err.add(where, "%s must be a dotted address that fits address_size" % k)
+    elif kind == "speed_interleaver":
+        check_keys(err, where, v, ("interleaver", "speed"))
+        check_spec(err, where, v, {"interleaver": 7, "speed": 31})
+    else:
+        check_keys(err, where, v, ("type", "fields"))
+        t = v.get("type")
+        if not is_int(t, 0, 15) or not isinstance(v.get("fields"), dict):
+            err.add(where, "eow needs type 0 to 15 and fields")
+            return
+        spec = EOW_FIELDS.get(t, {"contents": 255})
+        check_keys(err, where, v["fields"], tuple(spec))
+        check_spec(err, where, v["fields"], spec)
+    if res == "error":
+        err.add(where, "bytes decode to error %s" % out)
+    elif out != v:
+        err.add(where, "value disagrees with the bytes")
 
 
 def check_dpdu_case(err, where, c, b):
@@ -620,7 +803,7 @@ def check_dpdu_value(err, where, c, peer):
         err.add(where, "type must be 0 to 15")
         return
     undefined = peer == "ed3" and t in ED4_ONLY_TYPES
-    has_seg = (t in IFRAME_TYPES) and not undefined
+    has_seg = (t in SEG_TYPES) and not undefined
     req = ["type", "eow", "eot", "address_size", "dst", "src", "fields"]
     if has_seg:
         req += ["segment", "segment_crc_ok"]
@@ -652,12 +835,14 @@ def check_dpdu_value(err, where, c, peer):
         if spec is None:
             err.add(where, "no registered field set for type %d" % t)
         else:
-            check_keys(err, where, f, tuple(spec))
-            for k, kt in spec.items():
-                if k in f:
-                    ok = isinstance(f[k], bool) if kt == "bool" else is_int(f[k], 0, kt)
-                    if not ok:
-                        err.add(where, "field %s has a bad value" % k)
+            ack = f.get("ack_data")
+            long_form = t == 10 and isinstance(ack, str) and len(ack) // 2 > 21
+            check_keys(err, where, f, tuple(spec) + (("ack_data_crc_ok",) if long_form else ()))
+            check_spec(err, where, f, spec)
+            if long_form and not isinstance(f.get("ack_data_crc_ok"), bool):
+                err.add(where, "ack_data_crc_ok must be a boolean")
+            elif long_form and not f["ack_data_crc_ok"] and c.get("dir") != "decode":
+                err.add(where, "ack_data_crc_ok false is only allowed in decode cases")
     if has_seg:
         if not is_hex(v.get("segment")) or len(v.get("segment", "")) // 2 > 1023:
             err.add(where, "segment must be hex of at most 1023 bytes")
