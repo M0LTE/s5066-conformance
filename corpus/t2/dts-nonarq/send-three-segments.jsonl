@@ -1,0 +1,13 @@
+{"scenario":"dts-nonarq-send-three-segments","rows":["C-0522","C-0523","C-0525","C-0526","C-0527","C-0528","C-0529","C-0324","C-0325","C-0326","C-0342","C-0343","C-0346","C-0347","C-0350","C-0352","C-0549","C-0575","C-0595","C-1043","C-1040","C-1050"],"source":"Ed4 C.5.2, p.C-61 to C-62; C.4.11, p.C-46 to C-50","description":"A C_PDU larger than dts.max_segment_size goes out as three type 7 D_PDUs with one C_PDU ID, offsets 0, 8 and 16, in one transmission.","config":{"local_address":"0.0.1.2","address_size":4,"csma":{"mode":"jitter"},"modem":{"preamble_ms":600,"flush_ms":150,"waveforms":[{"wn":2,"interleaver":"long","block_bytes":64,"block_ms":4800}]},"dts":{"max_segment_size":8}},"note":"Conn 1 binds SAP 5 for non-ARQ. The U_PDU \u0022segment-me-now\u0022 (14 bytes, priority 0, TTL 0 so TTD = 1296000000 ms, A-0089, A-0091) makes a 20-byte DATA C_PDU (B-0297). The DTS queues it and starts dts.ttd at its TTD (C-0857, C-0864, C-1050); the MAC starts csma.lbt_wait 30000 (K-0070). dts.max_segment_size is 8, so the C_PDU is cut, when the transmission first places it, into segments of 8, 8 and 4 bytes (C-0523, C-0525, C-0529, C-0549), every one with C_PDU ID 0 (C-0326, C-0527, C-1040), C_PDU size 20 (C-0343) and offsets 0, 8 and 16 (C-0346, C-0347, C-0528, C-0529). Seed 0 draws slot 15, cont wait 45000 (K-0080). Fixture: 64-byte blocks of 4800 ms, preamble 600, flush 150. The D_PDUs are 33, 33 and 29 bytes, so the third starts in block 1; the burst is 95 bytes, two blocks, 10350 ms. EOT = ceil((duration - block start) / 500): 20, 20, 10 (C-0104, C-1043); every copy is in this transmission, so each reception window equals its EOT (C-0350, C-0352). Placing the last of the C_PDU empties the queue, so dts.ttd is cancelled before the transmit output (C-1050)."}
+{"t":0,"in":"sis_connect","conn":1}
+{"t":0,"in":"sis_bytes","conn":1,"bytes":"90eb00000401502000"}
+{"out":"sis_bytes","conn":1,"bytes":"90eb00000403500800"}
+{"t":0,"in":"sis_bytes","conn":1,"bytes":"90eb00001a1405e000010300000000000e7365676d656e742d6d652d6e6f77"}
+{"out":"timer_start","name":"dts.ttd","ms":1296000000}
+{"out":"timer_start","name":"csma.lbt_wait","ms":30000}
+{"t":30000,"in":"timer_expired","name":"csma.lbt_wait"}
+{"out":"timer_start","name":"csma.cont_wait","ms":45000}
+{"t":75000,"in":"timer_expired","name":"csma.cont_wait"}
+{"out":"timer_cancel","name":"dts.ttd"}
+{"out":"transmit","bytes":"90eb7000148f010301020008000014000000146ae4000055400000736530edbac090eb7000148f01030102000800001400080014f7f3676d656e742d6d65e4f53ea290eb70000a8f0103010200040000140010000a7b8a2d6e6f77eff77581","wn":2,"interleaver":"long","k":7,"eom":true}
+{"t":85350,"in":"transmit_done"}

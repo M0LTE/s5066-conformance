@@ -1,0 +1,20 @@
+{"scenario":"dts-nonarq-ttl-expired-dropped","rows":["A-0084","A-0085","A-0089","C-0856","C-0857","C-0859","C-0864","C-0326","C-1040","C-1050","K-0077","K-0087"],"source":"Ed4 C.7.5.2.2, p.C-111 to C-112; A.2.2.6, p.A-9","description":"A queued non-ARQ C_PDU whose TTL expires before it is sent is dropped at its TTD; the next one is still sent, and takes C_PDU ID 0.","config":{"local_address":"0.0.1.2","address_size":4,"csma":{"mode":"jitter"},"modem":{"preamble_ms":600,"flush_ms":150,"waveforms":[{"wn":2,"interleaver":"long","block_bytes":256,"block_ms":4800}]}},"note":"Conn 1 binds SAP 5 for non-ARQ. At 0 it sends \u0022first\u0022 with TTL 1 (2 s, so TTD 2000, A-0089) and then \u0022second\u0022 with TTL 0 (TTD 1296000000). The DTS keeps one dts.ttd timer at the earliest TTD of the queue (C-1050): started at 2000 ms for the first request; the second\u0027s TTD is later, so no output. The MAC starts csma.lbt_wait 30000. Another station\u0027s burst starts at 1000 (no D_PDU decoded): the LBT timer is cancelled while busy (K-0077, K-0087). At 2000 dts.ttd expires: the first C_PDU\u0027s TTL has expired, so it is dropped and never transmitted (C-0857, C-0864) and rejected to the CAS with reason TTL expired (C-0859, C-1050), which produces no SIS output because the client asked for no confirmation (A-0105). dts.ttd restarts for the second C_PDU\u0027s TTD, 1295998000 ms later. The burst ends at 5000 and LBT restarts with lbt_wait_dcd_ms 30000; seed 0 draws slot 15 (45000). At 80000 the second C_PDU goes out alone as one type 7 D_PDU with C_PDU ID 0: IDs are given when a C_PDU is first placed, so the dropped one used none (C-0326, C-1040). Placing it empties the queue, so dts.ttd is cancelled first. Duration 5550 ms, EOT and window 10."}
+{"t":0,"in":"sis_connect","conn":1}
+{"t":0,"in":"sis_bytes","conn":1,"bytes":"90eb00000401502000"}
+{"out":"sis_bytes","conn":1,"bytes":"90eb00000403500800"}
+{"t":0,"in":"sis_bytes","conn":1,"bytes":"90eb0000111405e00001030000000100056669727374"}
+{"out":"timer_start","name":"dts.ttd","ms":2000}
+{"out":"timer_start","name":"csma.lbt_wait","ms":30000}
+{"t":0,"in":"sis_bytes","conn":1,"bytes":"90eb0000121405e00001030000000000067365636f6e64"}
+{"t":1000,"in":"burst_started"}
+{"out":"timer_cancel","name":"csma.lbt_wait"}
+{"t":2000,"in":"timer_expired","name":"dts.ttd"}
+{"out":"timer_start","name":"dts.ttd","ms":1295998000}
+{"t":5000,"in":"burst_ended","reason":"eom","wn":2,"interleaver":"long","k":7,"snr_tenth_db":null,"blocks":0}
+{"out":"timer_start","name":"csma.lbt_wait","ms":30000}
+{"t":35000,"in":"timer_expired","name":"csma.lbt_wait"}
+{"out":"timer_start","name":"csma.cont_wait","ms":45000}
+{"t":80000,"in":"timer_expired","name":"csma.cont_wait"}
+{"out":"timer_cancel","name":"dts.ttd"}
+{"out":"transmit","bytes":"90eb70000a8f01030102000c00000c0000000ab0e80000554000007365636f6e64f579d02b","wn":2,"interleaver":"long","k":7,"eom":true}
+{"t":85550,"in":"transmit_done"}

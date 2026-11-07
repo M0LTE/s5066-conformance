@@ -1,0 +1,13 @@
+{"scenario":"dts-nonarq-group-address","rows":["C-0338","C-0339","C-0341","C-0122","C-0527","C-0529","C-0848","C-0884","C-0885","A-0081","A-0083","C-1055"],"source":"Ed4 C.4.11, p.C-48; C.7.5.4.2, p.C-114","description":"A segmented non-ARQ C_PDU to a group address sets GROUP ADDRESS on every D_PDU, and its repeats follow all the first copies.","config":{"local_address":"0.0.1.2","address_size":4,"csma":{"mode":"jitter"},"modem":{"preamble_ms":600,"flush_ms":150,"waveforms":[{"wn":2,"interleaver":"long","block_bytes":256,"block_ms":4800}]},"dts":{"max_segment_size":10}},"note":"Conn 1 binds SAP 5 for non-ARQ and sends \u0022group-message\u0022 (13 bytes, priority 0, TTL 0) to group address 0.0.1.9 with Minimum Number of Retransmissions 1, so each D_PDU is sent twice (A-0081, A-0083, C-0848). The 19-byte C_PDU is cut into segments of 10 and 9 bytes (dts.max_segment_size 10), C_PDU ID 0, offsets 0 and 10 (C-0527, C-0529). Every D_PDU has GROUP ADDRESS 1 and the group as its destination (C-0122, C-0338, C-0339). Spreading (C-0885, C-1055): the repeat copies go after all the first copies, one round at a time, so the order is segment 0, segment 1, segment 0, segment 1, and each copy is as far as it can be from its twin. All four fit one 256-byte block: EOT and reception window 10 each (duration 5550 ms)."}
+{"t":0,"in":"sis_connect","conn":1}
+{"t":0,"in":"sis_bytes","conn":1,"bytes":"90eb00000401502000"}
+{"out":"sis_bytes","conn":1,"bytes":"90eb00000403500800"}
+{"t":0,"in":"sis_bytes","conn":1,"bytes":"90eb0000191405f000010920100000000d67726f75702d6d657373616765"}
+{"out":"timer_start","name":"dts.ttd","ms":1296000000}
+{"out":"timer_start","name":"csma.lbt_wait","ms":30000}
+{"t":30000,"in":"timer_expired","name":"csma.lbt_wait"}
+{"out":"timer_start","name":"csma.cont_wait","ms":45000}
+{"t":75000,"in":"timer_expired","name":"csma.cont_wait"}
+{"out":"timer_cancel","name":"dts.ttd"}
+{"out":"transmit","bytes":"90eb70000a8f01090102040a0000130000000a01c300005540000067726f7547780ab590eb70000a8f010901020409000013000a000a1a5c702d6d6573736167655414cebd90eb70000a8f01090102040a0000130000000a01c300005540000067726f7547780ab590eb70000a8f010901020409000013000a000a1a5c702d6d6573736167655414cebd","wn":2,"interleaver":"long","k":7,"eom":true}
+{"t":80550,"in":"transmit_done"}

@@ -1,0 +1,16 @@
+{"scenario":"csma-queue-emptied-to-sense","rows":["K-0078","K-0091","C-0857","C-0864","C-1050","K-0070","K-0080"],"source":"Ed4 K.3.2.3, p.K-10; K.3.2.4, p.K-11; C.7.5.2.2, p.C-111","description":"A queue emptied by TTL expiry sends the MAC back to SENSE, from LBT_WAIT and from CONT_WAIT.","config":{"local_address":"0.0.1.2","address_size":4,"csma":{"mode":"jitter"},"modem":{"preamble_ms":600,"flush_ms":150,"waveforms":[{"wn":2,"interleaver":"long","block_bytes":256,"block_ms":4800}]}},"note":"Conn 1 binds SAP 5 for non-ARQ. At 0 it sends \u0022gone\u0022 with TTL 1 (TTD 2000): dts.ttd starts at 2000 (C-1050) and the MAC goes to LBT_WAIT with 30000 (K-0070). At 2000 the TTD passes and the C_PDU is dropped (C-0857, C-0864); the queue is empty, so the MAC cancels csma.lbt_wait and returns to SENSE (K-0078). At 3000 it sends \u0022gone\u0022 again with TTL 20 (TTD 43000): dts.ttd starts for 40000 ms; the channel has been idle since time 0 by DCD, so LBT_WAIT starts with 30000. At 33000 the LBT timer expires and seed 0 draws slot 15, 45000 ms (K-0080). At 43000 the TTD passes in CONT_WAIT: the C_PDU is dropped, and the empty queue cancels csma.cont_wait and returns the MAC to SENSE (K-0091)."}
+{"t":0,"in":"sis_connect","conn":1}
+{"t":0,"in":"sis_bytes","conn":1,"bytes":"90eb00000401502000"}
+{"out":"sis_bytes","conn":1,"bytes":"90eb00000403500800"}
+{"t":0,"in":"sis_bytes","conn":1,"bytes":"90eb0000101405e0000103000000010004676f6e65"}
+{"out":"timer_start","name":"dts.ttd","ms":2000}
+{"out":"timer_start","name":"csma.lbt_wait","ms":30000}
+{"t":2000,"in":"timer_expired","name":"dts.ttd"}
+{"out":"timer_cancel","name":"csma.lbt_wait"}
+{"t":3000,"in":"sis_bytes","conn":1,"bytes":"90eb0000101405e0000103000000140004676f6e65"}
+{"out":"timer_start","name":"dts.ttd","ms":40000}
+{"out":"timer_start","name":"csma.lbt_wait","ms":30000}
+{"t":33000,"in":"timer_expired","name":"csma.lbt_wait"}
+{"out":"timer_start","name":"csma.cont_wait","ms":45000}
+{"t":43000,"in":"timer_expired","name":"dts.ttd"}
+{"out":"timer_cancel","name":"csma.cont_wait"}
