@@ -24,7 +24,9 @@
     "default_ttl": 648000,
     "soft_link_idle_ms": null,
     "soft_link_min_hold_ms": null,
-    "soft_link_max_ms": null
+    "soft_link_max_ms": null,
+    "frag_size": null,
+    "confirm_wait_ms": null
   },
   "dts": {
     "max_segment_size": 1023,

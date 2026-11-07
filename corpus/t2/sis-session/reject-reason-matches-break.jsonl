@@ -27,6 +27,7 @@
 {"out":"transmit","bytes":"90eba0000a6a10310200010000d58f","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":83550,"in":"transmit_done"}
 {"t":85000,"in":"sis_bytes","conn":1,"bytes":"90eb0000101409e00001030000000000046461746190eb00001014f9e000010400000000000468696768"}
+{"out":"timer_start","name":"sis.confirm_wait","ms":1296000000}
 {"out":"timer_cancel","name":"sis.soft_link_idle/0.0.1.3"}
 {"out":"timer_start","name":"dts.ttd","ms":1296000000}
 {"out":"timer_cancel","name":"sis.soft_link_max/0.0.1.3"}
