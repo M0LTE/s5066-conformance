@@ -18,18 +18,18 @@ tools/
   prng_vectors.py          computes the PRNG test values
 ```
 
-`<area>` is a short lower-case name for the sublayer or feature under test, for example `dts-nonarq`, `dts-arq`, `cas`, `csma`, `sis`. T1 file names group related cases and carry no meaning of their own.
+`<area>` is a short lower-case name for the sublayer or feature under test, for example `dts-nonarq`, `dts-arq`, `cas`, `csma`, `sis`. T1 file names group related cases and carry no meaning of their own. No other files may be under `corpus/`, and T1 files are not in subdirectories.
 
 ## 2. Rules common to every file
 
-- Files are UTF-8 with ASCII content only, Unix line endings, and one JSON object per line (JSON Lines). Blank lines are not allowed. There are no comment lines; use the `note` field.
-- **Bytes** are lower-case hex strings with no separators, two digits per byte, for example `"90eb"`. An empty byte string is `""`.
-- **Integers** are JSON numbers with no fraction or exponent, in the range 0 to 2^53-1 unless a field says otherwise, so every JSON parser reads them exactly. A value that needs 64 bits (a PRNG seed or output) is a 16-digit lower-case hex string without a `0x` prefix.
+- Files are ASCII only (no byte order mark), Unix line endings, and one JSON object per line (JSON Lines). Every line, including the last, ends with a newline. Blank lines are not allowed. There are no comment lines; use the `note` field. A key may not appear twice in one object, and `NaN`, `Infinity` and other non-JSON constants are not allowed.
+- **Bytes** are lower-case hex strings with no separators, two digits per byte, for example `"90eb"`. An empty byte string is `""`. Harnesses compare byte strings as bytes, after decoding the hex, so the case of hex a harness prints in a failure report does not matter.
+- **Integers** are JSON numbers with no fraction or exponent, in the range 0 to 2^53-1 unless a field says otherwise, so every JSON parser reads them exactly. The only signed field so far is `snr_tenth_db` (section 4.2). A value that needs 64 bits (a PRNG seed or output) is a 16-digit lower-case hex string without a `0x` prefix.
 - **No floating point** anywhere. Quantities that are naturally fractional use an integer unit, for example SNR in tenths of a dB.
 - **Booleans** are `true` or `false`, never 0 or 1.
 - **Addresses** are dotted-decimal strings `"w.x.y.z"` holding the 28-bit address value: w is 0 to 15, x, y and z are 0 to 255 [Ed4 C.4.2.6, pp.C-14 to C-15]. A group address is not written as 16.x.y.z; the group flag is a separate field of the PDU that carries it.
 - **Objects are compared as values:** key order does not matter, but every key must be present with the exact type. A decoder output that omits a field, or adds one, does not match.
-- Unknown keys are errors. A new key needs a corpus version bump (section 8) and a validator update.
+- Unknown keys are errors for the validator. A new key needs a corpus version bump (section 8) and a validator update. A harness that meets a key it does not know reports that case or scenario as `unsupported` (harness-contract.md section 1), never as passed or failed.
 
 ### Case ids
 
@@ -111,18 +111,34 @@ Kinds planned for phase 1 and not yet registered: `eow`, `cpdu`, `spdu`, `sis_fr
 | `eow` | The 12-bit EOW field as one integer, 0 to 4095, EOW type in the top 4 bits [Ed4 C.4.2.2, pp.C-12 to C-13]. The `eow` kind will give its structure. |
 | `eot` | The EOT field, 0 to 255, in half seconds [Ed4 C.4.2.3, p.C-13]. |
 | `address_size` | The size-of-address field m, 1 to 7 [Ed4 C.4.2.4, p.C-13]. It is part of the value because the sender chooses it: leading zero nibbles may be dropped. |
-| `dst`, `src` | Destination and source addresses. Each must fit in 4m bits. |
+| `dst`, `src` | Destination and source addresses. Each must fit in 4m bits. The m-byte address field holds the 8m-bit number (dst x 2^(4m)) + src, most significant byte first [Ed4 C.4.2.6, Figures C-4(a) and C-4(b), pp.C-14 to C-15]. |
 | `fields` | The type-specific header fields, below. |
 | `segment` | I and I+C frame types only (0, 2, 4, 7, 8, 9, 11, and 10 or 13 when they carry data): the segmented C_PDU bytes. |
 | `segment_crc_ok` | Present exactly when `segment` is. On decode, whether the CRC-32 matched. Must be `true` in `encode` and `both` cases. |
 
 Not in the value, because they follow from it: the sync bytes, the size-of-header field, the size-of-segment field, and both CRCs. An encoder computes them; a decoder checks them.
 
+Multi-byte fields (EOW, the type 7 and 8 C_PDU ID split across two places, C_PDU size, offset and reception window, size of segment) are most significant bits first, as the Annex C figures draw them. The CRCs are the exception: least significant byte first (section 3.2).
+
 `peer_edition` says which edition's type table the decoder applies:
 
 - `any`: the type means the same to Ed3 and Ed4 peers (types 0 to 8 and 15).
 - `ed4`: decode as from an Ed4 peer.
-- `ed3`: decode as from an Ed3 peer. Types 9 to 14 are then undefined: `fields` is `{"undefined": true, "type_specific": hex}` holding the bytes between the address field and the header CRC, and there is no `segment`.
+- `ed3`: decode as from an Ed3 peer. Types 9 to 14 are then undefined: `fields` is `{"undefined": true, "type_specific": hex}` holding the bytes between the address field and the header CRC, and there is no `segment`. Any bytes after the header CRC are `trailing_bytes`. Undefined-type cases are `decode` only.
+
+`peer_edition` `any` may only be used when the bytes carry type 0 to 8 or 15.
+
+Size-of-header values h (h counts the four fixed bytes, the type-specific part and the header CRC, not the address [Ed4 C.4.2.5, p.C-14]). A value not allowed here is `bad_header_size`:
+
+| Type | Allowed h |
+|---|---|
+| 0, 3 | exactly 9 [Fig C-9, p.C-23; Fig C-19, p.C-36] |
+| 7, 8 | exactly 15 [Fig C-24, p.C-46; Fig C-33, p.C-51] |
+| 15 | exactly 7 [Fig C-36, p.C-54] |
+| 10, `ed4` | at least 10 [Fig C-12, p.C-28] |
+| 9 to 14, `ed3` (undefined) | at least 6, the four fixed bytes and the CRC. The standard gives an undefined type no size; this minimum is ours. |
+
+Types 1, 2, 4, 5, 6, and 9 and 11 to 14 under `ed4`, have no registered size yet and cannot appear in a case until a row is added here and in the validator.
 
 Registered `fields` sets (a type not listed here cannot appear in a case until its set is registered):
 
@@ -139,14 +155,14 @@ D_PDU decode check order. The decoder stops at the first failing step:
 2. The first two bytes are not `90 eb` [Ed4 C.4.2, p.C-11]: `bad_sync`.
 3. Fewer than 6 bytes: `truncated`.
 4. Size of address is 0: `bad_address_size`.
-5. Size of header is not possible for the type under `peer_edition` (below the type's minimum, or not equal to its fixed size): `bad_header_size`.
+5. Size of header is not allowed for the type under `peer_edition` (the table above): `bad_header_size`.
 6. Fewer bytes than 2 + (size of header) + (size of address): `truncated`.
 7. Header CRC mismatch: `header_crc`.
 8. For a type with a segment, fewer bytes than the header plus the size of segment plus 4: `truncated`.
 9. A field value the codec cannot represent: `invalid_field`.
 10. Bytes left over: `trailing_bytes`.
 
-Fields marked NOT USED in the standard are not in the value; encoders write them as zero [Ed4 C.4.2, p.C-12].
+Fields marked NOT USED in the standard are not in the value; encoders write them as zero [Ed4 C.4.2, p.C-12]. What a receiver does with a NOT USED bit that is one is NOT STATED. Until an `interp` row decides (ignore it, or `invalid_field`), no case may carry a NOT USED bit set to one, and the validator rejects one that does.
 
 ### 3.4 Example
 
@@ -195,11 +211,11 @@ Each input has `t` and `in`, plus the keys listed.
 | `burst_ended` | 2 | `reason`, `wn`, `interleaver`, `k`, `snr_tenth_db`, `blocks` | End of a received burst and its quality [plan 5.1]. |
 | `transmit_done` | 2 | none | The core's own transmission has finished on air. |
 | `channel_busy` | 2 | `busy` (boolean) | The optional external busy input [plan 7.3]. |
-| `sis_connect` | 3 | `conn` | A SIS client connected; `conn` is a positive integer chosen by the trace. |
+| `sis_connect` | 3 | `conn` | A SIS client connected; `conn` is a positive integer chosen by the trace. A `conn` value names one connection only and is not reused after it closes, within a scenario. |
 | `sis_bytes` | 3 | `conn`, `bytes` | Bytes from that client's stream. They may hold part of a frame or several frames. |
 | `sis_disconnect` | 3 | `conn` | The client went away. |
 
-`burst_ended` keys: `reason` is one of `eom`, `signal_lost`, `terminated`; `wn` is the waveform number; `interleaver` is from the interleaver enum below; `k` is the constraint length; `snr_tenth_db` is an integer SNR in tenths of a dB, or `null` when the modem gives none; `blocks` is the number of blocks decoded.
+`burst_ended` keys: `reason` is one of `eom`, `signal_lost`, `terminated`; `wn` is the waveform number; `interleaver` is from the interleaver enum below; `k` is the constraint length; `snr_tenth_db` is a signed integer SNR in tenths of a dB (it may be negative), or `null` when the modem gives none; `blocks` is the number of blocks decoded.
 
 Interleaver enum: `ultra_short`, `very_short`, `short`, `medium`, `long`, `very_long` (the Ed4 interleaver names, plan section 5.3).
 
@@ -207,27 +223,27 @@ Interleaver enum: `ultra_short`, `very_short`, `short`, `medium`, `long`, `very_
 
 | `out` | Keys | Meaning |
 |---|---|---|
-| `transmit` | `bytes`, `wn`, `interleaver`, `k`, `eom` | One whole transmission, sent as one modem burst [plan 5.1, 5.4]. |
+| `transmit` | `bytes`, `wn`, `interleaver`, `k`, `eom` | One whole transmission, sent as one modem burst [plan 5.1, 5.4]. `eom` is true when the modem is to end the burst with its end-of-message marker. The fake modem answers the call with the duration the modem fixture gives for (`wn`, `interleaver`, length of `bytes`) (section 5). |
 | `terminate_receive` | none | Ask the modem to stop the current reception [plan 5.1]. |
 | `set_max_input_blocks` | `n` | Change the modem's maximum input data blocks [plan 5.1]. |
 | `timer_start` | `name`, `ms` | Start, or restart, the named timer to expire `ms` milliseconds from now. |
 | `timer_cancel` | `name` | Stop the named timer. Cancelling a timer that is not running is allowed and is still an output. |
 | `sis_bytes` | `conn`, `bytes` | Bytes to write to a SIS client's stream. |
 | `sis_close` | `conn` | Close that client connection. |
-| `link_state` | `peer`, `state` | A link to `peer` changed state. State names are registered with the CAS work (section 4.6). |
+| `link_state` | `peer`, `state` | A link to `peer` (a dotted-decimal address, section 2) changed state. State names are registered with the CAS work (section 4.6). |
 
 ### 4.4 Time model
 
 - Time is an integer count of milliseconds since the core was created, which is time 0. The core's clock is the `t` of the input it is handling; it never reads time any other way.
 - `t` never decreases from one input to the next.
 - A timer's deadline is the `t` of the input that started it plus `ms`. `ms` is at least 1; a core that wants "now" acts now instead of starting a timer. Starting a timer that is already running replaces its deadline.
-- Timers do not fire by themselves. The trace lists every expiry as a `timer_expired` input at exactly the deadline, and the harness checks it (harness-contract.md section 2). An input at time t may only be fed once every running timer with a deadline at or before t has been listed as expired.
+- Timers do not fire by themselves. The trace lists every expiry as a `timer_expired` input at exactly the deadline, and the harness checks it (harness-contract.md section 2). Before an input at time t, every running timer with a deadline before t must have been listed as expired. A timer with a deadline equal to t must be listed as expired before any modem or SIS input at t; `config` inputs at t come before it (section 4.5), and may cancel or restart it.
 
 ### 4.5 Simultaneous events
 
 When inputs share the same `t`, they are handled in class order (the Class column in section 4.2): configuration, then timer expiries, then modem events, then SIS events. A trace must list them in that order and the validator rejects one that does not. Within a class:
 
-- Timer expiries at the same time are listed in the order the timers were last started.
+- Timer expiries at the same time are listed in the order the timers were last started, that is, the order of their `timer_start` outputs in the trace.
 - Modem events are listed in the order the modem reports them.
 - SIS events are listed in the order the bytes or connections arrived.
 
@@ -235,7 +251,7 @@ The host process (D3) follows the same order when real events arrive in the same
 
 ### 4.6 Names
 
-Timer names have the form `<sublayer>.<timer>`, optionally followed by `/<qualifier>` when one timer exists per peer or per connection, for example `csma.cont_wait` or `dts.ack_wait/0.0.1.2`. Sublayers are `sis`, `cas`, `dts`, `csma`, `drc` and `station`. Names use lower-case letters, digits and `_` in each part.
+Timer names have the form `<sublayer>.<timer>`, optionally followed by `/<qualifier>` when one timer exists per peer or per connection, for example `csma.cont_wait` or `dts.ack_wait/0.0.1.2`. Sublayers are `sis`, `cas`, `dts`, `csma`, `drc` and `station`. The timer part uses lower-case letters, digits and `_`. A qualifier is a dotted-decimal address (section 2) or a decimal `conn` number. The registry below lists the `<sublayer>.<timer>` part and says which qualifier, if any, it takes.
 
 Each timer name, and each `link_state` state name, is registered in a table in this section by the change that first uses it, with the matrix row that defines it. A trace using an unregistered name is invalid.
 
@@ -256,15 +272,15 @@ The core needs burst durations from the modem port's `PlanBurst` (plan 5.1) befo
           "waveforms": [{"wn": 6, "interleaver": "short", "block_bytes": 192, "block_ms": 1000}]}
 ```
 
-For a plan request with waveform number `wn`, interleaver `i` and `n` bytes, the harness finds the entry with that `wn` and `interleaver` (missing entry: the case fails with `unplanned_waveform`) and returns:
+`block_bytes` and `block_ms` are positive integers, and no two entries share a `wn` and `interleaver`. For a plan request with waveform number `wn`, interleaver `i` and `n` bytes, the harness finds the entry with that `wn` and `interleaver` (missing entry: the case fails with `unplanned_waveform`) and returns:
 
-- blocks = max(1, ceil(n / block_bytes)), using integer arithmetic;
+- blocks = max(1, ceil(n / block_bytes)), using integer arithmetic, that is (n + block_bytes - 1) / block_bytes rounded down, and 1 when n is 0;
 - bytes per block = block_bytes;
 - duration_ms = preamble_ms + blocks x block_ms + flush_ms.
 
 ## 6. Node configuration
 
-`corpus/t2/defaults.json` holds one JSON object: the full base configuration. A scenario's `config` is an overlay merged into it: objects merge key by key, recursively; any other value, including a list, replaces the base value. A key in the overlay that is not in the base is an error. `null` in the base means "no default": a scenario that exercises that setting must give a value, and a core that needs a `null` setting fails the case.
+`corpus/t2/defaults.json` holds one JSON object: the full base configuration. A scenario's `config` is an overlay merged into it: objects merge key by key, recursively; any other value, including a list or `null`, replaces the base value. A key in the overlay that is not in the base is an error, and so is replacing an object with a non-object or the other way round. A `config` input's `set` is merged the same way into the configuration in force at that moment. `null` in the base means "no default": a scenario that exercises that setting must give a value, and a core that needs a `null` setting fails the case.
 
 The base configuration and where each default comes from:
 
@@ -297,4 +313,4 @@ New settings are added to `defaults.json` and this table together, each with its
 - **MINOR**: new cases, new kinds, new registered names or settings, retired cases. An older harness may meet kinds or inputs it does not know; it must report those cases as unsupported, not as passed.
 - **PATCH**: corrections to existing cases (wrong expected bytes, wrong row ids, notes).
 
-Before 1.0.0 the format is still settling, and a MINOR bump may also carry format changes.
+Before 1.0.0 the format is still settling, and a MINOR bump may also carry format changes. So before 1.0.0 a harness accepts only the MAJOR.MINOR it was written for, and from 1.0.0 only its MAJOR (harness-contract.md section 1).

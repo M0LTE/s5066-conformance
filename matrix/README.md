@@ -14,7 +14,7 @@ Each row is one requirement or one interpretation. The columns, in order:
 | `applies` | `yes`, `no` (out of our profile or scope), or `na` (not applicable to a node of this kind). |
 | `reason` | Required when `applies` is not `yes`, for example `deprecated option HARD LINKS (main Table 1)`. |
 | `impl` | Code location, filled in during implementation. |
-| `tests` | Corpus case ids or test names, filled in during implementation. |
+| `tests` | Names of tests outside the corpus (T3 to T6), filled in during implementation. Corpus cases link to rows through their own `rows` list instead (docs/harness-contract.md section 4). |
 | `notes` | Cross references, conflicts, Ed1 differences. |
 
 Rules:

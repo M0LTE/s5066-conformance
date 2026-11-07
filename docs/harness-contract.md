@@ -4,10 +4,10 @@ Each implementation (C# first, C++ later) has a small test harness that runs thi
 
 ## 1. Discovery and reporting
 
-- Read the corpus from a pinned copy (submodule or package) at a tagged version. Check `corpus/VERSION`: refuse to run a MAJOR version the harness was not written for.
+- Read the corpus from a pinned copy (submodule or package) at a tagged version. Check `corpus/VERSION`: refuse to run a version the harness was not written for. Before 1.0.0 that means a different MAJOR.MINOR; from 1.0.0, a different MAJOR (corpus-format.md section 8).
 - Discover every `corpus/t1/*.jsonl`, every `corpus/t2/**/*.jsonl` and `corpus/prng/splitmix64.jsonl`. Do not hard-code file names.
 - Report one result per case id: `pass`, `fail` or `unsupported`, with a reason for anything but `pass`. A failure names the case id, the line number, and the first difference (expected and actual, as hex for bytes).
-- `unsupported` is for a kind, an input or an output type the harness does not know yet (corpus-format.md section 8). It is never counted as a pass. A harness may also mark cases it knowingly skips with a reason, but the summary must count them.
+- `unsupported` is for a kind, an input, an output type or a key the harness does not know yet (corpus-format.md sections 2 and 8). It is never counted as a pass. A harness may also mark cases it knowingly skips with a reason, but the summary must count them.
 - Exit non-zero if any case fails. Print a summary: totals of pass, fail, unsupported and skipped, and the corpus version.
 - The harness may write a machine-readable result file (JSON Lines, one `{"id", "result", "reason"}` per case) for CI to compare across the two languages.
 
@@ -32,16 +32,18 @@ The conversion between the corpus JSON shape and the implementation's types live
 
 For each scenario:
 
-1. Merge `config` over `corpus/t2/defaults.json` (corpus-format.md section 6) and create a fresh core with it, at time 0, with the PRNG seeded from `prng_seed`.
-2. Give the core a fake modem whose `PlanBurst` answers from the `modem` fixture (corpus-format.md section 5). Any other effect the core has on the outside world must come out as an output.
+1. Merge `config` over `corpus/t2/defaults.json` (corpus-format.md section 6) and create a fresh core with it, at time 0, with the PRNG seeded from `prng_seed`. If the core needs a setting that is `null`, fail with `missing_setting`.
+2. Give the core a fake modem whose `PlanBurst` answers from the `modem` fixture (corpus-format.md section 5), and whose `Transmit` records a `transmit` output and returns the duration the fixture gives for the same waveform, interleaver and byte count. Any other effect the core has on the outside world must come out as an output.
 3. Keep a table of running timers: name and deadline. Update it from every `timer_start` and `timer_cancel` output.
 4. For each input line in order:
-   - Check time: `t` is not earlier than the previous input. Every running timer with a deadline at or before `t` must already have been fed as `timer_expired`, unless this input is that expiry. Otherwise fail with `missed_timer`.
+   - Check time: `t` is not earlier than the previous input. No running timer may have a deadline earlier than `t`, and if this input is a modem or SIS input (class 2 or 3), none may have a deadline equal to `t`. Otherwise fail with `missed_timer`. (A `config` input at a timer's deadline is fed before the expiry, corpus-format.md section 4.5.)
    - For `timer_expired`: the named timer must be running with a deadline equal to `t`, or fail with `bad_expiry`. Remove it from the table, then feed it.
    - Feed the input to the core at time `t`.
    - Collect every output the core produced while handling it, in order.
    - Compare that list with the output lines that follow the input in the file, up to the next input. Same length, and each pair equal as JSON values. Bytes are compared exactly.
-5. The scenario passes when every input's outputs match. Timers still running at the end are fine.
+5. The scenario passes when every input's outputs match. Timers still running at the end are fine. Stop the scenario at its first failure, since the core's state after a mismatch is no longer defined by the trace.
+
+Failure reasons a T2 harness reports, so both languages use the same words: `output_mismatch` (with the first differing output), `missed_timer`, `bad_expiry`, `unplanned_waveform` and `missing_setting`.
 
 A harness must not reorder, merge or filter outputs, and must not fire timers by itself. The trace is the whole of the observable behaviour.
 

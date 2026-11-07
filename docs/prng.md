@@ -51,7 +51,7 @@ Why it is unbiased: the accepted values run from `threshold` to 2^64 - 1, which 
 Rules that both implementations must keep:
 
 - `uniform` always calls `next_u64` at least once, even for n = 1, which returns 0. So the number of draws does not depend on n being 1.
-- A rejected draw is consumed. For the small n used by the core, rejection has probability below 2^-59 (n = 16 gives threshold 0, so it never rejects), but the large-n test values below make sure the loop is right.
+- A rejected draw is consumed. For n up to 32, rejection has probability below 2^-59 (n = 16 gives threshold 0, so it never rejects), but the large-n test values below make sure the loop is right.
 - In C#, compute `threshold` as `(0UL - n) % n`, or `unchecked(-n) % n`. In C++, `(0 - n) % n` with `n` of type `uint64_t`, or `(~n + 1) % n`.
 
 ## 5. Test values
@@ -116,7 +116,7 @@ All 64-bit values are 16 lower-case hex digits without `0x`.
 
 ## 6. Draw sites
 
-Every place the core draws is registered here, with the matrix row that requires it, in the change that adds it. Order matters: if one input causes several draws, they happen in the order listed in the scenario's outputs.
+Every place the core draws is registered here, with the matrix row that requires it, in the change that adds it. Order matters: draws are not outputs, so if one input can reach more than one draw site, the registry entry says which site draws first, and both cores follow it.
 
 | Site | Draw | Defined by |
 |---|---|---|

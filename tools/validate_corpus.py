@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Validate the s5066-conformance corpus against docs/corpus-format.md and docs/prng.md.
 
-Checks that every corpus file parses and follows the schema. It does not run
-any codec, apart from recomputing CRCs on the bytes of CRC and D_PDU cases to
-catch typing mistakes.
+Checks that every corpus file parses and follows the schema. It also carries a
+small reference decoder for the registered D_PDU types and a reference
+SplitMix64, and checks every T1 value, error kind and PRNG value against them,
+to catch typing mistakes. It is a checker, not an implementation to copy.
 
 Usage:
   python3 tools/validate_corpus.py [--root DIR] [--matrix DIR] [--coverage] [--strict]
@@ -174,7 +175,7 @@ def read_jsonl(path, err):
             err.add(where, "blank line")
             continue
         try:
-            obj = json.loads(line, parse_float=lambda s: float(s), parse_constant=lambda s: s)
+            obj = json.loads(line, object_pairs_hook=no_duplicates, parse_constant=bad_constant)
         except ValueError as e:
             err.add(where, "JSON error: %s" % e)
             continue
@@ -185,6 +186,19 @@ def read_jsonl(path, err):
             err.add(where, "floating point value found")
         out.append((where, obj))
     return out
+
+
+def no_duplicates(pairs):
+    seen = {}
+    for k, v in pairs:
+        if k in seen:
+            raise ValueError("duplicate key %r" % k)
+        seen[k] = v
+    return seen
+
+
+def bad_constant(s):
+    raise ValueError("%s is not JSON" % s)
 
 
 def contains_float(v):
@@ -282,20 +296,124 @@ def check_crc_case(err, where, c, b, kind):
         err.add(where, "bytes must be the register least significant byte first")
 
 
+# Size-of-header field h (corpus-format.md section 3.3): fixed values, and minimums.
+DPDU_FIXED_H = {0: 9, 3: 9, 7: 15, 8: 15, 15: 7}
+DPDU_ED4_MIN_H = {10: 10}
+UNDEFINED_MIN_H = 6
+
+
+def dotted(a):
+    return "%d.%d.%d.%d" % ((a >> 24) & 15, (a >> 16) & 255, (a >> 8) & 255, a & 255)
+
+
+def ref_decode(b, peer):
+    """Reference D_PDU decode following the check order in corpus-format.md section 3.3.
+
+    Returns ("value", obj), ("error", kind) or ("unsupported", reason)."""
+    if len(b) < 2:
+        return "error", "truncated"
+    if b[:2] != b"\x90\xeb":
+        return "error", "bad_sync"
+    if len(b) < 6:
+        return "error", "truncated"
+    t, m, h = b[2] >> 4, b[5] >> 5, b[5] & 31
+    if m == 0:
+        return "error", "bad_address_size"
+    undefined = peer == "ed3" and t in ED4_ONLY_TYPES
+    if undefined:
+        ok = h >= UNDEFINED_MIN_H
+    elif peer == "ed4" and t in DPDU_ED4_MIN_H:
+        ok = h >= DPDU_ED4_MIN_H[t]
+    elif t in DPDU_FIXED_H and not (peer == "any" and t in ED4_ONLY_TYPES):
+        ok = h == DPDU_FIXED_H[t]
+    else:
+        return "unsupported", "no registered header size for type %d under %s" % (t, peer)
+    if not ok:
+        return "error", "bad_header_size"
+    end = 2 + h + m
+    if len(b) < end:
+        return "error", "truncated"
+    if crc(b[2:end - 2], 0x9299) != b[end - 2] | (b[end - 1] << 8):
+        return "error", "header_crc"
+    a = int.from_bytes(b[6:6 + m], "big")
+    v = {"type": t, "eow": ((b[2] & 15) << 8) | b[3], "eot": b[4], "address_size": m,
+         "dst": dotted(a >> (4 * m)), "src": dotted(a & ((1 << (4 * m)) - 1))}
+    ts = b[6 + m:end - 2]
+    rest = b[end:]
+    n = None
+    if undefined:
+        v["fields"] = {"undefined": True, "type_specific": ts.hex()}
+    elif t == 0:
+        x = ts[0]
+        v["fields"] = {"c_pdu_start": bool(x & 0x80), "c_pdu_end": bool(x & 0x40),
+                       "deliver_in_order": bool(x & 0x20), "drop_c_pdu": bool(x & 0x10),
+                       "tx_win_uwe": bool(x & 8), "tx_win_lwe": bool(x & 4), "tx_fsn": ts[2]}
+        n = ((x & 3) << 8) | ts[1]
+    elif t == 3:
+        if ts[0] & 0xF0:
+            return "unsupported", "NOT USED bits set (corpus-format.md section 3.3)"
+        x = ts[0]
+        v["fields"] = {"full_reset_cmnd": bool(x & 8), "reset_tx_win_rqst": bool(x & 4),
+                       "reset_rx_win_cmnd": bool(x & 2), "reset_ack": bool(x & 1),
+                       "new_rx_lwe": ts[1], "reset_frame_id": ts[2]}
+    elif t in (7, 8):
+        x = ts[0]
+        v["fields"] = {"c_pdu_id": ((x >> 4) << 8) | ts[2], "deliver_in_order": bool(x & 8),
+                       "group_address": bool(x & 4),
+                       "c_pdu_size": int.from_bytes(ts[3:5], "big"),
+                       "c_pdu_segment_offset": int.from_bytes(ts[5:7], "big"),
+                       "c_pdu_reception_window": int.from_bytes(ts[7:9], "big")}
+        n = ((x & 3) << 8) | ts[1]
+    elif t == 15:
+        v["fields"] = {"received_frame_type": ts[0] >> 4, "reason": ts[0] & 15}
+    else:
+        return "unsupported", "no registered field set for type %d" % t
+    if n is not None:
+        if len(rest) < n + 4:
+            return "error", "truncated"
+        seg = rest[:n]
+        v["segment"] = seg.hex()
+        v["segment_crc_ok"] = crc(seg, 0xF3A4E550) == int.from_bytes(rest[n:n + 4], "little")
+        rest = rest[n + 4:]
+    if rest:
+        return "error", "trailing_bytes"
+    return "value", v
+
+
 def check_dpdu_case(err, where, c, b):
     peer = c.get("peer_edition")
     if peer not in ("any", "ed3", "ed4"):
         err.add(where, "dpdu cases need peer_edition any, ed3 or ed4")
-    if "error" in c:
         return
+    if len(b) >= 3 and b[:2] == b"\x90\xeb":
+        t = b[2] >> 4
+        if peer == "any" and t in ED4_ONLY_TYPES:
+            err.add(where, "type %d differs between editions; use peer_edition ed3 or ed4" % t)
+        if peer == "ed3" and t in ED4_ONLY_TYPES and c.get("dir") != "decode":
+            err.add(where, "an undefined type can only be decoded")
+    if "value" in c:
+        check_dpdu_value(err, where, c, peer)
+    res, out = ref_decode(b, peer)
+    if res == "unsupported":
+        err.add(where, "cannot check: %s" % out)
+    elif "error" in c:
+        if res != "error" or out != c["error"]:
+            err.add(where, "check order gives %s, case says error %s"
+                    % (out if res == "error" else "a value", c["error"]))
+    elif res == "error":
+        err.add(where, "bytes decode to error %s" % out)
+    elif out != c["value"]:
+        diff = sorted(k for k in set(out) | set(c["value"]) if out.get(k) != c["value"].get(k))
+        err.add(where, "value disagrees with the bytes in: %s" % ", ".join(diff))
+
+
+def check_dpdu_value(err, where, c, peer):
     v = c["value"]
     t = v.get("type")
     if not is_int(t, 0, 15):
         err.add(where, "type must be 0 to 15")
         return
     undefined = peer == "ed3" and t in ED4_ONLY_TYPES
-    if peer == "any" and t in ED4_ONLY_TYPES:
-        err.add(where, "type %d differs between editions; use peer_edition ed3 or ed4" % t)
     has_seg = (t in IFRAME_TYPES) and not undefined
     req = ["type", "eow", "eot", "address_size", "dst", "src", "fields"]
     if has_seg:
@@ -341,32 +459,6 @@ def check_dpdu_case(err, where, c, b):
             err.add(where, "segment_crc_ok must be a boolean")
         elif not v["segment_crc_ok"] and c.get("dir") != "decode":
             err.add(where, "segment_crc_ok false is only allowed in decode cases")
-    # Byte-level checks: sync, header fields, header CRC, segment CRC.
-    if len(b) < 6 or b[:2] != b"\x90\xeb":
-        err.add(where, "bytes do not start with a D_PDU header")
-        return
-    h = b[2:]
-    if h[0] >> 4 != t or ((h[0] & 15) << 8 | h[1]) != v.get("eow") or h[2] != v.get("eot") \
-            or h[3] >> 5 != m:
-        err.add(where, "type, eow, eot or address_size disagree with the bytes")
-    hl = (h[3] & 31) - 2 + (h[3] >> 5)
-    if len(h) < hl + 2:
-        err.add(where, "bytes shorter than the declared header")
-        return
-    r = crc(h[:hl], 0x9299)
-    if h[hl] != (r & 255) or h[hl + 1] != r >> 8:
-        err.add(where, "header CRC in bytes is wrong (computed 0x%04X)" % r)
-    rest = h[hl + 2:]
-    if has_seg and is_hex(v.get("segment")):
-        seg = bytes.fromhex(v["segment"])
-        if rest[:-4] != seg or len(rest) != len(seg) + 4:
-            err.add(where, "segment does not match the bytes")
-        else:
-            ok = crc(seg, 0xF3A4E550).to_bytes(4, "little") == rest[-4:]
-            if ok != v.get("segment_crc_ok"):
-                err.add(where, "segment_crc_ok disagrees with the bytes")
-    elif not has_seg and rest:
-        err.add(where, "bytes continue after the header CRC")
 
 
 # ---------------------------------------------------------------- T2
@@ -378,9 +470,32 @@ def merge(base, overlay, err, where, path=""):
             err.add(where, "config key '%s%s' is not in defaults.json" % (path, k))
         elif isinstance(base[k], dict) and isinstance(v, dict):
             out[k] = merge(base[k], v, err, where, path + k + ".")
+        elif isinstance(base[k], dict) or isinstance(v, dict):
+            err.add(where, "config key '%s%s' mixes an object and a non-object" % (path, k))
         else:
             out[k] = v
     return out
+
+
+def check_modem_fixture(err, where, cfg):
+    """corpus-format.md section 5: positive sizes, at most one entry per wn and interleaver."""
+    wfs = cfg.get("modem", {}).get("waveforms") if isinstance(cfg.get("modem"), dict) else None
+    if not isinstance(wfs, list):
+        err.add(where, "modem.waveforms must be a list")
+        return
+    seen = set()
+    for e in wfs:
+        if not isinstance(e, dict):
+            err.add(where, "modem.waveforms entries must be objects")
+            continue
+        check_keys(err, where, e, ("wn", "interleaver", "block_bytes", "block_ms"))
+        if not (is_int(e.get("wn")) and e.get("interleaver") in INTERLEAVERS
+                and is_int(e.get("block_bytes"), 1) and is_int(e.get("block_ms"), 1)):
+            err.add(where, "modem.waveforms entry has a bad value")
+        key = (e.get("wn"), e.get("interleaver"))
+        if key in seen:
+            err.add(where, "modem.waveforms has two entries for wn %r %r" % key)
+        seen.add(key)
 
 
 def check_t2(path, err, ctx, defaults):
@@ -399,9 +514,12 @@ def check_t2(path, err, ctx, defaults):
     if not isinstance(hdr.get("config"), dict):
         err.add(where, "config must be an object")
     elif defaults is not None:
-        merge(defaults, hdr["config"], err, where)
-    timers = {}  # name -> deadline
+        check_modem_fixture(err, where, merge(defaults, hdr["config"], err, where))
+    timers = {}  # name -> (deadline, start sequence number)
+    starts = 0
+    conns, closed = set(), set()
     last_t, last_class, now = -1, -1, 0
+    last_expiry = None  # (t, start sequence) of the previous timer_expired input
     seen_input = False
     for where, s in lines[1:]:
         if "in" in s and "out" in s:
@@ -427,16 +545,31 @@ def check_t2(path, err, ctx, defaults):
                 err.add(where, "same-time inputs out of class order")
             if kind == "timer_expired":
                 name = s.get("name")
-                if timers.get(name) != t:
+                entry = timers.pop(name, None)
+                if entry is None or entry[0] != t:
                     err.add(where, "timer '%s' is not due at %d" % (name, t))
-                timers.pop(name, None)
-            due = [n for n, dl in timers.items() if dl <= t]
+                elif last_expiry is not None and last_expiry[0] == t and entry[1] < last_expiry[1]:
+                    err.add(where, "same-time expiries not in the order the timers were started")
+                if entry is not None:
+                    last_expiry = (t, entry[1])
+            # A timer due at t may still be pending while class 0 (config) inputs at t are fed.
+            due = [n for n, (dl, _) in timers.items() if dl < t or (dl == t and cls > 1)]
             if due:
                 err.add(where, "timers due but not expired: %s" % ", ".join(sorted(due)))
                 for n in due:
                     timers.pop(n)
             if kind == "config" and defaults is not None and isinstance(s.get("set"), dict):
                 merge(defaults, s["set"], err, where)
+            conn = s.get("conn")
+            if kind == "sis_connect":
+                if conn in conns or conn in closed:
+                    err.add(where, "conn %r was already used in this scenario" % (conn,))
+                conns.add(conn)
+            elif kind in ("sis_bytes", "sis_disconnect") and conn not in conns:
+                err.add(where, "conn %r is not connected" % (conn,))
+            if kind == "sis_disconnect":
+                conns.discard(conn)
+                closed.add(conn)
             last_t, last_class, now, seen_input = t, cls, t, True
         elif "out" in s:
             kind = s["out"]
@@ -456,9 +589,15 @@ def check_t2(path, err, ctx, defaults):
                 if base not in REGISTERED_TIMERS:
                     err.add(where, "timer name '%s' is not registered" % base)
                 if kind == "timer_start" and is_int(s.get("ms"), 1):
-                    timers[name] = now + s["ms"]
+                    starts += 1
+                    timers[name] = (now + s["ms"], starts)
                 elif kind == "timer_cancel":
                     timers.pop(name, None)
+            if kind in ("sis_bytes", "sis_close") and s.get("conn") not in conns:
+                err.add(where, "conn %r is not connected" % (s.get("conn"),))
+            if kind == "sis_close":
+                conns.discard(s.get("conn"))
+                closed.add(s.get("conn"))
             if kind == "link_state" and s.get("state") not in REGISTERED_LINK_STATES:
                 err.add(where, "link state %r is not registered" % (s.get("state"),))
         else:
@@ -466,6 +605,15 @@ def check_t2(path, err, ctx, defaults):
 
 
 # ---------------------------------------------------------------- PRNG
+
+def splitmix64(s):
+    """One SplitMix64 step: returns (new state, output)."""
+    mask = (1 << 64) - 1
+    s = (s + 0x9E3779B97F4A7C15) & mask
+    z = ((s ^ (s >> 30)) * 0xBF58476D1CE4E5B9) & mask
+    z = ((z ^ (z >> 27)) * 0x94D049BB133111EB) & mask
+    return s, z ^ (z >> 31)
+
 
 def check_prng(path, err, ctx):
     for where, c in read_jsonl(path, err):
@@ -489,6 +637,29 @@ def check_prng(path, err, ctx):
             continue
         if not (isinstance(c.get("seed"), str) and HEX64_RE.match(c["seed"]) and ok):
             err.add(where, "bad seed, n or results")
+            continue
+        s = int(c["seed"], 16)
+        if op == "next_u64":
+            got = []
+            for _ in c["results"]:
+                s, x = splitmix64(s)
+                got.append("%016x" % x)
+        else:
+            n = int(c["n"], 16)
+            threshold = ((1 << 64) - n) % n
+            got = []
+            for _ in c["results"]:
+                used = 0
+                while True:
+                    s, x = splitmix64(s)
+                    used += 1
+                    if x >= threshold:
+                        break
+                got.append({"value": "%016x" % (x % n), "draws": used})
+            if "%016x" % s != c["state_after"]:
+                err.add(where, "state_after should be %016x" % s)
+        if got != c["results"]:
+            err.add(where, "results disagree with SplitMix64 (prng.md)")
 
 
 # ---------------------------------------------------------------- matrix
@@ -554,8 +725,11 @@ def main():
     else:
         err.add(ppath, "missing")
 
+    t1dir, t2dir = os.path.join(corpus, "t1"), os.path.join(corpus, "t2")
     stray = [p for p in glob.glob(os.path.join(corpus, "**", "*"), recursive=True)
-             if os.path.isfile(p) and not (p.endswith(".jsonl") or p == vpath or p == dpath)]
+             if os.path.isfile(p) and p not in (vpath, dpath, ppath)
+             and not (p.endswith(".jsonl") and (os.path.dirname(p) == t1dir
+                                                 or os.path.dirname(os.path.dirname(p)) == t2dir))]
     for p in stray:
         err.add(p, "unexpected file in corpus/")
 
