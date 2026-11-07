@@ -5,7 +5,7 @@
 {"t":1000,"in":"burst_started"}
 {"t":2000,"in":"bytes_received","bytes":"90ebd0000ae7fffffff000010301a85a90ebd0000a8701020103424277"}
 {"t":3000,"in":"burst_ended","reason":"eom","wn":2,"interleaver":"long","k":7,"snr_tenth_db":60,"blocks":1}
-{"out":"sis_bytes","conn":1,"bytes":"90eb00000b1301010000010300000000"}
+{"out":"sis_bytes","conn":1,"bytes":"90eb00000b130101e000010300000000"}
 {"out":"timer_start","name":"csma.vdcd_end","ms":4000}
 {"t":7000,"in":"timer_expired","name":"csma.vdcd_end"}
 {"out":"timer_start","name":"csma.lbt_wait","ms":3000}
