@@ -1,0 +1,55 @@
+{"scenario": "sis-bind-accept", "rows": ["A-0030", "A-0031", "A-0032", "A-0034", "A-0041", "A-0042", "A-0043", "A-0044", "A-0047", "S-0010", "S-0011", "S-0015", "S-0027", "S-0085", "S-0088", "S-0089"], "source": "Ed4 A.2.2.1 and A.2.2.3, pp.A-4 to A-6; S.5.3 and S.5.5, pp.S-10 to S-13", "description": "Clients bind distinct SAPs with ARQ and non-ARQ service types and each gets S_BIND_ACCEPTED with its SAP and MTU 2048.", "config": {"local_address": "0.0.1.2", "address_size": 4}, "note": "Seventeen connections are accepted (S-0015); the seventeenth binds a SAP freed by a disconnect. No S_DATA_FLOW_ON follows a bind (S-0027)."}
+{"t": 0, "in": "sis_connect", "conn": 1}
+{"t": 0, "in": "sis_bytes", "conn": 1, "bytes": "90eb00000401501000"}
+{"out": "sis_bytes", "conn": 1, "bytes": "90eb00000403500800"}
+{"t": 100, "in": "sis_connect", "conn": 2}
+{"t": 200, "in": "sis_bytes", "conn": 2, "bytes": "90eb00000401002200"}
+{"out": "sis_bytes", "conn": 2, "bytes": "90eb00000403000800"}
+{"t": 300, "in": "sis_connect", "conn": 3}
+{"t": 300, "in": "sis_bytes", "conn": 3, "bytes": "90eb00000401f02030"}
+{"out": "sis_bytes", "conn": 3, "bytes": "90eb00000403f00800"}
+{"t": 400, "in": "sis_connect", "conn": 4}
+{"t": 400, "in": "sis_bytes", "conn": 4, "bytes": "90eb00000401731000"}
+{"out": "sis_bytes", "conn": 4, "bytes": "90eb00000403700800"}
+{"t": 500, "in": "sis_connect", "conn": 5}
+{"t": 500, "in": "sis_bytes", "conn": 5, "bytes": "90eb00000401102200"}
+{"out": "sis_bytes", "conn": 5, "bytes": "90eb00000403100800"}
+{"t": 510, "in": "sis_connect", "conn": 6}
+{"t": 510, "in": "sis_bytes", "conn": 6, "bytes": "90eb00000401202200"}
+{"out": "sis_bytes", "conn": 6, "bytes": "90eb00000403200800"}
+{"t": 520, "in": "sis_connect", "conn": 7}
+{"t": 520, "in": "sis_bytes", "conn": 7, "bytes": "90eb00000401302200"}
+{"out": "sis_bytes", "conn": 7, "bytes": "90eb00000403300800"}
+{"t": 530, "in": "sis_connect", "conn": 8}
+{"t": 530, "in": "sis_bytes", "conn": 8, "bytes": "90eb00000401402200"}
+{"out": "sis_bytes", "conn": 8, "bytes": "90eb00000403400800"}
+{"t": 540, "in": "sis_connect", "conn": 9}
+{"t": 540, "in": "sis_bytes", "conn": 9, "bytes": "90eb00000401602200"}
+{"out": "sis_bytes", "conn": 9, "bytes": "90eb00000403600800"}
+{"t": 550, "in": "sis_connect", "conn": 10}
+{"t": 550, "in": "sis_bytes", "conn": 10, "bytes": "90eb00000401802200"}
+{"out": "sis_bytes", "conn": 10, "bytes": "90eb00000403800800"}
+{"t": 560, "in": "sis_connect", "conn": 11}
+{"t": 560, "in": "sis_bytes", "conn": 11, "bytes": "90eb00000401902200"}
+{"out": "sis_bytes", "conn": 11, "bytes": "90eb00000403900800"}
+{"t": 570, "in": "sis_connect", "conn": 12}
+{"t": 570, "in": "sis_bytes", "conn": 12, "bytes": "90eb00000401a02200"}
+{"out": "sis_bytes", "conn": 12, "bytes": "90eb00000403a00800"}
+{"t": 580, "in": "sis_connect", "conn": 13}
+{"t": 580, "in": "sis_bytes", "conn": 13, "bytes": "90eb00000401b02200"}
+{"out": "sis_bytes", "conn": 13, "bytes": "90eb00000403b00800"}
+{"t": 590, "in": "sis_connect", "conn": 14}
+{"t": 590, "in": "sis_bytes", "conn": 14, "bytes": "90eb00000401c02200"}
+{"out": "sis_bytes", "conn": 14, "bytes": "90eb00000403c00800"}
+{"t": 600, "in": "sis_connect", "conn": 15}
+{"t": 600, "in": "sis_bytes", "conn": 15, "bytes": "90eb00000401d02200"}
+{"out": "sis_bytes", "conn": 15, "bytes": "90eb00000403d00800"}
+{"t": 610, "in": "sis_connect", "conn": 16}
+{"t": 610, "in": "sis_bytes", "conn": 16, "bytes": "90eb00000401e02200"}
+{"out": "sis_bytes", "conn": 16, "bytes": "90eb00000403e00800"}
+{"t": 620, "in": "sis_connect", "conn": 17}
+{"t": 620, "in": "sis_bytes", "conn": 17, "bytes": "90eb00000401502200"}
+{"out": "sis_bytes", "conn": 17, "bytes": "90eb0000020403"}
+{"t": 720, "in": "sis_disconnect", "conn": 1}
+{"t": 820, "in": "sis_bytes", "conn": 17, "bytes": "90eb00000401502200"}
+{"out": "sis_bytes", "conn": 17, "bytes": "90eb00000403500800"}
