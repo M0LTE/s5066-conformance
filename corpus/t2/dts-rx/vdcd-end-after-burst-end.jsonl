@@ -1,0 +1,13 @@
+{"scenario": "dts-rx-vdcd-end-after-burst-end", "rows": ["C-0842", "C-0843", "C-0844", "K-0021", "K-0063", "K-0066", "K-0071", "K-0073", "K-0096", "C-1024", "K-0111"], "source": "Ed4 C.7.5.1.1, p.C-110; K.3.2.2, p.K-9", "description": "A burst that ends (signal_lost) before its predicted end, with nothing queued, leaves the prediction in force; data queued later waits for it with csma.vdcd_end. Several EOTs combine to the earliest end time.", "config": {"local_address": "0.0.1.2", "address_size": 4, "csma": {"mode": "jitter"}}, "note": "Conn 1 binds SAP 5 for non-ARQ and gets S_BIND_ACCEPTED (A-0041, A-0047); its S_UNIDATA_REQUEST (priority 0 to SAP 5 at 0.0.1.3, U_PDU \"hello\", no confirmation) is data queued for transmission and produces no SIS output (A-0095, K-0096). Every received D_PDU is a single-segment NON-ARQ-DATA (type 7, address size 4, C_PDU ID as stated, reception window 20) whose segment is a DATA C_PDU holding a DATA S_PDU from SAP 9 to SAP 9 with U_PDU \"hi\". Three D_PDUs from 0.0.1.3 to 0.0.1.9 (C_PDU IDs 1 to 3) arrive at 2000 with EOT 16 (end 10000), at 3000 with EOT 12 (end 9000) and at 3500 with EOT 14 (end 10500). Each end time is an upper bound, so the estimate is the minimum, 9000 (C-0843, C-1024). The burst end at 4000 does not clear it (K-0111) and nothing is queued, so no output (K-0065). Data queued at 5000 finds the channel busy until 9000, so csma.vdcd_end runs 4000 ms; at its expiry VDCD clears last and rule 3 gives 3000 ms."}
+{"t": 0, "in": "sis_connect", "conn": 1}
+{"t": 0, "in": "sis_bytes", "conn": 1, "bytes": "90eb00000401502000"}
+{"out": "sis_bytes", "conn": 1, "bytes": "90eb00000403500800"}
+{"t": 1000, "in": "burst_started"}
+{"t": 2000, "in": "bytes_received", "bytes": "90eb7000108f01090103000601000600000014dee7000099006869bf44d33b"}
+{"t": 3000, "in": "bytes_received", "bytes": "90eb70000c8f0109010300060200060000001486bd000099006869bf44d33b"}
+{"t": 3500, "in": "bytes_received", "bytes": "90eb70000e8f01090103000603000600000014727f000099006869bf44d33b"}
+{"t": 4000, "in": "burst_ended", "reason": "signal_lost", "wn": 2, "interleaver": "long", "k": 7, "snr_tenth_db": null, "blocks": 3}
+{"t": 5000, "in": "sis_bytes", "conn": 1, "bytes": "90eb0000111405e000010300000000000568656c6c6f"}
+{"out": "timer_start", "name": "csma.vdcd_end", "ms": 4000}
+{"t": 9000, "in": "timer_expired", "name": "csma.vdcd_end"}
+{"out": "timer_start", "name": "csma.lbt_wait", "ms": 3000}

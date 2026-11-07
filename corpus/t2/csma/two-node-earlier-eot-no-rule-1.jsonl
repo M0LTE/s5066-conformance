@@ -1,0 +1,16 @@
+{"scenario": "csma-two-node-earlier-eot-no-rule-1", "rows": ["K-0067", "K-0068", "K-0071", "K-0072", "K-0073", "C-0844", "C-1024", "K-0111"], "source": "Ed4 K.3.2.2, p.K-9; C.7.5.1.1, p.C-110", "description": "When the idle is produced by the EOT prediction of an earlier burst rather than by the last burst, rule 1 does not apply even though the last burst met two-node condition (a): the VDCD-determined idle gets lbt_wait_vdcd_ms.", "config": {"local_address": "0.0.1.2", "address_size": 4, "csma": {"mode": "jitter"}}, "note": "Conn 1 binds SAP 5 for non-ARQ and gets S_BIND_ACCEPTED (A-0041, A-0047); its S_UNIDATA_REQUEST (priority 0 to SAP 5 at 0.0.1.3, U_PDU \"hello\", no confirmation) is data queued for transmission and produces no SIS output (A-0095, K-0096). Every received D_PDU is a single-segment NON-ARQ-DATA (type 7, address size 4, C_PDU ID as stated, reception window 20) whose segment is a DATA C_PDU holding a DATA S_PDU from SAP 9 to SAP 9 with U_PDU \"hi\". At 2000: a D_PDU from 0.0.1.3 to 0.0.1.9 (C_PDU ID 1, EOT 16, end 10000); the burst is lost at 3000, so csma.vdcd_end runs 7000 ms. At 3500 a burst from 0.0.1.9 starts (csma.vdcd_end cancelled, DCD busy); at 4000 a D_PDU from 0.0.1.9 to this node, individual (C_PDU ID 1, EOT 10, end 9000), whose S_PDU is for SAP 9, which no client has bound, so delivering it (P3-6) gives no output (A-0235). That burst meets condition (a), but its end at 4500 and its own end time 9000 come before the carried end time 10000 (C-1024), so the idle at 10000 is produced by the first transmission, which does not meet it (K-0072). At 4500 csma.vdcd_end 5500 ms; at 10000 rule 3 gives 3000 ms."}
+{"t": 0, "in": "sis_connect", "conn": 1}
+{"t": 0, "in": "sis_bytes", "conn": 1, "bytes": "90eb00000401502000"}
+{"out": "sis_bytes", "conn": 1, "bytes": "90eb00000403500800"}
+{"t": 1000, "in": "burst_started"}
+{"t": 1500, "in": "sis_bytes", "conn": 1, "bytes": "90eb0000111405e000010300000000000568656c6c6f"}
+{"t": 2000, "in": "bytes_received", "bytes": "90eb7000108f01090103000601000600000014dee7000099006869bf44d33b"}
+{"t": 3000, "in": "burst_ended", "reason": "signal_lost", "wn": 2, "interleaver": "long", "k": 7, "snr_tenth_db": null, "blocks": 2}
+{"out": "timer_start", "name": "csma.vdcd_end", "ms": 7000}
+{"t": 3500, "in": "burst_started"}
+{"out": "timer_cancel", "name": "csma.vdcd_end"}
+{"t": 4000, "in": "bytes_received", "bytes": "90eb70000a8f01020109000601000600000014215c000099006869bf44d33b"}
+{"t": 4500, "in": "burst_ended", "reason": "eom", "wn": 2, "interleaver": "long", "k": 7, "snr_tenth_db": 60, "blocks": 1}
+{"out": "timer_start", "name": "csma.vdcd_end", "ms": 5500}
+{"t": 10000, "in": "timer_expired", "name": "csma.vdcd_end"}
+{"out": "timer_start", "name": "csma.lbt_wait", "ms": 3000}
