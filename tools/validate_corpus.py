@@ -332,6 +332,50 @@ def sis_body(t, d):
     return None
 
 
+SIS_TYPES = {"S_BIND_REQUEST": 1, "S_UNBIND_REQUEST": 2, "S_BIND_ACCEPTED": 3, "S_BIND_REJECTED": 4,
+             "S_UNBIND_INDICATION": 5, "S_SUBNET_AVAILABILITY": 14, "S_DATA_FLOW_ON": 15,
+             "S_DATA_FLOW_OFF": 16, "S_KEEP_ALIVE": 17, "S_MANAGEMENT_MSG_REQUEST": 18,
+             "S_MANAGEMENT_MSG_INDICATION": 19, "S_UNIDATA_REQUEST": 20, "S_UNIDATA_INDICATION": 21,
+             "S_UNIDATA_REQUEST_CONFIRM": 22, "S_UNIDATA_REQUEST_REJECTED": 23}
+
+
+def sis_encode(v):
+    """Encode a value that already decodes from the case's bytes, NOT USED bits and RANK as zero."""
+    def st(s):
+        return (s["tx_mode"] << 8) | (s["confirm"] << 6) | (s["order"] << 5) | (s["extended"] << 4) | s["min_retx"]
+
+    def addr(a):
+        return ((a["size"] << 29) | (int(a["group"]) << 28) | addr_value(a["address"])).to_bytes(4, "big")
+
+    def updu(h):
+        d = bytes.fromhex(h)
+        return len(d).to_bytes(2, "big") + d
+
+    p = v["primitive"]
+    b = bytes([SIS_TYPES[p]])
+    if p == "S_BIND_REQUEST":
+        s = st(v["service_type"])
+        b += bytes([v["sap"] << 4, s >> 4, (s & 15) << 4])
+    elif p == "S_BIND_ACCEPTED":
+        b += bytes([v["sap"] << 4]) + v["mtu"].to_bytes(2, "big")
+    elif p in ("S_BIND_REJECTED", "S_UNBIND_INDICATION"):
+        b += bytes([v["reason"]])
+    elif p == "S_SUBNET_AVAILABILITY":
+        b += bytes([v["node_status"], v["reason"]])
+    elif p in ("S_MANAGEMENT_MSG_REQUEST", "S_MANAGEMENT_MSG_INDICATION"):
+        b += bytes([v["msg_type"]]) + bytes.fromhex(v["body"])
+    elif p == "S_UNIDATA_REQUEST":
+        s = st(v["delivery_mode"])
+        b += bytes([(v["priority"] << 4) | v["dest_sap"]]) + addr(v["dest_address"]) \
+            + bytes([s >> 4, ((s & 15) << 4) | (v["ttl"] >> 16)]) + (v["ttl"] & 0xFFFF).to_bytes(2, "big") + updu(v["u_pdu"])
+    elif p == "S_UNIDATA_INDICATION":
+        b += bytes([(v["priority"] << 4) | v["dest_sap"]]) + addr(v["dest_address"]) \
+            + bytes([(v["tx_mode"] << 4) | v["src_sap"]]) + addr(v["src_address"]) + updu(v["u_pdu"])
+    elif p in ("S_UNIDATA_REQUEST_CONFIRM", "S_UNIDATA_REQUEST_REJECTED"):
+        b += bytes([(v.get("reason", 0) << 4) | v["dest_sap"]]) + addr(v["dest_address"]) + updu(v["u_pdu"])
+    return b"\x90\xeb\x00" + len(b).to_bytes(2, "big") + b
+
+
 def sis_next(b, off):
     """One step of the reference decoder at b[off:], where a preamble is expected.
 
@@ -414,6 +458,8 @@ def check_sis_case(err, where, c, b, kind):
             err.add(where, "bytes decode to error %s" % exp[1])
         elif exp[1] != c["value"]:
             err.add(where, "value disagrees with the bytes")
+        elif c.get("dir") in ("encode", "both") and sis_encode(c["value"]) != b:
+            err.add(where, "bytes are not the encoding of the value (a NOT USED bit or RANK is set?)")
         return
     v = c.get("value")
     if c.get("dir") != "decode" or not isinstance(v, dict):

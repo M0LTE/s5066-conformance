@@ -209,11 +209,11 @@ The value always has `primitive` (the Annex S name) and these keys. `service_typ
 
 The U_PDU size fields are not in the value; the encoder computes them and the decoder checks them. Whether a value is acceptable to the node (a U_PDU over the MTU, TTL above 648000, an invalid service type, a group address with ARQ) is node policy and is not tested here.
 
-`sis_stream` is decode only. `value` is `{"chunks": [hex, ...], "events": [event, ...]}`; `bytes` is the chunks joined. The harness feeds the chunks to a streaming decoder one by one and collects every event it gives, in order; the list must equal `events`. An event is a primitive (a value as above) or `{"error": kind}` where kind is one of the five SIS kinds above or `bad_sync`. Results must not depend on how the bytes are chunked, so a harness should also try the bytes as one chunk and one byte at a time. Rules [S-0075, S-0076]:
+`sis_stream` is decode only. `value` is `{"chunks": [hex, ...], "events": [event, ...]}`; `bytes` is the chunks joined. The harness feeds the chunks to a streaming decoder one by one and collects every event it gives, in order; the list must equal `events`. An event is a primitive (a value as above) or `{"error": kind}` where kind is one of the five SIS kinds above or `bad_sync`. Results must not depend on how the bytes are chunked, so a harness should also try the bytes as one chunk and one byte at a time. Rules [S-0075, S-0076, S-0159]:
 
-- Bytes that are not at a preamble give one `bad_sync` event, then the decoder scans forward byte by byte for the next `90 eb` and resumes there. A run of junk of any length, however chunked, gives one event.
-- A bad version or zero size gives its event, then the scan restarts at the byte after the first preamble byte.
-- A deprecated type, an unknown type or a body of the wrong length is reported once the whole body has arrived, and the body is then skipped by its size field.
+- Bytes that are not at a preamble, where one is expected (at the start, or after a whole frame), give one `bad_sync` event, then the decoder scans forward byte by byte for the next `90 eb` and resumes there. A run of junk of any length, however chunked, gives one event.
+- A bad version or zero size gives its event, then the scan restarts at the byte after the first preamble byte. The bytes that scan passes over give no further event.
+- A deprecated type, an unknown type or a body of the wrong length is reported once the whole body has arrived, and the body is then skipped by its size field. That counts as a whole frame, so junk after it is a new run.
 - A frame that has not fully arrived gives no event. A final lone `90` is held in case it starts a preamble. There is no end-of-input event.
 
 ## 4. T2 scenario traces
