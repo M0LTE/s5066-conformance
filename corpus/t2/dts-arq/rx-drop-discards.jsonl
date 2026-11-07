@@ -1,0 +1,25 @@
+{"scenario":"dts-arq-rx-drop-discards","rows":["C-0181","C-0184","C-0204","C-0217","C-0861","C-0836","C-1125","C-0776"],"source":"Ed4 C.4.4.3, p.C-26; C.4.5.4, p.C-29","description":"A DROP PDU ends a C_PDU: the segment already received is discarded, nothing is delivered, and the DROP PDU is acknowledged even with a bad data CRC.","config":{"local_address":"0.0.1.2","csma":{"mode":"jitter"},"modem":{"preamble_ms":600,"flush_ms":150,"waveforms":[{"wn":2,"interleaver":"long","block_bytes":25,"block_ms":4800}]},"cas":{"max_links":4,"link_request_timeout_ms":60000,"link_request_retries":2,"first_data_timeout_ms":120000},"dts":{"ack_wait_ms":60000}},"note":"Conn 1 binds SAP 9 for ARQ. Link setup as cas/make-called-accept: at 2000 the peer 0.0.1.3 calls with an Ed4 PHYSICAL LINK REQUEST, our accept goes out at 52000, and when that transmission ends at 57550 the link is made with the 16-bit family (B-0213, B-0142): window edges at their initial values (C-0782, C-0787), and cas.first_data/0.0.1.3 runs (B-0215). The peer had a two-segment C_PDU whose TTL expired after its first segment was sent. At 61000 FSN 0: C_PDU START, DELIVER IN ORDER, TX WIN LWE, a 6-byte segment (block 0 of a 2-block transmission, EOT 20, end 71000); it is stored and RX LWE moves to 1, but the C_PDU is incomplete. At 66000 FSN 1: a DROP PDU (DROP C_PDU set, C_PDU END, TX WIN UWE, no segment), whose data CRC arrives corrupted (its last byte inverted). A DROP PDU is acknowledged whatever its data CRC (C-0204, C-0217), so unlike other D_PDUs with a bad data CRC (C-0836) it is not discarded (C-1125). Its C_PDU is discarded with the segment already received (C-0184): nothing is delivered and cas.first_data keeps running. RX LWE moves to 2. The burst ends at 67000: csma.vdcd_end to 71000, LBT rule 1, contention 12000 ms; at 83000 the ACK-ONLY with RX LWE 2 and no bitmap acknowledges both (C-0181, C-0861). Fixture: preamble 600, flush 150, 25 bytes and 4800 ms a block, so an n-block transmission lasts 750 \u002B 4800 n ms, and the EOT of a D_PDU starting in block b of n is ceil((4800 (n - b) \u002B 150) / 500): 10, 20, 30 for 1, 2, 3 blocks to go (C-0104, C-1043). Addresses 0.0.1.2 (this node) and 0.0.1.3 take address size 3 (C-0133), so a DATA-ONLY is 19 bytes plus its segment, an ACK-ONLY 15 bytes plus its bitmap and a DATA-ACK 22 bytes plus bitmap and segment. dts.ack_wait_ms 60000. Seed 0 draws uniform(16) = 15, 4, 15, 12: contention waits 45000, 12000, 45000, 36000 ms (K-0080). Transmissions are zero filled: fill is P4-3\u0027s. "}
+{"t":0,"in":"sis_connect","conn":1}
+{"t":0,"in":"sis_bytes","conn":1,"bytes":"90eb00000401901000"}
+{"out":"sis_bytes","conn":1,"bytes":"90eb00000403900800"}
+{"t":1000,"in":"burst_started"}
+{"t":2000,"in":"bytes_received","bytes":"90eb80000a6f10210300010000010000000a8bb212977d6864"}
+{"t":3000,"in":"burst_ended","reason":"eom","wn":2,"interleaver":"long","k":7,"snr_tenth_db":60,"blocks":1}
+{"out":"timer_start","name":"csma.vdcd_end","ms":4000}
+{"t":7000,"in":"timer_expired","name":"csma.vdcd_end"}
+{"out":"timer_start","name":"csma.cont_wait","ms":45000}
+{"t":52000,"in":"timer_expired","name":"csma.cont_wait"}
+{"out":"transmit","bytes":"90eb80000a6f10310200010000010000000a5cf62269d8f546","wn":2,"interleaver":"long","k":7,"eom":true}
+{"t":57550,"in":"transmit_done"}
+{"out":"link_state","peer":"0.0.1.3","state":"linked"}
+{"out":"timer_start","name":"cas.first_data/0.0.1.3","ms":120000}
+{"t":60000,"in":"burst_started"}
+{"t":61000,"in":"bytes_received","bytes":"90eb9000146a102103a4060000e59d000059400000aed290c5"}
+{"t":66000,"in":"bytes_received","bytes":"90eb90000a6a102103780000012ed7000000ff"}
+{"t":67000,"in":"burst_ended","reason":"eom","wn":2,"interleaver":"long","k":7,"snr_tenth_db":60,"blocks":1}
+{"out":"timer_start","name":"csma.vdcd_end","ms":4000}
+{"t":71000,"in":"timer_expired","name":"csma.vdcd_end"}
+{"out":"timer_start","name":"csma.cont_wait","ms":12000}
+{"t":83000,"in":"timer_expired","name":"csma.cont_wait"}
+{"out":"transmit","bytes":"90eba0000a6a10310200020000fe3e","wn":2,"interleaver":"long","k":7,"eom":true}
+{"t":88550,"in":"transmit_done"}

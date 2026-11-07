@@ -25,7 +25,9 @@
   },
   "dts": {
     "max_segment_size": 1023,
-    "max_transmission_ms": 127500
+    "max_transmission_ms": 127500,
+    "max_window": 32768,
+    "ack_wait_ms": null
   },
   "drc": {
     "default_speed": {
