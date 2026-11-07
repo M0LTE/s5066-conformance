@@ -93,13 +93,13 @@ B-0091	Ed4 B.7	B-12	shall	When ALE is not used, the CAS-1 linking protocol is us
 B-0092	Ed4 B.7	B-12	shall	If CAS-1 linking was skipped under ALE and ARQ data draws a WARNING saying no connection exists, run CAS-1 linking and resend	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
 B-0093	Ed4 B.7	B-12	shall	A called node that accepted an ALE link answers a PHYSICAL LINK REQUEST per the CAS-1 linking protocol	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
 B-0094	Ed4 B.7	B-13	shall	Under ALE, a received type 4 BREAK is answered with a type 5 BREAK CONFIRM, then the ALE link closes and the physical link is broken	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			Text cites B.4.2.2, a stale reference
-B-0095	Ed4 B.7	B-13	shall	A node uses a physical link for control and data of soft-link data exchange sessions that SIS requests	yes				
+B-0095	Ed4 B.7	B-13	shall	A node uses a physical link for control and data of soft-link data exchange sessions that SIS requests	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs; src/M0LTE.S5066.Core/Runtime/TransmitQueue.cs		
 B-0096	Ed4 B.7	B-13	may	A node may hold physical links with several nodes at once, at most one per remote node	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs		
 B-0097	Ed4 B.7	B-13	may	A node may make a new physical link before breaking existing ones	yes				
-B-0098	Ed4 B.7	B-13	shall	Switching between physical links needs no explicit peer-to-peer exchange	yes				
+B-0098	Ed4 B.7	B-13	shall	Switching between physical links needs no explicit peer-to-peer exchange	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs; src/M0LTE.S5066.Core/Runtime/TransmitQueue.cs		
 B-0099	Ed4 B.7	B-13	info	Under 1:1 ALE, CAS allows one active ALE link per channel and binds one physical link to it	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
 B-0100	Ed4 B.7	B-13	shall	CAS-1 talks to peer CAS sublayers with these protocols to make and break physical links	yes				
-B-0101	Ed4 B.7	B-13	shall	CAS-1 talks to peer CAS sublayers with these protocols to carry S_PDUs between local and remote SIS	yes				
+B-0101	Ed4 B.7	B-13	shall	CAS-1 talks to peer CAS sublayers with these protocols to carry S_PDUs between local and remote SIS	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs; src/M0LTE.S5066.Core/Runtime/TransmitQueue.cs		
 B-0102	Ed4 B.7.1	B-13	shall	CAS peers communicate using the C_PDUs listed in B.7.1	yes				
 B-0103	Ed4 B.7.1	B-13	info	C_PDU type codes used in our profile: 0 DATA, 1 PHYSICAL LINK REQUEST, 2 PHYSICAL LINK ACCEPTED, 3 PHYSICAL LINK REJECTED, 4 PHYSICAL LINK BREAK, 5 PHYSICAL LINK BREAK CONFIRM, 6 PHYSICAL LINK BREAK REQUEST	yes				
 B-0104	Ed4 B.7.1	B-13	info	C_PDU type codes for ALE: 7 PHYSICAL LINK RESUME, 8 PHYSICAL LINK RESUME ACCEPT, 9 PHYSICAL LINK RESUME REJECT, 10 ALE RELINK	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			Codes 11 to 15 are not defined; see interp row on unknown types
