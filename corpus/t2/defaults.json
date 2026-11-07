@@ -1,0 +1,18 @@
+{
+  "local_address": null,
+  "address_size": null,
+  "prng_seed": "0000000000000000",
+  "csma": {
+    "mode": null,
+    "cont_slot_width_ms": 3000,
+    "num_cont_slots": 16,
+    "lbt_wait_dcd_ms": 30000,
+    "lbt_wait_vdcd_ms": 3000,
+    "node_slot_position": null
+  },
+  "modem": {
+    "preamble_ms": null,
+    "flush_ms": null,
+    "waveforms": []
+  }
+}
