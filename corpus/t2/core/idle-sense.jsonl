@@ -1,0 +1,8 @@
+{"scenario": "core-idle-sense", "rows": ["K-0043", "K-0062", "K-0063", "K-0065"], "source": "Ed4 K.3.2.1 and K.3.2.2, pp.K-8 to K-9", "description": "A node with nothing queued starts in SENSE with no timer and stays there through bursts, received bytes and external busy changes, producing no output.", "config": {"local_address": "0.0.1.2", "address_size": 4}, "note": "Construction is START (core-architecture.md section 10 item 1). The received bytes hold no 90 EB sync. csma.mode is left null: a node with nothing queued never contends, so it never needs it."}
+{"t": 0, "in": "burst_started"}
+{"t": 0, "in": "bytes_received", "bytes": "00112233445566778899"}
+{"t": 4000, "in": "burst_ended", "reason": "eom", "wn": 2, "interleaver": "long", "k": 7, "snr_tenth_db": 120, "blocks": 1}
+{"t": 10000, "in": "channel_busy", "busy": true}
+{"t": 20000, "in": "channel_busy", "busy": false}
+{"t": 60000, "in": "burst_started"}
+{"t": 61000, "in": "burst_ended", "reason": "signal_lost", "wn": 2, "interleaver": "long", "k": 7, "snr_tenth_db": null, "blocks": 0}

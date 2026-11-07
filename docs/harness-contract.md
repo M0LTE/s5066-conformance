@@ -7,7 +7,7 @@ Each implementation (C# first, C++ later) has a small test harness that runs thi
 - Read the corpus from a pinned copy (submodule or package) at a tagged version. Check `corpus/VERSION`: refuse to run a version the harness was not written for. Before 1.0.0 that means a different MAJOR.MINOR; from 1.0.0, a different MAJOR (corpus-format.md section 8).
 - Discover every `corpus/t1/*.jsonl`, every `corpus/t2/**/*.jsonl` and `corpus/prng/splitmix64.jsonl`. Do not hard-code file names.
 - Report one result per case id: `pass`, `fail` or `unsupported`, with a reason for anything but `pass`. A failure names the case id, the line number, and the first difference (expected and actual, as hex for bytes).
-- `unsupported` is for a kind, an input, an output type or a key the harness does not know yet (corpus-format.md sections 2 and 8). It is never counted as a pass. A harness may also mark cases it knowingly skips with a reason, but the summary must count them.
+- `unsupported` is for a kind, an input, an output type or a key the harness does not know yet (corpus-format.md sections 2 and 8). It is never counted as a pass. A harness decides it from the whole case before running it, so a T2 scenario with an unknown kind, input, output or key on any line is `unsupported`, never a failure at an earlier line; the two harnesses' result files then agree whatever each core does. A harness may also mark cases it knowingly skips with a reason, but the summary must count them.
 - Exit non-zero if any case fails. Print a summary: totals of pass, fail, unsupported and skipped, and the corpus version.
 - The harness may write a machine-readable result file (JSON Lines, one `{"id", "result", "reason"}` per case) for CI to compare across the two languages.
 
@@ -33,7 +33,7 @@ The conversion between the corpus JSON shape and the implementation's types live
 For each scenario:
 
 1. Merge `config` over `corpus/t2/defaults.json` (corpus-format.md section 6) and create a fresh core with it, at time 0, with the PRNG seeded from `prng_seed`. If the core needs a setting that is `null`, fail with `missing_setting`.
-2. Give the core a fake modem whose `PlanBurst` answers from the `modem` fixture (corpus-format.md section 5), and whose `Transmit` records a `transmit` output and returns the duration the fixture gives for the same waveform, interleaver and byte count. Any other effect the core has on the outside world must come out as an output.
+2. Give the core a fake modem whose `PlanBurst` answers from the `modem` fixture with the six values of corpus-format.md section 5 (`preamble_ms`, `block_ms`, `flush_ms`, `bytes_per_block`, `blocks`, `duration_ms`), and whose `Transmit` records a `transmit` output and returns the duration the fixture gives for the same waveform, interleaver and byte count. A core that plans each burst with `PlanBurst` may ignore that return value, or emit `transmit` as an output instead of calling the fake modem: the `transmit` output is the observable either way. Any other effect the core has on the outside world must come out as an output.
 3. Keep a table of running timers: name and deadline. Update it from every `timer_start` and `timer_cancel` output.
 4. For each input line in order:
    - Check time: `t` is not earlier than the previous input. No running timer may have a deadline earlier than `t`, and if this input is a modem or SIS input (class 2 or 3), none may have a deadline equal to `t`. Otherwise fail with `missed_timer`. (A `config` input at a timer's deadline is fed before the expiry, corpus-format.md section 4.5.)

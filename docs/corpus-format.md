@@ -378,6 +378,7 @@ Interleaver enum: `ultra_short`, `very_short`, `short`, `medium`, `long`, `very_
 - Time is an integer count of milliseconds since the core was created, which is time 0. The core's clock is the `t` of the input it is handling; it never reads time any other way.
 - `t` never decreases from one input to the next.
 - A timer's deadline is the `t` of the input that started it plus `ms`. `ms` is at least 1; a core that wants "now" acts now instead of starting a timer. Starting a timer that is already running replaces its deadline.
+- Zero-duration rule: because `ms` is at least 1, a core that would start a timer with 0 ms (some protocol waits can be zero, for example a CSMA wait under LBT rule 1 or a jitter draw of slot 0) starts nothing and emits nothing, and takes the action the expiry would have taken at once, while handling the same input. So a chain of zero waits can happen inside one input, and a core that started a 1 ms timer instead does not match the trace.
 - Timers do not fire by themselves. The trace lists every expiry as a `timer_expired` input at exactly the deadline, and the harness checks it (harness-contract.md section 2). Before an input at time t, every running timer with a deadline before t must have been listed as expired. A timer with a deadline equal to t must be listed as expired before any modem or SIS input at t; `config` inputs at t come before it (section 4.5), and may cancel or restart it.
 
 ### 4.5 Simultaneous events
@@ -416,8 +417,11 @@ The core needs burst durations from the modem port's `PlanBurst` (plan 5.1) befo
 `block_bytes` and `block_ms` are positive integers, and no two entries share a `wn` and `interleaver`. For a plan request with waveform number `wn`, interleaver `i` and `n` bytes, the harness finds the entry with that `wn` and `interleaver` (missing entry: the case fails with `unplanned_waveform`) and returns:
 
 - blocks = max(1, ceil(n / block_bytes)), using integer arithmetic, that is (n + block_bytes - 1) / block_bytes rounded down, and 1 when n is 0;
-- bytes per block = block_bytes;
+- bytes_per_block = block_bytes;
+- preamble_ms, block_ms and flush_ms, as in the fixture;
 - duration_ms = preamble_ms + blocks x block_ms + flush_ms.
+
+The answer exposes all six values, not only the duration: a core needs the start time of each block (preamble_ms + i x block_ms) to stamp a different EOT on each D_PDU, and the block capacity to size a transmission. The real modem port gives the same six values (plan 5.1).
 
 ## 6. Node configuration
 
@@ -430,7 +434,7 @@ The base configuration and where each default comes from:
 | `local_address` | `null` | Per node. |
 | `address_size` | `null` | Size-of-address field the node sends. |
 | `prng_seed` | `"0000000000000000"` | [prng.md](prng.md) |
-| `csma.mode` | `null` | `jitter` or `slotted`, network-wide (decision D7). |
+| `csma.mode` | `null` | `jitter`, `slotted` or `ed3`, network-wide (decision D7). `ed3` is the Ed3-compatible setting of the K-0107 ruling: jitter contention, one common LBT value equal to `lbt_wait_dcd_ms`, LBT rule 1 off. |
 | `csma.cont_slot_width_ms` | 3000 | [Ed4 K Table 7, p.K-12] |
 | `csma.num_cont_slots` | 16 | [Ed4 K Table 7, p.K-12] |
 | `csma.lbt_wait_dcd_ms` | 30000 | [Ed4 K Table 7, p.K-12] |

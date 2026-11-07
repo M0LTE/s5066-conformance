@@ -1058,6 +1058,16 @@ def check_modem_fixture(err, where, cfg):
         seen.add(key)
 
 
+CSMA_MODES = {None, "jitter", "slotted", "ed3"}  # corpus-format.md section 6
+
+
+def check_csma_mode(err, where, cfg):
+    """csma.mode is null (no default) or one of the registered values."""
+    csma = cfg.get("csma") if isinstance(cfg, dict) else None
+    if isinstance(csma, dict) and "mode" in csma and csma["mode"] not in CSMA_MODES:
+        err.add(where, "csma.mode %r is not jitter, slotted or ed3" % (csma["mode"],))
+
+
 def check_t2(path, err, ctx, defaults):
     lines = read_jsonl(path, err)
     if not lines:
@@ -1075,6 +1085,7 @@ def check_t2(path, err, ctx, defaults):
         err.add(where, "config must be an object")
     elif defaults is not None:
         check_modem_fixture(err, where, merge(defaults, hdr["config"], err, where))
+        check_csma_mode(err, where, hdr["config"])
     timers = {}  # name -> (deadline, start sequence number)
     starts = 0
     conns, closed = set(), set()
@@ -1120,6 +1131,7 @@ def check_t2(path, err, ctx, defaults):
                     timers.pop(n)
             if kind == "config" and defaults is not None and isinstance(s.get("set"), dict):
                 merge(defaults, s["set"], err, where)
+                check_csma_mode(err, where, s["set"])
             conn = s.get("conn")
             if kind == "sis_connect":
                 if conn in conns or conn in closed:
