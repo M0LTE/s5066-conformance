@@ -1,0 +1,21 @@
+{"scenario":"dts-nonarq-warning-reason-0-unknown-type","rows":["C-0376","C-0377","C-0378","C-0380","C-0381","C-0384","C-0388","C-0051","C-0044","B-0123","B-0139","B-0228","B-0408","B-0400","C-1100","K-0067","K-0068"],"source":"Ed4 C.4.15, pp.C-54 to C-56; B.7.2.2, pp.B-30 to B-31","description":"A D_PDU of a type undefined in Edition 3 (type 9) from a peer recorded as Edition 3 draws a WARNING with reason 0.","config":{"local_address":"0.0.1.2","csma":{"mode":"jitter"},"modem":{"preamble_ms":600,"flush_ms":150,"waveforms":[{"wn":2,"interleaver":"long","block_bytes":25,"block_ms":4800}]},"cas":{"max_links":4,"link_request_timeout_ms":60000,"link_request_retries":2,"first_data_timeout_ms":120000}},"note":"At 2000, from 0.0.1.3 (EOT 10, so the burst ends by 7000), a type 8 D_PDU carrying a PHYSICAL LINK REQUEST. Accepting it would leave the active link count within cas.max_links, so the CAS answers PHYSICAL LINK ACCEPTED (B-0130, B-0210, B-0211), queued in a type 8 D_PDU; nothing is output during the burst. At 3000 the burst ends with the prediction ahead and data queued: csma.vdcd_end 4000. At 7000 LBT rule 1 applies (only this node was addressed, K-0067, K-0068), so contention starts at once, slot 15, 45000 ms. At 52000 the accept goes out (Ed4 bit echoed from the request, B-0138, B-0139; LINK 0, B-0137). The link is declared made when that transmission has ended, at 57550 (B-0213, B-0400, C-1100): link_state linked, D_CONNECTION_MADE to the DTS (C-0571), C_PHYSICAL_LINK_MADE to the SIS, whose soft link is then established (A-0194), and cas.first_data/0.0.1.3 starts with cas.first_data_timeout_ms (B-0215, B-0216). The request has Ed4 clear (octet 10), so the peer is recorded Ed3 (B-0228, B-0408) and the accept has Ed4 clear (octet 20, B-0139). At 71000 0.0.1.3 sends a type 9 D_PDU (EOT 10, end 76000). Types 9 to 14 are undefined for an Ed3 peer (C-0051), so the receiver reads it as an unrecognised type and queues a WARNING with received frame type 9 and reason 0 (C-0388, C-0384). Burst end 72000: csma.vdcd_end 4000; at 76000 rule 1, slot 4, 12000 ms; at 88000 the WARNING goes out (12 bytes in one block, zero filled; no PADDING towards an Ed3 peer, C-0044). Fixture: preamble 600, flush 150, 25 bytes and 4800 ms a block, so one type 8 D_PDU carrying a one-byte C_PDU (address size 3, C-0133) fills a block exactly and a one-block transmission lasts 5550 ms, EOT and reception window ceil(4950 / 500) = 10 (C-0104, C-1043, C-0350). Every C_PDU of this scenario is a one-octet CAS-1 C_PDU sent once in a type 8 D_PDU (B-0129, B-0143, B-0152, B-0191), C_PDU IDs from 0 (C-1040), EOW 0. Seed 0 draws uniform(16) = 15 then 4: contention waits 45000 then 12000 ms (K-0080). Settings: cas.max_links, cas.link_request_timeout_ms 60000, cas.link_request_retries and cas.first_data_timeout_ms 120000. "}
+{"t":1000,"in":"burst_started"}
+{"t":2000,"in":"bytes_received","bytes":"90eb80000a6f10210300010000010000000a8bb210aa9c741e"}
+{"t":3000,"in":"burst_ended","reason":"eom","wn":2,"interleaver":"long","k":7,"snr_tenth_db":60,"blocks":1}
+{"out":"timer_start","name":"csma.vdcd_end","ms":4000}
+{"t":7000,"in":"timer_expired","name":"csma.vdcd_end"}
+{"out":"timer_start","name":"csma.cont_wait","ms":45000}
+{"t":52000,"in":"timer_expired","name":"csma.cont_wait"}
+{"out":"transmit","bytes":"90eb80000a6f10310200010000010000000a5cf6205439e93c","wn":2,"interleaver":"long","k":7,"eom":true}
+{"t":57550,"in":"transmit_done"}
+{"out":"link_state","peer":"0.0.1.3","state":"linked"}
+{"out":"timer_start","name":"cas.first_data/0.0.1.3","ms":120000}
+{"t":70000,"in":"burst_started"}
+{"t":71000,"in":"bytes_received","bytes":"90eb90000a6a102103c0030000be7a010203d75c09b7"}
+{"t":72000,"in":"burst_ended","reason":"eom","wn":2,"interleaver":"long","k":7,"snr_tenth_db":60,"blocks":1}
+{"out":"timer_start","name":"csma.vdcd_end","ms":4000}
+{"t":76000,"in":"timer_expired","name":"csma.vdcd_end"}
+{"out":"timer_start","name":"csma.cont_wait","ms":12000}
+{"t":88000,"in":"timer_expired","name":"csma.cont_wait"}
+{"out":"transmit","bytes":"90ebf0000a67103102900792","wn":2,"interleaver":"long","k":7,"eom":true}
+{"t":93550,"in":"transmit_done"}
