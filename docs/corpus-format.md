@@ -178,7 +178,7 @@ A CAS-1 C_PDU as carried inside a D_PDU segment [Ed4 B.7.1, pp.B-13 to B-25]. Th
 
 | Type | Keys | Bytes |
 |---|---|---|
-| 0 DATA | `s_pdu` (hex, may be empty) | One octet (type, low nibble unused), then the S_PDU [Fig B-1, p.B-14]. |
+| 0 DATA | `s_pdu` (hex; empty only in `decode` cases, since the CAS discards a DATA C_PDU with no S_PDU octet, interp row B-0325) | One octet (type, low nibble unused), then the S_PDU [Fig B-1, p.B-14]. |
 | 1 PHYSICAL LINK REQUEST, 2 PHYSICAL LINK ACCEPTED | `short`, `ed4`, `link` (booleans) | One octet: bit 3 unused, bit 2 Short, bit 1 Ed4, bit 0 LINK [Figs B-2, B-3, pp.B-15, B-17]. |
 | 3 PHYSICAL LINK REJECTED, 4 PHYSICAL LINK BREAK | `reason` (0 to 15) | One octet: low nibble is the reason [Figs B-4, B-5, pp.B-18, B-19]. |
 | 5 PHYSICAL LINK BREAK CONFIRM | none | One octet, low nibble unused [Fig B-6, p.B-21]. |
@@ -205,7 +205,7 @@ A SIS peer S_PDU as carried in a DATA C_PDU [Ed4 A.3.1, pp.A-14 to A-18]. The ty
 | 1 DATA DELIVERY CONFIRM | `priority`, `src_sap`, `dst_sap`, `u_pdu` (hex, a full or partial copy, may be empty) | Two octets as DATA octets 0 and 1, then the copy [Fig A-6, p.A-17]. |
 | 2 DATA DELIVERY FAIL | `reason` (0 to 15), `src_sap`, `dst_sap`, `u_pdu` (hex) | Two octets: type and reason, then the SAPs, then the copy [Fig A-8, p.A-18]. |
 
-`ttd` is an object `{"day_mod16": 0 to 15, "half_seconds": 0 to 65535}`: the 4-bit day and the 16-bit seconds-in-day value after dropping the least significant bit [Ed4 A.3.1.1, p.A-16]. The codec does not resolve it to a time (interp rows A-0166, A-0167). When VALID TTD is 0, octet 2 bits 3 to 0 are NOT USED (Fig A-4) and an encoder writes them as zero. Unused bits are ignored on receipt (interp row A-0157), so a case with one set is `decode` only. The codec does not police reasons (A-0185 maps any DATA DELIVERY FAIL reason in the SIS).
+`ttd` is an object `{"day_mod16": 0 to 15, "half_seconds": 0 to 65535}`: the 4-bit day and the 16-bit seconds-in-day value after dropping the least significant bit [Ed4 A.3.1.1, p.A-16]. The codec does not resolve it to a time (interp rows A-0166, A-0167). When VALID TTD is 0, octet 2 bits 3 to 0 are NOT USED (Fig A-4) and an encoder writes them as zero. Unused bits, including the TTD day bits when VALID TTD is 0 (row A-0159), are ignored on receipt (interp row A-0157), so a case with one set is `decode` only. The codec does not police reasons (A-0185 maps any DATA DELIVERY FAIL reason in the SIS).
 
 Decode check order, stopping at the first failure:
 

@@ -608,6 +608,8 @@ def check_pdu_case(err, where, c, b, kind):
             err.add(where, "C_PDU types 7 to 10 are decode only")
         if kind == "cpdu" and v.get("type") in (1, 2) and v.get("short") and not v.get("ed4") and d != "decode":
             err.add(where, "Short without Ed4 is decode only")
+        if kind == "cpdu" and v.get("type") == 0 and v.get("s_pdu") == "" and d != "decode":
+            err.add(where, "a DATA C_PDU with no S_PDU is decode only")
         if kind == "cpdu" and v.get("type") in (1, 2) and v.get("link") and d != "decode":
             err.add(where, "LINK set is decode only")
         if d in ("encode", "both") and len(err.items) == before:
