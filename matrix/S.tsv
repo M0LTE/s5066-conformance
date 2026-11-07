@@ -19,7 +19,7 @@ S-0017	Ed4 S.3	S-4	info	The main purpose of the protocol is client access to the
 S-0018	Ed4 S.4	S-4	info	Local management and flow control primitives (table printed as "Table A-1"): SIS to client S_SUBNET_AVAILABILITY, S_DATA_FLOW_ON, S_DATA_FLOW_OFF, S_MANAGEMENT_MSG_INDICATION; client to SIS S_MANAGEMENT_MSG_REQUEST; S_KEEP_ALIVE both ways.	yes				Table label duplicates Annex A's Table A-1 (editorial).
 S-0019	Ed4 S.4.1	S-5	shall	The SIS issues S_DATA_FLOW_ON and S_DATA_FLOW_OFF to control the client's transfer of U_PDUs.	yes				
 S-0020	Ed4 S.4.1	S-5	shall	On S_DATA_FLOW_OFF the client stops sending U_PDUs.	yes				Client duty (client library).
-S-0021	Ed4 S.4.1	S-5	shall	The client may send U_PDUs again after S_DATA_FLOW_ON.	yes				Client duty.
+S-0021	Ed4 S.4.1	S-5	shall	Once the client has received S_DATA_FLOW_ON, it is allowed to send U_PDUs again.	yes				Client duty.
 S-0022	Ed4 S.4.1	S-5	may	The SIS may use these primitives or other mechanisms to throttle local clients.	yes				
 S-0023	Ed4 S.4.1	S-5	may	U_PDUs a client sends after being sent S_DATA_FLOW_OFF may be discarded with no acknowledgement, indication or warning.	yes				See interp below for our choice.
 S-0024	Ed4 S.4.1	S-5	shall	A client never controls the flow of data from the subnetwork, explicitly or implicitly.	yes				Client duty: always keep reading the socket.
@@ -48,7 +48,7 @@ S-0046	Ed4 S.4.5	S-7	may	S_SUBNET_AVAILABILITY may be sent at any time to all or
 S-0047	Ed4 S.4.5	S-7	info	The content of S_SUBNET_AVAILABILITY is implementation-dependent.	yes				Contradicted by the value tables on the same page; see interp.
 S-0048	Ed4 S.4.5	S-7	shall	A minimally compliant client can receive S_SUBNET_AVAILABILITY, with no duty to act on it.	yes				Client duty.
 S-0049	Ed4 S.4.5	S-7	info	Node Status values: 0 OFF, 1 ON, 2 Receive-Only, 3 Half-Duplex, 4 Full-Duplex, 5 Transmit-Only.	yes				
-S-0050	Ed4 S.4.5	S-7	shall	When status is other than ON, the Reason argument explains why, using: 0 unspecified, 1 Local Node in EMCON, 2 Reserved.	yes				
+S-0050	Ed4 S.4.5	S-7	shall	For any node status except ON, the Reason argument gives the cause, coded 0 unspecified, 1 Local Node in EMCON, 2 Reserved.	yes				
 S-0051	Ed4 S.4.5	S-7	shall	The Node Status values above are the ones used in the Annex S encoding.	yes				Source says "represent the reason" for status values (editorial).
 S-0052	Ed4 S.4.5	S-7	shall	The Reason values above are the ones used in the Annex S encoding.	yes				
 S-0053	Ed4 S.4.5	S-7	interp	S.4.5 prints Node Status and Reason value tables that "shall" be used [p.S-7], while S.4.5 and S.5.8 call the content implementation-dependent [pp.S-7, S-14]. Reading: the node sends only the S.4.5 values; the client library accepts any value and treats unknown ones as unspecified.	yes				Not in plan 4.4.
@@ -85,7 +85,7 @@ S-0083	Ed4 S.5.3	S-11	info	Extended Field values: 0 no extended field, 1 extende
 S-0084	Ed4 S.5.3	S-11	info	Minimum Number of Retransmissions is used only when Transmission Mode is a non-ARQ subtype and is "don't care" otherwise.	yes				4-bit field, 0 to 15.
 S-0085	Ed4 S.5.3	S-11	shall	The Service Type gives the client's requested default service.	yes				
 S-0086	Ed4 S.5.3	S-11	shall	The Service Type applies to every U_PDU the client submits until it unbinds, unless overridden by a U_PDU's Delivery Mode.	yes				
-S-0087	Ed4 S.5.3	S-11	shall	A client changes its default service type only by unbinding and binding again.	yes				Client duty; node rejects a second bind on a bound connection (interp below).
+S-0087	Ed4 S.5.3	S-11	shall	The only way a client changes its default service type is to unbind and then bind again.	yes				Client duty; node rejects a second bind on a bound connection (interp below).
 S-0088	Ed4 S.5.3	S-11	should	RANK, an Edition 3 field unused in Edition 4, is sent as 0 and ignored on receipt.	yes				
 S-0089	Ed4 S.5.3	S-11	shall	The Service Type states ARQ or non-ARQ, with a non-ARQ submode when non-ARQ.	yes				
 S-0090	Ed4 S.5.3	S-11	shall	Transmission Mode 0 is invalid in a bind.	yes				
@@ -122,7 +122,7 @@ S-0120	Ed4 S.5.12	S-16	shall	The DELIVERY MODE field is encoded per S.5.16.2.	ye
 S-0121	Ed4 S.5.12	S-15	interp	Handling of a TTL field above 648000 (the 20-bit field can hold up to 1048575) is NOT STATED. Reading: treat it as 648000.	yes				Not in plan 4.4.
 S-0122	Ed4 S.5.13	S-16	shall	S_UNIDATA_INDICATION is variable length: byte 5 type 21; byte 6 PRIORITY (bits 7 to 4) and DESTINATION SAP ID (bits 3 to 0); bytes 7 to 10 DESTINATION NODE ADDRESS; byte 11 TRANSMISSION MODE (bits 7 to 4) and SOURCE SAP ID (bits 3 to 0); bytes 12 to 15 SOURCE NODE ADDRESS; bytes 16 and 17 U_PDU size N; then the U_PDU (from byte 18 when no error fields are present).	yes				Fig S-16, read from rendered page.
 S-0123	Ed4 S.5.13	S-16	shall	The error fields (2-byte errored-block count K, K pairs of 2-byte pointer and 2-byte size, 2-byte non-received count L, L such pairs) are present only when the transmission mode is non-ARQ with errors, and are omitted otherwise.	yes				We always omit them.
-S-0124	Ed4 S.5.13	S-16	info	When present, the error fields sit between the U_PDU size and the U_PDU.	no	option NON-ARQ WITH ERRORS not in any profile (main 7.2, p.12)			
+S-0124	Ed4 S.5.13	S-16	info	When present, the error fields sit between the U_PDU size and the U_PDU.	no	option NON-ARQ WITH ERRORS not in CSMA Fixed Frequency (main Table 2)			
 S-0125	Ed4 S.5.13	S-17	shall	Source and destination node address fields are encoded per S.5.16.1.	yes				
 S-0126	Ed4 S.5.13	S-17	shall	The TRANSMISSION MODE field is encoded per S.5.16.3.	yes				
 S-0127	Ed4 S.5.14	S-17	shall	S_UNIDATA_REQUEST_CONFIRM is variable length: byte 5 type 22; byte 6 NOT USED (bits 7 to 4) and DESTINATION SAP ID (bits 3 to 0); bytes 7 to 10 DESTINATION NODE ADDRESS; bytes 11 and 12 size of the confirmed U_PDU or part; bytes 13 onward that U_PDU or part.	yes				Fig S-17.

@@ -22,7 +22,7 @@ A-0020	Ed4 A.1.5	A-3	shall	A broadcast-only node uses a permanent Broadcast Data
 A-0021	Ed4 A.1.5	A-3	shall	During that permanent broadcast session the SIS serves no ARQ U_PDUs.	na	our node is general-purpose, not broadcast-only			
 A-0022	Ed4 A.1.5	A-3	may	The SIS may instead start and end broadcast sessions on its own initiative.	yes				In practice: the SIS sends non-ARQ U_PDUs whenever it chooses.
 A-0023	Ed4 A.1.5	A-3	info	The core broadcast service delivers only error-free data.	yes				
-A-0024	Ed4 A.1.5	A-3	info	Delivery of data that may contain errors is the optional NON-ARQ WITH ERRORS profile option.	no	option NON-ARQ WITH ERRORS not in any profile (main 7.2, p.12)			
+A-0024	Ed4 A.1.5	A-3	info	Delivery of data that may contain errors is the optional NON-ARQ WITH ERRORS profile option.	no	option NON-ARQ WITH ERRORS not in CSMA Fixed Frequency (main Table 2)			
 A-0025	Ed4 A.2	A-3	shall	Where Table A-1 and the detailed primitive sections differ, the detailed sections govern.	yes				
 A-0026	Ed4 A.2	A-4	info	Table A-1 core primitives: client to SIS S_BIND_REQUEST, S_UNBIND_REQUEST, S_UNIDATA_REQUEST; SIS to client S_BIND_ACCEPTED, S_BIND_REJECTED, S_UNBIND_INDICATION, S_UNIDATA_REQUEST_CONFIRM, S_UNIDATA_REQUEST_REJECTED, S_UNIDATA_INDICATION.	yes				Encodings in Ed4 S.5.
 A-0027	Ed4 A.2.1	A-4	info	Flow control and management between SIS and application are local, not standardised in Annex A, and do not affect end-to-end interoperation; Annex S gives suitable primitives.	yes				We implement the Annex S local primitives (plan 4.3).
@@ -38,7 +38,7 @@ A-0036	Ed4 A.2.2.2	A-5	shall	A client goes off-line by issuing S_UNBIND_REQUEST.
 A-0037	Ed4 A.2.2.2	A-5	shall	On S_UNBIND_REQUEST the SIS releases the client's SAP ID.	yes				
 A-0038	Ed4 A.2.2.2	A-5	shall	A released SAP ID becomes available to any other client that asks for it.	yes				
 A-0039	Ed4 A.2.2.2	A-5	info	A client that unbound can come back on-line with a new S_BIND_REQUEST.	yes				Basis for keeping the TCP connection open after unbind (S interp).
-A-0040	Ed4 A.2.2.2	A-5	info	A client can also go off-line by disconnecting physically.	yes				Over TCP: connection close counts as unbind (S interp).
+A-0040	Ed4 A.2.2.2	A-5	info	Disconnecting physically (for example powering off or unplugging) also takes a client off-line.	yes				Over TCP: connection close counts as unbind (S interp).
 A-0041	Ed4 A.2.2.3	A-5	shall	S_BIND_ACCEPTED is the SIS's positive response to S_BIND_REQUEST.	yes				
 A-0042	Ed4 A.2.2.3	A-5	shall	The SAP ID argument of S_BIND_ACCEPTED is the SAP ID assigned to the client.	yes				
 A-0043	Ed4 A.2.2.3	A-5	shall	That SAP ID equals the one in the S_BIND_REQUEST being answered.	yes				
@@ -69,7 +69,7 @@ A-0067	Ed4 A.2.2.6	A-8	shall	The Delivery Mode (Service Type) argument has four 
 A-0068	Ed4 A.2.2.6	A-8	info	Delivery Mode may be DEFAULT, meaning the Service Type given at bind; any other value overrides the bind default for this U_PDU.	yes				Encoded as Transmission Mode 0 (Ed4 S.5.16.2).
 A-0069	Ed4 A.2.2.6	A-8	shall	The transmission mode, ARQ or non-ARQ, is specified, with a non-ARQ submode when non-ARQ is chosen.	yes				
 A-0070	Ed4 A.2.2.6	A-8	info	Non-ARQ has two submodes: error-free-only delivery (the default) and delivery-with-errors.	yes				We support error-free-only.
-A-0071	Ed4 A.2.2.6	A-8	info	The delivery-with-errors submode is optional and belongs to the NON-ARQ WITH ERRORS profile option.	no	option NON-ARQ WITH ERRORS not in any profile (main 7.2, p.12)			
+A-0071	Ed4 A.2.2.6	A-8	info	The delivery-with-errors submode is optional and belongs to the NON-ARQ WITH ERRORS profile option.	no	option NON-ARQ WITH ERRORS not in CSMA Fixed Frequency (main Table 2)			
 A-0072	Ed4 A.2.2.6	A-8	may	A client may ask for no delivery confirmation, node-to-node, client-to-client, or both.	yes				Annex S can only carry one type per request (next rows).
 A-0073	Ed4 A.2.2.6	A-8	shall	Explicit delivery confirmation is requested only together with ARQ delivery.	yes				Client duty; node handling of violations in S interp rows.
 A-0074	Ed4 A.2.2.6	A-8	info	Node-to-node confirmation reuses the DTS ARQ acknowledgement and adds no SIS peer traffic; client-to-client confirmation needs SIS peer S_PDUs and adds overhead.	yes				
@@ -124,13 +124,13 @@ A-0122	Ed4 A.2.2.9	A-12	shall	The indication's Source SAP ID is the SAP of the s
 A-0123	Ed4 A.2.2.9	A-12	shall	The indication's Source Node Address is the node address of the sending client.	yes				
 A-0124	Ed4 A.2.2.9	A-12	shall	The indication's size argument is the size of the delivered U_PDU.	yes				
 A-0125	Ed4 A.2.2.9	A-13	shall	The four error-description arguments are absent from the indication unless the transmission mode is non-ARQ with errors.	yes				We always omit them.
-A-0126	Ed4 A.2.2.9	A-13	shall	The four error-description arguments are present when the transmission mode is non-ARQ with errors.	no	option NON-ARQ WITH ERRORS not in any profile (main 7.2, p.12)			
-A-0127	Ed4 A.2.2.9	A-13	shall	Number of Blocks in Error equals the count of data blocks received in error and passed up.	no	option NON-ARQ WITH ERRORS not in any profile (main 7.2, p.12)			
-A-0128	Ed4 A.2.2.9	A-13	shall	Number of Blocks in Error gives the number of pairs in the block-error array.	no	option NON-ARQ WITH ERRORS not in any profile (main 7.2, p.12)			
-A-0129	Ed4 A.2.2.9	A-13	shall	Each block-error pair holds the location of an errored block in the U_PDU and its size.	no	option NON-ARQ WITH ERRORS not in any profile (main 7.2, p.12)			
-A-0130	Ed4 A.2.2.9	A-13	shall	Number of Non-Received Blocks equals the count of blocks missing from the U_PDU.	no	option NON-ARQ WITH ERRORS not in any profile (main 7.2, p.12)			
-A-0131	Ed4 A.2.2.9	A-13	shall	Number of Non-Received Blocks gives the number of pairs in the non-received array.	no	option NON-ARQ WITH ERRORS not in any profile (main 7.2, p.12)			
-A-0132	Ed4 A.2.2.9	A-13	shall	Each non-received pair holds the location of a missing block in the U_PDU and its size.	no	option NON-ARQ WITH ERRORS not in any profile (main 7.2, p.12)			
+A-0126	Ed4 A.2.2.9	A-13	shall	The four error-description arguments are present when the transmission mode is non-ARQ with errors.	no	option NON-ARQ WITH ERRORS not in CSMA Fixed Frequency (main Table 2)			
+A-0127	Ed4 A.2.2.9	A-13	shall	Number of Blocks in Error equals the count of data blocks received in error and passed up.	no	option NON-ARQ WITH ERRORS not in CSMA Fixed Frequency (main Table 2)			
+A-0128	Ed4 A.2.2.9	A-13	shall	Number of Blocks in Error gives the number of pairs in the block-error array.	no	option NON-ARQ WITH ERRORS not in CSMA Fixed Frequency (main Table 2)			
+A-0129	Ed4 A.2.2.9	A-13	shall	Each block-error pair holds the location of an errored block in the U_PDU and its size.	no	option NON-ARQ WITH ERRORS not in CSMA Fixed Frequency (main Table 2)			
+A-0130	Ed4 A.2.2.9	A-13	shall	Number of Non-Received Blocks equals the count of blocks missing from the U_PDU.	no	option NON-ARQ WITH ERRORS not in CSMA Fixed Frequency (main Table 2)			
+A-0131	Ed4 A.2.2.9	A-13	shall	Number of Non-Received Blocks gives the number of pairs in the non-received array.	no	option NON-ARQ WITH ERRORS not in CSMA Fixed Frequency (main Table 2)			
+A-0132	Ed4 A.2.2.9	A-13	shall	Each non-received pair holds the location of a missing block in the U_PDU and its size.	no	option NON-ARQ WITH ERRORS not in CSMA Fixed Frequency (main Table 2)			
 A-0133	Ed4 A.2.2.9	A-13	shall	The final argument of the indication holds the received user data.	yes				
 A-0134	Ed4 A.3	A-13	shall	Peer SIS sublayers communicate by exchanging S_PDUs.	yes				
 A-0135	Ed4 A.3	A-13	shall	Peer-to-peer S_PDU exchange is used for client data, including its confirmation.	yes				
@@ -165,7 +165,7 @@ A-0163	Ed4 A.3.1.1	A-16	shall	The GMT seconds value loses its least significant 
 A-0164	Ed4 A.3.1.1	A-16	info	When VALID TTD is 1 the full 20-bit TTD is present and the receiver must honour it, discarding the U_PDU if the TTD passes before delivery.	yes				
 A-0165	Ed4 A.3.1.1	A-16	info	When VALID TTD is 0 the last two TTD bytes are absent and the receiver must not use a TTD; it delivers without regard to time.	yes				
 A-0166	Ed4 A.3.1.1	A-16	interp	"GMT in seconds" has no stated origin. Reading: seconds since 00:00 UTC of the TTD's Julian day (0 to 86399), so the 16-bit field holds that value divided by 2 (0 to 43199).	yes				Not in plan 4.4.
-A-0167	Ed4 A.3.1.1	A-16	interp	Day-of-year modulo 16 is ambiguous across a year end, where days run 365 or 366 then 1. NOT STATED how a receiver resolves it. Reading: map the 4-bit day to the nearest real calendar date whose day-of-year modulo 16 matches, searching from 8 days before today to 15 days after (forward wins a tie); if none matches, treat the TTD as expired.	yes				Not in plan 4.4. TTD at most about 15 days ahead (TTL field maximum).
+A-0167	Ed4 A.3.1.1	A-16	interp	The TTD day is only day-of-year modulo 16, and day numbers restart at 1 after 365 or 366; how a receiver resolves it is NOT STATED. Reading: resolve the 4-bit day and the seconds to the instant T, later than 1 day before now and no later than 15 days after now, whose day-of-year modulo 16 matches; if two dates match (possible only across a year end) take the earlier; if none matches, the TTD has passed. Deliver only if T is later than now.	yes				Not in plan 4.4. 15 days is the TTL field maximum (648000 x 2 s). Fixed in review: the earlier reading (nearest match from 8 days back to 15 ahead) turned a TTD 15 days ahead into yesterday, so a maximum-TTL U_PDU would be discarded on arrival.
 A-0168	Ed4 A.3.1.1	A-16	interp	Whether the sender sets VALID TTD is not fixed. Reading: every DATA S_PDU we send carries VALID TTD = 1 with the TTD computed at acceptance, since every accepted U_PDU has a finite TTD under the TTL 0 reading.	yes				Our choice; costs 2 bytes per S_PDU.
 A-0169	Ed4 A.3.1.2	A-17	shall	A DATA DELIVERY CONFIRM S_PDU is sent after a U_PDU, received in a DATA S_PDU with CLIENT DELIVERY CONFIRM REQUIRED = 1, is delivered to its client.	yes				
 A-0170	Ed4 A.3.1.2	A-17	shall	The DATA DELIVERY CONFIRM goes to the peer SIS that originated the DATA S_PDU.	yes				
@@ -198,7 +198,7 @@ A-0196	Ed4 A.3.2.1.3	A-20	shall	Either peer ends a soft link session by asking i
 A-0197	Ed4 A.3.2.1.3	A-20	shall	A called peer waits a configurable minimum time before ending a session on its own, to keep the protocol stable.	yes				The note repeats this as a should and says the value is set per network in operating procedures.
 A-0198	Ed4 A.3.2.1.3	A-20	info	The caller normally ends the session based on its queue; the called side may end it to serve higher-priority data for another node.	yes				
 A-0199	Ed4 A.3.2.1.3	A-20	shall	When told the physical link is broken, the SIS declares the soft link session terminated.	yes				
-A-0200	Ed4 A.3.2.1.4	A-21	info	Under MSPA the SIS can keep queues to several peers with open soft links and may hand all data to the DTS, which handles priority and sharing between peers (Annex C 7.5.2).	yes				
+A-0200	Ed4 A.3.2.1.4	A-21	may	Under MSPA the SIS can hold queues to several peers with open soft links, and may hand all their data to the DTS, which then handles priority and sharing between peers (Annex C 7.5.2).	yes				"may" is bold on the rendered page; was info.
 A-0201	Ed4 A.3.2.1.4	A-21	info	Under Single Peer Access with several peers, queueing is done in the SIS (except ALE 1:1 EXPLICIT CAS-1), since only a few soft links can be open.	no	Single Peer Access model not used; we run MSPA (main Table 2)			
 A-0202	Ed4 A.3.2.1.4	A-21	shall	Single Peer Access: when higher-priority traffic arrives for another peer, the SIS closes the active link as soon as practical, respecting A.3.2.1.3.	no	Single Peer Access model only; we run MSPA			
 A-0203	Ed4 A.3.2.1.4	A-21	shall	Single Peer Access: with traffic for several peers, the SIS is fair and opens soft links to each in turn at reasonable intervals.	no	Single Peer Access model only; we run MSPA			

@@ -6,7 +6,7 @@ Each row is one requirement or one interpretation. The columns, in order:
 
 | Column | Meaning |
 |---|---|
-| `id` | Annex letter and a 4-digit number, for example `C-0042`. Never reused or renumbered. |
+| `id` | Annex letter and a 4-digit number, for example `C-0042`. Main body rows use `MAIN` instead of a letter, for example `MAIN-0007`, because the main body has no annex letter and `M` is a reserved annex. Never reused or renumbered. |
 | `source` | Section reference, for example `Ed4 C.4.2.3`. Write `Ed4 C (section unnumbered)` when the number is missing. |
 | `page` | Printed page, for example `C-13`. |
 | `strength` | `shall`, `should`, `may`, `info` (a definition or encoding that code must follow even though it is not phrased as shall), or `interp` (our resolution of an ambiguity, contradiction or gap). |
