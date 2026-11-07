@@ -450,6 +450,9 @@ The base configuration and where each default comes from:
 | `modem.flush_ms` | `null` | Section 5 |
 | `modem.waveforms` | `[]` | Section 5 |
 | `sis.default_ttl` | 648000 | The default maximum TTL, in the 2-second units of the TTL field, used when a request gives TTL 0; it is configurable [Ed4 A.2.2.6, p.A-9; A-0087, A-0088], and we default it to the field maximum (A-0091). 1 to 648000. |
+| `dts.max_segment_size` | 1023 | The largest C_PDU segment a new D_PDU carries, configurable up to 1023 bytes [Ed4 C.5.1, p.C-57; C.5.2, p.C-61; C-0503, C-0523]. 1 to 1023. |
+| `dts.max_transmission_ms` | 127500 | A configured maximum transmission length below the 127.5 s EOT limit [Ed4 K.3.2.5, p.K-12; K-0094, K-0095]; never applied so as to block one D_PDU (C-0551, C-0878). 1 to 127500. |
+| `drc.default_speed` | `{"wn": 2, "interleaver": "long"}` | The waveform and interleaver of every transmission until rate selection (phase 7) chooses them; a conservative start (plan 6.2). An object with `wn` and `interleaver` (section 4.2 enum). |
 
 New settings are added to `defaults.json` and this table together, each with its source, in the change that first needs them. Only settings the standard makes configurable, or that the plan records as ours, go in (plan 3.2 principle 5).
 

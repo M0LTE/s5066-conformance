@@ -23,5 +23,15 @@
   },
   "sis": {
     "default_ttl": 648000
+  },
+  "dts": {
+    "max_segment_size": 1023,
+    "max_transmission_ms": 127500
+  },
+  "drc": {
+    "default_speed": {
+      "wn": 2,
+      "interleaver": "long"
+    }
   }
 }
