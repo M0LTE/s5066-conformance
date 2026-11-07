@@ -1,0 +1,17 @@
+{"scenario":"dts-nonarq-repeat-dropped-after-window","rows":["C-0353","C-0350","C-0848","K-0077","K-0087","K-0091","C-1051","C-1052"],"source":"Ed4 C.4.11, p.C-50; K.3.2.3, p.K-10","description":"A copy owed for a later transmission is dropped when that transmission could not end within the reception window already announced.","config":{"local_address":"0.0.1.2","address_size":4,"csma":{"mode":"jitter","num_cont_slots":1},"modem":{"preamble_ms":600,"flush_ms":150,"waveforms":[{"wn":2,"interleaver":"long","block_bytes":64,"block_ms":4800}]},"dts":{"max_transmission_ms":5550}},"note":"As dts-nonarq/repeats-across-transmissions up to the end of the first transmission (35550): its copy announced a reception window ending at 59100 (C-0350, C-1051). Another station\u0027s burst then holds the channel from 36000 to 60000 (no D_PDU decoded); the LBT timer is cancelled while busy and restarted with lbt_wait_dcd_ms 30000 when the channel is idle (K-0077, K-0087). At 90000 the contention wait is 0, and on entry to LINKING the DTS finds that a transmission starting now cannot end by 59100 (90000 \u002B 5550), so the two copies still owed are dropped, not sent (C-0353, C-1052), with no rejection: the TTL has not expired and non-ARQ has no confirmation. That empties the queue, so dts.ttd is cancelled and the MAC returns to SENSE with no transmission (K-0091, core-architecture.md 3.5 rule 4)."}
+{"t":0,"in":"sis_connect","conn":1}
+{"t":0,"in":"sis_bytes","conn":1,"bytes":"90eb00000401502000"}
+{"out":"sis_bytes","conn":1,"bytes":"90eb00000403500800"}
+{"t":0,"in":"sis_bytes","conn":1,"bytes":"90eb0000111405e000010320200000000568656c6c6f"}
+{"out":"timer_start","name":"dts.ttd","ms":1296000000}
+{"out":"timer_start","name":"csma.lbt_wait","ms":30000}
+{"t":30000,"in":"timer_expired","name":"csma.lbt_wait"}
+{"out":"transmit","bytes":"90eb70000a8f01030102000b00000b000000397f9900005540000068656c6c6f5398c0d5","wn":2,"interleaver":"long","k":7,"eom":true}
+{"t":35550,"in":"transmit_done"}
+{"out":"timer_start","name":"csma.lbt_wait","ms":3000}
+{"t":36000,"in":"burst_started"}
+{"out":"timer_cancel","name":"csma.lbt_wait"}
+{"t":60000,"in":"burst_ended","reason":"eom","wn":2,"interleaver":"long","k":7,"snr_tenth_db":null,"blocks":0}
+{"out":"timer_start","name":"csma.lbt_wait","ms":30000}
+{"t":90000,"in":"timer_expired","name":"csma.lbt_wait"}
+{"out":"timer_cancel","name":"dts.ttd"}
