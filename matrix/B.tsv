@@ -139,7 +139,7 @@ B-0137	Ed4 B.7.1.3	B-17	shall	Without HARD LINKS, the LINK bit of PHYSICAL LINK 
 B-0138	Ed4 B.7.1.3	B-17	shall	The Ed4 bit of PHYSICAL LINK ACCEPTED is set when the Ed4 bit was set in the request being answered	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs		
 B-0139	Ed4 B.7.1.3	B-17	shall	The Ed4 bit of PHYSICAL LINK ACCEPTED is clear when it was clear in the request being answered	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs		
 B-0140	Ed4 B.7.1.3	B-17	may	The Short bit of PHYSICAL LINK ACCEPTED may be set only when the Ed4 bit is set and the request had Short set	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs		
-B-0141	Ed4 B.7.1.3	B-18	shall	When the accept has both Ed4 and Short set, short-FSN D_PDUs are used on the link in both directions	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs		Links to Annex C D_PDU family selection
+B-0141	Ed4 B.7.1.3	B-18	shall	When the accept has both Ed4 and Short set, short-FSN D_PDUs are used on the link in both directions	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs	t2/dts-arq/short-family-window-128; t2/dts-arq/short-link-type9-warning-3	Links to Annex C D_PDU family selection
 B-0142	Ed4 B.7.1.3	B-18	shall	When the accept has Ed4 set and Short clear, short-FSN D_PDUs are not used on the link	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs		
 B-0143	Ed4 B.7.1.3	B-18	shall	PHYSICAL LINK ACCEPTED is sent via the expedited non-ARQ service (type 8 D_PDUs)	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs		
 B-0144	Ed4 B.7.1.4, Figure B-4	B-18	info	PHYSICAL LINK REJECTED layout, one octet: bits 7 to 4 Type = 3, bits 3 to 0 Reason (bit 3 MSB)	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs		
@@ -230,7 +230,7 @@ B-0228	Ed4 B.7.2.2	B-30 to B-31	info	An Ed3 or earlier peer is expected to ignor
 B-0229	Ed4 B.7.2.2	B-31	shall	If a peer answers an Ed4-bit request with a WARNING D_PDU, the Caller records that the peer does not support Ed4	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs		See interp row on which WARNING counts
 B-0230	Ed4 B.7.2.2	B-31	shall	After such a WARNING the Caller repeats link establishment with the Ed4 bit clear	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs		
 B-0231	Ed4 B.7.2.2	B-31	info	The recorded edition can be reused for later links to avoid repeating the failed attempt	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs; src/M0LTE.S5066.Core/Runtime/PeerTable.cs		
-B-0232	Ed4 B.7.2.2	B-31	info	Between Ed4 peers the default D_PDU family has 16-bit FSN; the Short bit negotiates the 8-bit FSN family, aimed at speeds of 1200 bps or less	yes				
+B-0232	Ed4 B.7.2.2	B-31	info	Between Ed4 peers the default D_PDU family has 16-bit FSN; the Short bit negotiates the 8-bit FSN family, aimed at speeds of 1200 bps or less	yes		src/M0LTE.S5066.Core/Runtime/CasSublayer.cs; src/M0LTE.S5066.Core/Runtime/DtsPeers.cs	t2/dts-arq/ed3-family-roundtrip; t2/dts-arq/short-family-window-128	
 B-0233	Ed4 B.7.2.3	B-31	info	Ed4 defines 1:1 ALE with Ed3 peers using Ed3 PDUs only	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
 B-0234	Ed4 B.7.2.3	B-31	should	The IMPLICIT or EXPLICIT choice should follow how the Ed3 system works	no	ALE profile options (ALE 1:1, MULTICAST ALE, DUPLEX WITH ALE) are not in CSMA Fixed Frequency (main Tables 1, 2, pp.11, 13)			
 B-0235	Ed4 B.7.2.4	B-31	info	Before terminating a link it is desirable that CAS-1 state is clean, with nothing pending either way	yes				
