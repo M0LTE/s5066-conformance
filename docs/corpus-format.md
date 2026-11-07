@@ -170,9 +170,9 @@ Registered `fields` sets (all integers are 0 up to the maximum shown; booleans a
 | 3 | `full_reset_cmnd`, `reset_tx_win_rqst`, `reset_rx_win_cmnd`, `reset_ack` (booleans), `new_rx_lwe` (255), `reset_frame_id` (255) [Ed4 Fig C-19, p.C-36] |
 | 12 | as type 3 but `new_rx_lwe` is 0 to 65535 [Ed4 Fig C-20, p.C-37] |
 | 4 | `c_pdu_start`, `c_pdu_end` (booleans), `c_pdu_id` (15), `tx_fsn` (255) [Ed4 Fig C-21, p.C-40] |
-| 6 | `extended_message`, `valid_message`, `ack` (booleans), `management_frame_id` (255), `extended_data` (hex23) [Ed4 Fig C-23, p.C-43]. The flag is carried as it is on the wire; the codec does not require it to agree with the length of `extended_data` |
+| 6 | `extended_message`, `valid_message`, `ack` (booleans), `management_frame_id` (255), `extended_data` (hex23) [Ed4 Fig C-23, p.C-43]. The flag is carried as it is on the wire; the codec does not require it to agree with the length of `extended_data` (C-1023) |
 | 7, 8 | `c_pdu_id` (4095), `deliver_in_order`, `group_address` (booleans), `c_pdu_size`, `c_pdu_segment_offset`, `c_pdu_reception_window` (65535) [Ed4 Fig C-24, p.C-46; Fig C-33, p.C-51] |
-| 13 | `extended_type` (255), `extended_header` (hex24): the bytes after the extended type up to the header CRC. The format after the header CRC is unknown for any extended type, so it is read as a header-only D_PDU and any bytes after it are `trailing_bytes` (C-0365) [Ed4 Fig C-34, p.C-52] |
+| 13 | `extended_type` (255), `extended_header` (hex24): the bytes after the extended type up to the header CRC [Ed4 Fig C-34, p.C-52]. We implement no extended type, so a decoded type 13 is always an unrecognised extension, and the value is its header. Whether data follows the header depends on the extended type, so bytes after the header CRC are not part of the value and are not `trailing_bytes`; a receiver reading a stream resumes the sync search after the header CRC (C-0365). A case with such bytes is `decode` only |
 | 14 | none, `{}` [Ed4 Fig C-35, p.C-53] |
 | 15 | `received_frame_type` (15), `reason` (15) [Ed4 Fig C-36, p.C-54] |
 
@@ -189,7 +189,7 @@ D_PDU decode check order. The decoder stops at the first failing step:
 7. Header CRC mismatch: `header_crc`.
 8. Type 10 only: the header size is inconsistent with the ack length (section above): `bad_header_size`. Then, for a type with a segment, fewer bytes than the header plus the size of segment plus 4: `truncated`; for a type 10 long form, fewer bytes than the header plus aa plus 4: `truncated`.
 9. A field value the codec cannot represent: `invalid_field`.
-10. Bytes left over: `trailing_bytes`.
+10. Bytes left over: `trailing_bytes`. Type 13 is the exception (the type 13 row above).
 
 Fields marked NOT USED in the standard (type 3 and 12 flag byte bits 7-4, type 6 bits 7-3, type 11 Encoding byte bits 6-0) are not in the value; encoders write them as zero [Ed4 C.4.2, p.C-12]. What a receiver does with a NOT USED bit that is one is NOT STATED. Until an `interp` row decides (ignore it, or `invalid_field`), no case may carry a NOT USED bit set to one, and the validator rejects one that does.
 

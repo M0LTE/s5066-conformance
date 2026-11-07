@@ -645,7 +645,10 @@ def ref_decode(b, peer):
                 return "error", "bad_header_size"
             long_ack = aa
     elif t == 13:
+        # No extended type is implemented, so every one is unrecognised and its format after the
+        # header CRC is unknown: the value is the header only, and later bytes are not reported (C-0365).
         f = {"extended_type": ts[0], "extended_header": ts[1:].hex()}
+        rest = b""
     elif t == 14:
         f = {}
     elif t == 15:
