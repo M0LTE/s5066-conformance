@@ -850,12 +850,12 @@ C-0836	Ed4 C.7.5.1	C-110	info	Otherwise a D_PDU whose data CRC fails is discarde
 C-0837	Ed4 C.7.5.1	C-110	info	Pass extended D_PDU types 1-6 to the WTRP layer; discard other extended types	no	Annex L WTRP not in profile; see interp row on EXTENSION handling			Plan 4.4 (1-4 versus 1-6)
 C-0838	Ed4 C.7.5.1	C-110	info	All other D_PDUs go to the state machine	yes				
 C-0839	Ed4 C.7.5.1	C-110	interp	The data CRC failure path names DATA-ONLY and DATA-ACK (ARQ types) for the non-ARQ with errors service, which uses types 7 and 8. We implement no with-errors service, so any D_PDU whose data CRC fails is discarded after its header EOW and EOT have been used; it is never acknowledged positively (C.4, part 1)	yes				New, minor
-C-0840	Ed4 C.7.5.1.1	C-110	may	A single channel node may transmit after receiving a transmission	yes				
-C-0841	Ed4 C.7.5.1.1	C-110	shall	When a node may transmit is governed by Annex K (CSMA) or Annex L (WTRP); one of them is followed	yes				We follow Annex K (plan 4.1, 7)
+C-0840	Ed4 C.7.5.1.1	C-110	may	A single channel node may transmit after receiving a transmission	yes		src/M0LTE.S5066.Core/Runtime/MacSublayer.cs		
+C-0841	Ed4 C.7.5.1.1	C-110	shall	When a node may transmit is governed by Annex K (CSMA) or Annex L (WTRP); one of them is followed	yes		src/M0LTE.S5066.Core/Runtime/MacSublayer.cs		We follow Annex K (plan 4.1, 7)
 C-0842	Ed4 C.7.5.1.1	C-110	shall	The receiving system processes received EOTs; any EOT gives the end time of the transmission being received	yes				
 C-0843	Ed4 C.7.5.1.1	C-110	shall	Information from every EOT received is combined to estimate that end time as accurately as possible	yes				Plan 7.2
 C-0844	Ed4 C.7.5.1.1	C-110	shall	A node never transmits before that end time, even if it hears no signal	yes				
-C-0845	Ed4 C.7.5.1.1	C-110	should	When receiving a transmission with no EOT parsed, pass the modem's end-of-transmission information to the MAC layer	yes				Phrased as desirable. Modem port BurstEnded (plan 5.1)
+C-0845	Ed4 C.7.5.1.1	C-110	should	When receiving a transmission with no EOT parsed, pass the modem's end-of-transmission information to the MAC layer	yes		src/M0LTE.S5066.Core/Runtime/MacSublayer.cs		Phrased as desirable. Modem port BurstEnded (plan 5.1)
 C-0846	Ed4 C.7.5.2	C-110	info	The DTS output is described as a queue of D_PDUs; an implementation need not use a queue if its external behaviour is the same	yes				
 C-0847	Ed4 C.7.5.2	C-110	info	A D_PDU leaves the queue once transmitted, except as below	yes				
 C-0848	Ed4 C.7.5.2	C-110	shall	NON-ARQ DATA D_PDUs stay queued until they have been sent the required number of times	yes				Continues on C-111. Applied to types 7 and 8. Count comes from the client (Annex A minimum retransmissions)
