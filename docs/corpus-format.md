@@ -93,10 +93,12 @@ A kind is added to this table, and to the validator, in the same change that add
 | `crc16` | `{"data": hex, "register": int}` | The 2 header CRC bytes as transmitted. |
 | `crc32` | `{"data": hex, "register": int}` | The 4 segment CRC bytes as transmitted. |
 | `dpdu` | Section 3.3 | One whole D_PDU from its first sync byte to its last CRC byte. |
+| `cpdu` | Section 3.5 | One whole CAS C_PDU. |
+| `spdu` | Section 3.6 | One whole SIS peer S_PDU. |
 
 For `crc16` and `crc32`, `register` is the final value of the Annex C shift-register code example after all bytes of `data` [Ed4 C.4.2.8, p.C-18; C.4.2.11, p.C-21], and `bytes` is that register sent least significant byte first [Ed4 pp.C-18, C-22]. These kinds are `encode` only.
 
-Kinds planned for phase 1 and not yet registered: `eow`, `cpdu`, `spdu`, `sis_frame`, `address`, `speed_interleaver`.
+Kinds planned for phase 1 and not yet registered: `eow`, `sis_frame`, `address`, `speed_interleaver`.
 
 ### 3.3 The `dpdu` value
 
@@ -169,6 +171,49 @@ Fields marked NOT USED in the standard are not in the value; encoders write them
 ```json
 {"id": "crc16-annex-c-example", "kind": "crc16", "dir": "encode", "rows": ["TODO"], "source": "Ed4 C.4.2.8, pp.C-18 to C-19", "value": {"data": "f0000047056402", "register": 7775}, "bytes": "5f1e"}
 ```
+
+### 3.5 The `cpdu` value
+
+A CAS-1 C_PDU as carried inside a D_PDU segment [Ed4 B.7.1, pp.B-13 to B-25]. The type is the high nibble of the first octet (rows B-0105, B-0106). `peer_edition` is not used. Every `value` has `type` (0 to 10) plus:
+
+| Type | Keys | Bytes |
+|---|---|---|
+| 0 DATA | `s_pdu` (hex; empty only in `decode` cases, since the CAS discards a DATA C_PDU with no S_PDU octet, interp row B-0325) | One octet (type, low nibble unused), then the S_PDU [Fig B-1, p.B-14]. |
+| 1 PHYSICAL LINK REQUEST, 2 PHYSICAL LINK ACCEPTED | `short`, `ed4`, `link` (booleans) | One octet: bit 3 unused, bit 2 Short, bit 1 Ed4, bit 0 LINK [Figs B-2, B-3, pp.B-15, B-17]. |
+| 3 PHYSICAL LINK REJECTED, 4 PHYSICAL LINK BREAK | `reason` (0 to 15) | One octet: low nibble is the reason [Figs B-4, B-5, pp.B-18, B-19]. |
+| 5 PHYSICAL LINK BREAK CONFIRM | none | One octet, low nibble unused [Fig B-6, p.B-21]. |
+| 6 PHYSICAL LINK BREAK REQUEST | `reason` (0 to 7), `priority` (0 to 255) | Two octets: octet 0 bit 3 unused, bits 2 to 0 reason; octet 1 the priority [Fig B-7, p.B-22]. |
+| 7, 8, 9 (ALE resume family) | none | One octet, low nibble unused [Figs B-8 to B-10, pp.B-23, B-24]. Decode only. |
+| 10 ALE RELINK | `reason` (0 to 7) | One octet: bit 3 unused, bits 2 to 0 reason [Fig B-11, p.B-24]. Decode only. |
+
+Types 7 to 10 are ALE only and out of our profile, so their cases are `decode` only. Cases that carry Short without Ed4, or LINK, are also `decode` only: an encoder never sends them (rows B-0125, B-0127) but a decoder reports what arrived. NOT USED bits are written as zero by an encoder and ignored by a decoder (interp row B-0306), so a case that has one set is `decode` only. The codec does not interpret reasons: any value that fits the field decodes. The Priority octet is carried raw; reading values above 15 as 15 (interp row B-0311) is for the CAS above the codec.
+
+Decode check order, stopping at the first failure:
+
+1. No bytes: `truncated`.
+2. Type 11 to 15 (undefined) [Ed4 B.7.1, p.B-13]: `invalid_field`.
+3. Type 6 with fewer than 2 octets: `truncated`.
+4. Any type except 0 with octets beyond the PDU's fixed length (1, or 2 for type 6): `trailing_bytes`.
+
+### 3.6 The `spdu` value
+
+A SIS peer S_PDU as carried in a DATA C_PDU [Ed4 A.3.1, pp.A-14 to A-18]. The type is the high nibble of octet 0. `peer_edition` is not used. Every `value` has `type` (0 to 2) plus:
+
+| Type | Keys | Bytes |
+|---|---|---|
+| 0 DATA | `priority`, `src_sap`, `dst_sap` (0 to 15), `client_confirm` (boolean), `u_pdu` (hex), and `ttd` only when VALID TTD is 1 | Octet 0 type and priority; octet 1 source then destination SAP; octet 2 bit 7 client delivery confirm required, bit 6 VALID TTD, bits 5 and 4 unused, bits 3 to 0 the TTD day; then, only with VALID TTD, two octets of TTD, most significant first; then the U_PDU [Figs A-3, A-4, p.A-15]. |
+| 1 DATA DELIVERY CONFIRM | `priority`, `src_sap`, `dst_sap`, `u_pdu` (hex, a full or partial copy, may be empty) | Two octets as DATA octets 0 and 1, then the copy [Fig A-6, p.A-17]. |
+| 2 DATA DELIVERY FAIL | `reason` (0 to 15), `src_sap`, `dst_sap`, `u_pdu` (hex) | Two octets: type and reason, then the SAPs, then the copy [Fig A-8, p.A-18]. |
+
+`ttd` is an object `{"day_mod16": 0 to 15, "half_seconds": 0 to 65535}`: the 4-bit day and the 16-bit seconds-in-day value after dropping the least significant bit [Ed4 A.3.1.1, p.A-16]. The codec does not resolve it to a time (interp rows A-0166, A-0167). When VALID TTD is 0, octet 2 bits 3 to 0 are NOT USED (Fig A-4) and an encoder writes them as zero. Unused bits, including the TTD day bits when VALID TTD is 0 (row A-0159), are ignored on receipt (interp row A-0157), so a case with one set is `decode` only. The codec does not police reasons (A-0185 maps any DATA DELIVERY FAIL reason in the SIS).
+
+Decode check order, stopping at the first failure:
+
+1. No bytes: `truncated`.
+2. Type 3 to 15 (reserved) [Ed4 A.3.1, p.A-14]: `invalid_field`.
+3. Fewer octets than the fixed part (2 for types 1 and 2; 3 for type 0, or 5 when VALID TTD is 1): `truncated`.
+
+All the bytes after the fixed part belong to the U_PDU copy, so there is no `trailing_bytes` for S_PDUs.
 
 ## 4. T2 scenario traces
 
