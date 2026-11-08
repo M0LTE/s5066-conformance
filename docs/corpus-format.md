@@ -476,6 +476,7 @@ The base configuration and where each default comes from:
 | `dts.max_window` | 32768 | The maximum allowable transmit window size for the 16-bit FSN family: no new ARQ D_PDU is sent while this many are outstanding. It should be configurable and must not exceed the maximum window size [Ed4 C.7.2 (g) to (j), p.C-99; C-0771 to C-0775]. 1 to 32768. |
 | `dts.ack_wait_ms` | `null` | How long after the end of a transmission carrying ARQ data to a peer the node waits for an acknowledgement before it treats the D_PDUs still unacknowledged as failed and retransmits them. The standard gives no value (C-0911). When null the wait is derived (interp C-1120): `dts.max_transmission_ms` plus the longer of `csma.lbt_wait_dcd_ms` and `csma.lbt_wait_vdcd_ms` plus `csma.num_cont_slots * csma.cont_slot_width_ms`. 1 or more, or null. An explicit value below `csma.lbt_wait_dcd_ms` is refused when the configuration is loaded (interp C-1252). |
 | `drc.default_speed` | `{"wn": 2, "interleaver": "long"}` | The waveform and interleaver of every transmission until rate selection (phase 7) chooses them; a conservative start (plan 6.2). An object with `wn` and `interleaver` (section 4.2 enum). |
+| `drc.table` | an empty table (`ladder` and `thresholds` `[]`, every constant `null`) | The rate selection calibration (core-architecture.md 9, phase 7, design shape items 5 and 6; plan 6.2): data, not an operator setting. An empty `ladder` means no calibration: the node sends no MAX-SPEED, LOW-SPEED, MAX-SEGMENT or ED3-BASIC-RATE and transmits at `drc.default_speed` throughout, the fixed-rate baseline. Schema, smoothing and use in sections 6.1 and 6.2. A `drc/` scenario supplies a small synthetic table; the host loads the calibrated one. |
 | `cas.max_links` | `null` | The configurable limit on active physical links; a request that would take the count above it is rejected with reason 4 (B-0193, B-0209, B-0313). Links being made count (B-0402). 1 or more. |
 | `cas.link_request_timeout_ms` | `null` | The Caller's wait for an answer to a PHYSICAL LINK REQUEST, from the end of the transmission carrying it; configurable with no value given (B-0203, B-0204). 1 or more. When null it is derived: one answer wait, `dts.ack_wait_ms` or its derived value (interp B-0420). |
 | `cas.link_request_retries` | `null` | How many times an unanswered PHYSICAL LINK REQUEST is sent again before the link fails, so 1 + retries sends in all (B-0222, B-0407). 0 or more. |
@@ -487,6 +488,52 @@ The base configuration and where each default comes from:
 There is no address size setting. A node sends each D_PDU with the smallest size-of-address field m that holds both its destination and its source, so m follows the addresses: a broadcast D_PDU always has m = 7 (C-0133, C-0130). Corpus 0.8.0 removed the `address_size` key that earlier versions had.
 
 New settings are added to `defaults.json` and this table together, each with its source, in the change that first needs them. Only settings the standard makes configurable, or that the plan records as ours, go in (plan 3.2 principle 5).
+
+### 6.1 The `drc.table`
+
+`drc.table` holds the rate selection calibration (core-architecture.md 9, phase 7). Integers only. A scenario overlay gives the whole table it needs; since lists replace and the constants are `null` in the base, every key the scenario's behaviour reads must be given.
+
+| Key | Value | Meaning |
+|---|---|---|
+| `ladder` | list of `{"wn", "interleaver"}` | The rungs, slowest first: the order in which recommendations and the sender move. No two entries are the same rung. Empty means no calibration (section 6). WN 0 is never on it (interp C-0470). |
+| `thresholds` | list of `{"wn", "interleaver", "bulk", "latency"}` | One entry per rung an estimate can be measured on (on the ladder or not, for example `drc.default_speed`); no two entries share a rung. `bulk` and `latency` are each a list as long as `ladder`: element j is the smoothed estimate, in tenths of a dB, on this entry's rung at or above which ladder rung j meets the bulk (throughput) criterion, or the latency criterion; `null` means rung j never meets it from this rung. |
+| `smoothing_weight` | integer 1 to 16 | The weight w of a new estimate, in sixteenths (section 6.2). 16 means no smoothing. |
+| `clean_run` | integer, 1 or more | The clean bursts in a row on a rung before a recommendation moves up from it (the trial), and before MAX-SEGMENT doubles to a fixed-speed sender. |
+| `rx_error_limit_ppt` | integer 0 to 1000 | A burst whose D_PDU error rate, in parts per thousand, is above this caps its rung in the recommendations. |
+| `rx_ceiling_initial` | integer, 1 or more | The first cap on a rung lasts this many bursts from the peer. |
+| `rx_ceiling_cap` | integer, at least `rx_ceiling_initial` | A cap doubles on each repeat failure of the rung, up to this many bursts. |
+| `tx_step_down_waits` | integer, 1 or more | The sender's step down: this many `dts.ack_wait` expiries in a row with no answer from the peer move its rung down one (P7-7). |
+| `tx_ceiling_initial` | integer, 1 or more | The sender's failed-trial ceiling lasts this many of its transmissions to the peer (P7-7). |
+| `tx_ceiling_cap` | integer, at least `tx_ceiling_initial` | The failed-trial ceiling doubles on each repeat failure, up to this many transmissions (P7-7). |
+
+A rung is named by `wn` and `interleaver` (section 4.2 enum). A rung's position is its index in `ladder`. Example:
+
+```json
+"drc": {"table": {"ladder": [{"wn": 2, "interleaver": "long"}, {"wn": 4, "interleaver": "long"}],
+                  "thresholds": [{"wn": 2, "interleaver": "long", "bulk": [-100, 80], "latency": [-100, 120]},
+                                 {"wn": 4, "interleaver": "long", "bulk": [-100, 60], "latency": [-100, 100]}],
+                  "smoothing_weight": 8, "clean_run": 2, "rx_error_limit_ppt": 500,
+                  "rx_ceiling_initial": 2, "rx_ceiling_cap": 8,
+                  "tx_step_down_waits": 2, "tx_ceiling_initial": 2, "tx_ceiling_cap": 8}}
+```
+
+### 6.2 Receiver recommendations (P7-6)
+
+The exact arithmetic, so every implementation computes the same values (interp C-1270). Nothing here runs when `ladder` is empty.
+
+**Smoothing.** Per peer and per measured rung, the smoothed estimate S starts empty. A burst on that rung with estimate x (`snr_tenth_db`, not null) sets S = x when S is empty, otherwise S = S + q, where d = x - S, q = (|d| x w) / 16 with integer division on the non-negative product, and q takes the sign of d (so it truncates towards zero for both signs). A burst with a null estimate leaves S unchanged. T1 kind `drc_smooth` holds vectors.
+
+**Per burst.** At each `burst_ended`, for each source heard in the burst (a D_PDU header with a good CRC from it, whatever its destination, as C-0833), in ascending address order: h is its valid headers in the burst and e its D_PDUs discarded for a bad data CRC. Let a be the burst's rung (`wn`, `interleaver`). In this order:
+
+1. Caps: every active cap of the peer counts down by one; a cap that reaches 0 is lifted.
+2. If a is on the ladder: when e x 1000 > `rx_error_limit_ppt` x h, the rung's failure count goes up by one and the rung is capped for min(`rx_ceiling_initial` x 2^(failures - 1), `rx_ceiling_cap`) bursts (replacing any cap it had); when e = 0, the rung's failure count goes back to 0.
+3. Clean run of rung a: one more when e = 0, else 0.
+4. Smoothing of S on rung a, as above, when a has a `thresholds` entry.
+5. The ceiling: the lowest position p - 1 over the capped rungs p, never below 0; no cap, no ceiling.
+6. For each of MAX-SPEED (criterion `bulk`) and LOW-SPEED (`latency`), with current recommendation R (a position, or none): if this burst had an estimate and a has a `thresholds` entry, the target T is the highest position j whose element is not null and not above S, or 0 when there is none. With no R yet, R = T, but not above a's position when a is on the ladder. Otherwise, if T < R, R = T (a move down is immediate); if T > R and the clean run of the rung at R is at least `clean_run`, R = R + 1 (one rung, the trial). Then, in every case, R above the ceiling becomes the ceiling. Without an estimate only the ceiling applies.
+7. MAX-SEGMENT, kept only for a fixed-speed sender (the peer's last SENDER-APPROACH has Fixed = 1; interp C-1272): it starts at 255; when e x 2 > h it halves (integer division), not below 25, and its clean count goes to 0; otherwise, when e = 0 its clean count goes up by one, and on reaching `clean_run` it doubles, not above 255, and the count goes to 0. To any other sender MAX-SEGMENT is 255.
+
+A recommendation sent is the rung at position R: MAX-SPEED or LOW-SPEED with Speed = WN and the interleaver code of the rung (C-0462, C-0469). To a peer recorded Ed3, ED3-BASIC-RATE instead, from the MAX-SPEED rung (C-0957, C-0959; interp C-1273). Which go where in the headers: core-architecture.md 9, open question 1, and interp C-1271.
 
 ## 7. PRNG cases
 
