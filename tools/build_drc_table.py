@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build the calibrated drc.table from the P7-5 modem calibration aggregates.
 
-Reads own.tsv and meta.json from a calibration directory (for example
+Reads own.tsv, next.tsv and meta.json from a calibration directory (for example
 calibration/ms110d-cs-0.6.1/, written by the M0LTE.Ms110d calibration sweep,
 docs/calibration-sweep.md there) and writes, into the same directory:
 
@@ -305,30 +305,24 @@ def thresholds_for(exp, ladder, rate):
 
 def build_table(weights, cv, point, binned, rate, rungs, ladder):
     entries = []
-    detail = {}
     for a in rungs:
         if not all((c, a) in cv for c in weights):
             continue
         exp = expected_errors(a, weights, cv, point, binned, ladder)
         if not exp:
             continue
-        bulk, lat, best = thresholds_for(exp, ladder, rate)
+        bulk, lat, _ = thresholds_for(exp, ladder, rate)
         e = rung_obj(a)
         e["bulk"] = bulk
         e["latency"] = lat
         entries.append(e)
-        detail[a] = (exp, best)
     entries.sort(key=lambda e: (e["wn"] if e["wn"] != 13 else 4.5, IL_ORDER[e["interleaver"]]))
     table = {"ladder": [rung_obj(r) for r in ladder], "thresholds": entries}
     table.update(CONSTANTS)
-    return table, detail
+    return table
 
 
 # --- Outputs --------------------------------------------------------------------
-
-
-def fmt_ppt(fr):
-    return str(tenths(fr * 10000) / 10) if fr is not None else "-"
 
 
 def ppt(fr):
@@ -600,7 +594,7 @@ def build(caldir):
     out = {}
     for name, weights, kind in (("drc-table.json", DEFAULT_WEIGHTS, "default: unknown channel and radio"),
                                 ("drc-table-ssb.json", SSB_WEIGHTS, "comparison: SSB band-pass channels only")):
-        table, _ = build_table(weights, cv, point, binned, rate, rungs, ladder)
+        table = build_table(weights, cv, point, binned, rate, rungs, ladder)
         if name == "drc-table.json":
             out[name] = table_json({"source": source(meta, caldir, weights, kind), "table": table})
             out["settle.tsv"] = settle(table, channels, cv, point, binned, rate, rungs, ladder, DEFAULT_SPEED, fading)
