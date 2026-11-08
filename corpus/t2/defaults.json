@@ -18,6 +18,7 @@
   "modem": {
     "preamble_ms": null,
     "flush_ms": null,
+    "eom_bytes": 0,
     "waveforms": []
   },
   "sis": {

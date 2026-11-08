@@ -81,7 +81,7 @@ EOW_CAP = ("drc_capable", "stanag_4529", "ms110_75_2400", "extended_rate",
 T2_INPUTS = {
     "config": (0, {"set": "object"}),
     "timer_expired": (1, {"name": "timer"}),
-    "burst_started": (2, {}),
+    "burst_started": (2, {"block_ms": "posint"}),
     "bytes_received": (2, {"bytes": "hex"}),
     "burst_ended": (2, {"reason": "reason", "wn": "int", "interleaver": "interleaver",
                         "k": "int", "snr_tenth_db": "int_or_null_signed", "blocks": "int"}),
@@ -91,6 +91,8 @@ T2_INPUTS = {
     "sis_bytes": (3, {"conn": "posint", "bytes": "hex"}),
     "sis_disconnect": (3, {"conn": "posint"}),
 }
+# Input keys that may be left out (corpus-format.md section 4.2).
+T2_OPTIONAL_INPUT_KEYS = {"burst_started": ("block_ms",)}
 T2_OUTPUTS = {
     "transmit": {"bytes": "hex", "wn": "int", "interleaver": "interleaver", "k": "int", "eom": "bool"},
     "terminate_receive": {},
@@ -1088,6 +1090,9 @@ def check_modem_fixture(err, where, cfg):
     if not isinstance(wfs, list):
         err.add(where, "modem.waveforms must be a list")
         return
+    eom = cfg["modem"].get("eom_bytes", 0)
+    if not is_int(eom):
+        err.add(where, "modem.eom_bytes must be a non-negative integer")
     seen = set()
     for e in wfs:
         if not isinstance(e, dict):
@@ -1147,7 +1152,8 @@ def check_t2(path, err, ctx, defaults):
                 err.add(where, "unknown input %r" % (kind,))
                 continue
             cls, keys = T2_INPUTS[kind]
-            check_keys(err, where, s, ("t", "in") + tuple(keys))
+            optional = T2_OPTIONAL_INPUT_KEYS.get(kind, ())
+            check_keys(err, where, s, ("t", "in") + tuple(k for k in keys if k not in optional), optional)
             for k, kt in keys.items():
                 if k in s and not check_type(s[k], kt):
                     err.add(where, "%s has a bad value" % k)
