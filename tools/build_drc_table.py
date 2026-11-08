@@ -8,15 +8,19 @@ docs/calibration-sweep.md there) and writes, into the same directory:
   drc-table.json        the default table for an unknown channel: {"source": {...},
                         "table": {...}}, where "table" is exactly the drc.table of
                         docs/corpus-format.md section 6.1
-  drc-table-ssb.json    the same method over the SSB band-pass channels only, for
-                        comparison (docs/calibration-results.md says whether it is
-                        warranted as a table of its own)
   rungs.tsv             per channel and rung: data rate, the set SNR at which the
                         rung meets the bulk and the latency criterion, the error
                         rate at the top of its window, and the ladder verdict
   error-vs-estimate.tsv per channel, rung and estimate bin: bursts, D_PDUs and the
                         D_PDU error rate of the burst itself
+  estimate-summary.tsv  per channel and rung: the estimate's range and the bin
+                        from which the burst's own error rate meets each criterion
   next-check.tsv        the independence check of the method against next.tsv
+  settle.tsv            per channel and set SNR, where the bulk walk of
+                        corpus-format.md 6.2 settles with the default table (a
+                        static prediction), against the best rung there
+  settle-ssb.tsv        the same for a table built over the SSB channels only, to
+                        show whether such a table would be worth having
 
 Method (core-architecture.md 9, phase 7, design shape items 4 to 6 and open
 question 15; docs/calibration-results.md gives the reasons):
@@ -87,6 +91,8 @@ ORDER_CHANNEL = "Poor"
 # SSB-only comparison table.
 DEFAULT_WEIGHTS = {"AWGN": 1, "Poor": 1, "Moderate": 1, "AWGN-SSB": 1, "Poor-SSB": 1}
 SSB_WEIGHTS = {"AWGN-SSB": 1, "Poor-SSB": 1}
+# drc.default_speed in corpus/t2/defaults.json: where the walk starts.
+DEFAULT_SPEED = "wn2-long"
 # A bin of a's estimate needs this many bursts of a over the weighted channels.
 MIN_BIN_BURSTS = 20
 # Starting values of the constants, tuned by the P7-9 stack sweep rounds.
@@ -200,19 +206,20 @@ def curves(point):
 
 
 def pareto(cands, rate):
-    """cands: {rung: needed SNR (Fraction)}. Strict Pareto dominance."""
-    kept = []
+    """cands: {rung: needed SNR (Fraction)}. Strict Pareto dominance: a rung is
+    dropped when another is no worse on data rate and needed SNR and strictly
+    better on one. Returns {rung: None when kept, else the dominating rung that
+    needs the least SNR (then the fastest)}."""
+    out = {}
     for x, sx in cands.items():
-        beaten = False
-        for y, sy in cands.items():
-            if y == x:
-                continue
-            if rate[y] >= rate[x] and sy <= sx and (rate[y] > rate[x] or sy < sx):
-                beaten = True
-                break
-        if not beaten:
-            kept.append(x)
-    return kept
+        doms = [y for y, sy in cands.items() if y != x and rate[y] >= rate[x] and sy <= sx
+                and (rate[y] > rate[x] or sy < sx)]
+        out[x] = min(doms, key=lambda y: (cands[y], -rate[y], y)) if doms else None
+    return out
+
+
+def kept_of(verdict):
+    return sorted(r for r, by in verdict.items() if by is None)
 
 
 def build_ladder(cv, rate, rungs):
@@ -224,7 +231,7 @@ def build_ladder(cv, rate, rungs):
             n = c.needs(ppt) if c else None
             if n is not None:
                 need[crit][r] = n
-    kept = {crit: pareto(need[crit], rate) for crit in need}
+    kept = {crit: kept_of(pareto(need[crit], rate)) for crit in need}
     union = set(kept["bulk"]) | set(kept["latency"])
 
     def order(r):
@@ -379,11 +386,25 @@ def channel_sets(c, cv, rate, rungs):
     return out
 
 
+def verdict(v, r):
+    if r not in v:
+        return "never meets"
+    return "kept" if v[r] is None else "beaten by " + v[r]
+
+
+def db2(fr):
+    """A Fraction in tenths of a dB as dB with two decimals."""
+    h = tenths(fr * 10)
+    sign = "-" if h < 0 else ""
+    return "%s%d.%02d" % (sign, abs(h) // 100, abs(h) % 100)
+
+
 def rungs_tsv(channels, rungs, rate, cv, ladder):
-    """Per channel and rung. bulk_set and latency_set say whether the rung would be
-    kept if that channel ordered the ladder; ladder gives its position (Poor orders)."""
+    """Per channel and rung. bulk and latency say whether the rung would be kept if
+    that channel ordered the ladder, and if not which rung beats it; ladder gives
+    its position in the table (Poor orders it)."""
     rows = [["channel", "rung", "data_rate_bps", "window_low_tenth", "window_high_tenth",
-             "top_error_ppt", "bulk_needs_tenth", "latency_needs_tenth", "bulk_set", "latency_set", "ladder"]]
+             "top_error_ppt", "bulk_needs_db", "latency_needs_db", "bulk", "latency", "ladder"]]
     for c in channels:
         kept = channel_sets(c, cv, rate, rungs)
         for r in rungs:
@@ -394,10 +415,10 @@ def rungs_tsv(channels, rungs, rate, cv, ladder):
             nb = cur.needs(BULK_ERROR_PPT)
             nl = cur.needs(LATENCY_TARGET_PPT)
             rows.append([c, r, rate[r], cur.s[0], cur.s[-1], ppt(cur.p[-1]),
-                         tenths(nb) if nb is not None else "never",
-                         tenths(nl) if nl is not None else "never",
-                         "kept" if r in kept["bulk"] else "dropped",
-                         "kept" if r in kept["latency"] else "dropped",
+                         db2(nb) if nb is not None else "never",
+                         db2(nl) if nl is not None else "never",
+                         verdict(kept["bulk"], r),
+                         verdict(kept["latency"], r),
                          str(ladder.index(r)) if r in ladder else "-"])
     return tsv(rows)
 
@@ -412,27 +433,162 @@ def errbin_tsv(errbin, channels, rungs):
     return tsv(rows)
 
 
-def next_check(caldir, cv, point, binned, channels):
-    """Compare next.tsv's measured errors on b after an estimate bin on a with the
-    prediction from own.tsv at the same channel and set SNR."""
+def median_bin(hist):
+    total = sum(hist.values())
+    run = 0
+    for b in sorted(hist):
+        run += hist[b]
+        if 2 * run >= total:
+            return b
+    raise AssertionError
+
+
+def estimate_summary(errbin, channels, rungs):
+    """Per channel and rung: the range of the burst estimate (bins with at least
+    MIN_BIN_BURSTS bursts) and the lowest bin from which the burst's own D_PDU
+    error rate stays at or below the bulk and latency error rates."""
+    rows = [["channel", "rung", "lowest_bin_tenth", "highest_bin_tenth", "bulk_from_bin_tenth",
+             "latency_from_bin_tenth"]]
+    for c in channels:
+        for r in rungs:
+            bins = sorted(b for (cc, rr, b) in errbin if cc == c and rr == r
+                          and errbin[(cc, rr, b)][0] >= MIN_BIN_BURSTS and errbin[(cc, rr, b)][1] > 0)
+            if not bins:
+                continue
+            res = []
+            for lim in (BULK_ERROR_PPT, LATENCY_TARGET_PPT):
+                edge = "never"
+                for b in reversed(bins):
+                    n, d, e = errbin[(c, r, b)]
+                    if e * 1000 <= lim * d:
+                        edge = b
+                    else:
+                        break
+                res.append(edge)
+            rows.append([c, r, bins[0], bins[-1]] + res)
+    return tsv(rows)
+
+
+def next_check(caldir, cv, binned, channels):
+    """Test the independence assumption of the thresholds against the measured
+    pairs: next.tsv's errors on b after a burst on a, split by whether a's
+    estimate fell below, at or above a's median bin at that channel and set SNR,
+    against the prediction from own.tsv at the same channel and set SNR alone.
+    If the channel carried over the gap, a low estimate on a would be followed by
+    more errors on b than predicted, and a high one by fewer."""
     obs = {}
     with open(os.path.join(caldir, "next.tsv"), encoding="ascii", newline="") as f:
         for r in csv.DictReader(f, delimiter="\t"):
             if r["est_bin_a_tenth"] == "-":
                 continue
             c, a, b, s = r["channel"], r["rung_a"], r["rung_b"], int(r["set_snr_tenth"])
+            m = median_bin(binned[(c, a, s)])
+            e = int(r["est_bin_a_tenth"])
+            cls = "below" if e < m else ("at" if e == m else "above")
             d = int(r["dpdus"])
-            o = obs.setdefault((c, a == b), [0, 0, Fraction(0)])
-            o[0] += d
-            o[1] += int(r["dpdu_errors"])
-            o[2] += d * cv[(c, b)].at(s)
-    rows = [["channel", "pairs", "dpdus", "observed_errors", "predicted_errors", "observed_ppt", "predicted_ppt"]]
+            o = obs.setdefault((c, cls), [0, 0, 0, Fraction(0)])
+            o[0] += int(r["pairs"])
+            o[1] += d
+            o[2] += int(r["dpdu_errors"])
+            o[3] += d * cv[(c, b)].at(s)
+    rows = [["channel", "estimate_on_a", "pairs", "dpdus", "observed_errors", "predicted_errors",
+             "observed_ppt", "predicted_ppt"]]
     for c in channels:
-        for same in (True, False):
-            if (c, same) in obs:
-                d, e, p = obs[(c, same)]
-                rows.append([c, "same rung" if same else "other rung", d, e, tenths(p * 10) / 10 if False else round(float(p), 1),
-                             ppt(Fraction(e, d)), ppt(p / d)])
+        for cls in ("below", "at", "above"):
+            if (c, cls) in obs:
+                n, d, e, p = obs[(c, cls)]
+                rows.append([c, cls + " median", n, d, e, tenths(p), ppt(Fraction(e, d)), ppt(p / d)])
+    return tsv(rows)
+
+
+def target(entry, crit, smoothed):
+    """corpus-format.md 6.2 step 6: the highest position whose element is not
+    null and not above the smoothed estimate, or 0."""
+    t = 0
+    for j, v in enumerate(entry[crit]):
+        if v is not None and v <= smoothed:
+            t = j
+    return t
+
+
+def estimate_at(c, r, s, binned, fading):
+    """Median estimate bin of rung r at (c, s). Outside r's window: the nearest
+    measured point's median, shifted by the SNR difference on a channel without
+    fading (where the estimate reads the channel SNR) and unshifted on fading
+    (where it saturates)."""
+    pts = sorted(ss for (cc, rr, ss) in binned if cc == c and rr == r)
+    if not pts:
+        return None
+    if s in pts:
+        return median_bin(binned[(c, r, s)])
+    near = pts[-1] if s > pts[-1] else pts[0]
+    if pts[0] < s < pts[-1]:
+        near = max(ss for ss in pts if ss < s)
+    m = median_bin(binned[(c, r, near)])
+    return m if fading[c] else m + (s - near) // 5 * 5
+
+
+def settle(table, channels, cv, point, binned, rate, rungs, ladder, default_rung, fading):
+    """A static prediction of where the bulk walk settles, per channel and set SNR,
+    with the receiver's estimate taken as the median bin on the rung in use (the
+    smoothing converges near it) and a step up refused when the higher rung loses
+    more than rx_error_limit_ppt there (its cap would bring it back). The P7-9
+    stack sweeps measure the real thing; this only shows what the table implies."""
+    ent = {(e["wn"], e["interleaver"]): e for e in table["thresholds"]}
+    lim = Fraction(table["rx_error_limit_ppt"], 1000)
+    rows = [["channel", "set_snr_tenth", "settles_on", "goodput_bps", "probing_reaches", "probing_goodput_bps", "best_ladder_rung", "best_ladder_bps",
+             "best_any_rung", "best_any_bps", "stop_reason"]]
+    for c in channels:
+        snrs = sorted({s for (cc, r, s) in point if cc == c})
+        for s in snrs:
+            def good(r):
+                return rate[r] * (1 - cv[(c, r)].at(s)) if (c, r) in cv else Fraction(0)
+            pos = ladder.index(default_rung) if default_rung in ladder else 0
+            reason = "stable"
+            trial = None
+            seen = set()
+            while True:
+                if pos in seen:
+                    reason = "cycle"
+                    break
+                seen.add(pos)
+                r = ladder[pos]
+                est = estimate_at(c, r, s, binned, fading)
+                if est is None:
+                    reason = "no estimate"
+                    break
+                t = target(ent[rung_key(r)], "bulk", est)
+                if t < pos:
+                    pos = t
+                elif t > pos:
+                    if cv[(c, ladder[pos + 1])].at(s) > lim:
+                        reason = "next rung fails, capped"
+                        trial = ladder[pos + 1]
+                        break
+                    pos += 1
+                else:
+                    break
+            r = ladder[pos]
+            if reason == "stable" and (c, r, s) not in binned:
+                reason = "stable, estimate extrapolated"
+            bl = max(ladder, key=lambda x: (good(x), -ladder.index(x)))
+            ba = max(rungs, key=lambda x: (good(x), -rungs.index(x)))
+            g = good(r)
+            if trial is not None:
+                # Once the cap has doubled to rx_ceiling_cap, one failed trial every
+                # rx_ceiling_cap + clean_run + 1 bursts.
+                n = table["rx_ceiling_cap"] + table["clean_run"]
+                g = (g * n + good(trial)) / (n + 1)
+            # Not corpus-format 6.2: what a step up on a clean run alone (a trial
+            # whatever the estimate says) would reach, for the P7-9 decision.
+            q = pos
+            while q + 1 < len(ladder) and cv[(c, ladder[q + 1])].at(s) <= lim:
+                q += 1
+            gp = good(ladder[q])
+            if q + 1 < len(ladder):
+                n = table["rx_ceiling_cap"] + table["clean_run"]
+                gp = (gp * n + good(ladder[q + 1])) / (n + 1)
+            rows.append([c, s, r, tenths(g), ladder[q], tenths(gp), bl, tenths(good(bl)), ba, tenths(good(ba)), reason])
     return tsv(rows)
 
 
@@ -440,14 +596,20 @@ def build(caldir):
     meta, rate, channels, rungs, point, binned, errbin = load(caldir)
     cv = curves(point)
     ladder, need, kept = build_ladder(cv, rate, rungs)
+    fading = {c["name"]: bool(c["paths"]) for c in meta["channels"]}
     out = {}
     for name, weights, kind in (("drc-table.json", DEFAULT_WEIGHTS, "default: unknown channel and radio"),
                                 ("drc-table-ssb.json", SSB_WEIGHTS, "comparison: SSB band-pass channels only")):
         table, _ = build_table(weights, cv, point, binned, rate, rungs, ladder)
-        out[name] = table_json({"source": source(meta, caldir, weights, kind), "table": table})
+        if name == "drc-table.json":
+            out[name] = table_json({"source": source(meta, caldir, weights, kind), "table": table})
+            out["settle.tsv"] = settle(table, channels, cv, point, binned, rate, rungs, ladder, DEFAULT_SPEED, fading)
+        else:
+            out["settle-ssb.tsv"] = settle(table, channels, cv, point, binned, rate, rungs, ladder, DEFAULT_SPEED, fading)
     out["rungs.tsv"] = rungs_tsv(channels, rungs, rate, cv, ladder)
     out["error-vs-estimate.tsv"] = errbin_tsv(errbin, channels, rungs)
-    out["next-check.tsv"] = next_check(caldir, cv, point, binned, channels)
+    out["estimate-summary.tsv"] = estimate_summary(errbin, channels, rungs)
+    out["next-check.tsv"] = next_check(caldir, cv, binned, channels)
     return out
 
 

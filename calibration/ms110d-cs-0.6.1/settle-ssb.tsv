@@ -1,0 +1,132 @@
+channel	set_snr_tenth	settles_on	goodput_bps	probing_reaches	probing_goodput_bps	best_ladder_rung	best_ladder_bps	best_any_rung	best_any_bps	stop_reason
+AWGN	-90	wn1-long	0	wn1-long	0	wn1-long	0	wn1-ultra_short	0	stable
+AWGN	-75	wn1-long	0	wn1-long	0	wn1-long	0	wn1-ultra_short	0	stable
+AWGN	-60	wn1-long	66	wn1-long	63	wn1-long	66	wn1-medium	67	stable
+AWGN	-45	wn1-long	150	wn1-long	142	wn1-long	150	wn1-long	150	stable
+AWGN	-30	wn1-long	150	wn2-long	218	wn2-long	230	wn2-medium	236	stable
+AWGN	-15	wn2-long	299	wn2-long	284	wn2-long	299	wn2-medium	300	stable
+AWGN	0	wn3-long	576	wn3-long	546	wn3-long	576	wn3-long	576	stable
+AWGN	15	wn3-long	600	wn3-long	569	wn3-long	600	wn3-ultra_short	600	stable
+AWGN	30	wn13-long	1346	wn13-long	1276	wn13-long	1346	wn13-medium	1449	stable
+AWGN	45	wn13-long	2361	wn13-long	2248	wn13-long	2361	wn13-medium	2380	stable
+AWGN	60	wn13-long	2400	wn6-long	2705	wn6-medium	2855	wn6-medium	2855	stable
+AWGN	75	wn6-medium	3200	wn6-long	3043	wn6-medium	3200	wn6-medium	3200	stable
+AWGN	90	wn6-long	3200	wn6-long	3138	wn6-medium	3200	wn6-ultra_short	3200	stable
+AWGN	105	wn7-medium	4410	wn7-long	3953	wn7-medium	4410	wn7-medium	4410	stable
+AWGN	120	wn7-medium	4793	wn7-long	4550	wn7-long	4794	wn7-long	4794	stable
+AWGN	135	wn8-long	5282	wn8-long	5282	wn8-long	5282	wn8-short	5326	stable
+AWGN	150	wn8-long	6355	wn8-long	6355	wn8-long	6355	wn8-medium	6375	stable
+AWGN	165	wn8-long	6400	wn8-long	6400	wn8-long	6400	wn8-ultra_short	6400	stable
+AWGN	180	wn8-long	6400	wn8-long	6400	wn8-long	6400	wn8-ultra_short	6400	stable
+AWGN	195	wn8-long	6400	wn8-long	6400	wn8-long	6400	wn8-ultra_short	6400	stable
+AWGN	210	wn8-long	6400	wn8-long	6400	wn8-long	6400	wn8-ultra_short	6400	stable, estimate extrapolated
+Poor	-75	wn1-long	0	wn1-long	0	wn1-long	0	wn1-medium	2	stable
+Poor	-60	wn1-long	1	wn1-long	1	wn1-long	1	wn1-medium	18	stable
+Poor	-45	wn1-long	17	wn1-long	16	wn1-long	17	wn1-medium	39	stable
+Poor	-30	wn1-long	59	wn1-long	56	wn1-long	59	wn1-long	59	stable
+Poor	-15	wn1-long	123	wn1-long	117	wn1-long	123	wn1-long	123	stable
+Poor	0	wn1-long	145	wn1-long	141	wn1-long	145	wn1-long	145	stable
+Poor	15	wn2-long	205	wn2-long	205	wn3-long	262	wn3-long	262	next rung fails, capped
+Poor	30	wn3-long	550	wn3-long	523	wn3-long	550	wn3-long	550	stable
+Poor	45	wn3-long	585	wn3-long	587	wn13-long	614	wn13-medium	750	stable
+Poor	60	wn13-long	1725	wn13-long	1654	wn13-long	1725	wn13-long	1725	stable
+Poor	75	wn13-long	2285	wn13-long	2217	wn13-long	2285	wn13-long	2285	stable
+Poor	90	wn13-long	2379	wn6-long	1574	wn13-long	2379	wn13-long	2379	stable
+Poor	105	wn13-long	2400	wn6-long	2721	wn6-long	2827	wn6-long	2827	stable
+Poor	120	wn13-long	2400	wn6-long	3045	wn6-long	3095	wn6-long	3095	stable
+Poor	135	wn13-long	2376	wn7-long	3210	wn7-long	3363	wn7-long	3363	stable
+Poor	150	wn13-long	2353	wn7-long	4441	wn7-long	4558	wn7-long	4558	stable
+Poor	165	wn13-long	2353	wn8-long	4974	wn8-long	4974	wn8-long	4974	stable
+Poor	180	wn13-long	2400	wn8-long	6027	wn8-long	6027	wn8-long	6027	stable
+Poor	195	wn13-long	2400	wn8-long	6261	wn8-long	6261	wn8-long	6261	stable, estimate extrapolated
+Poor	210	wn13-long	2400	wn8-long	6260	wn8-long	6260	wn8-long	6260	stable, estimate extrapolated
+Poor	225	wn13-long	2400	wn8-long	6257	wn8-long	6257	wn8-medium	6286	stable, estimate extrapolated
+Poor	240	wn13-long	2400	wn8-long	6274	wn8-long	6274	wn8-long	6274	stable, estimate extrapolated
+Poor	255	wn13-long	2400	wn8-long	6258	wn8-long	6258	wn8-medium	6318	stable, estimate extrapolated
+Poor	270	wn13-long	2400	wn8-long	6393	wn8-long	6393	wn8-long	6393	stable, estimate extrapolated
+Poor	285	wn13-long	2400	wn8-long	6332	wn8-long	6332	wn8-long	6332	stable, estimate extrapolated
+Poor	300	wn13-long	2400	wn8-long	6320	wn8-long	6320	wn8-medium	6346	stable, estimate extrapolated
+Poor	315	wn13-long	2400	wn8-long	6320	wn8-long	6320	wn8-long	6320	stable, estimate extrapolated
+Poor	330	wn13-long	2400	wn8-long	6320	wn8-long	6320	wn8-long	6320	stable, estimate extrapolated
+Poor	345	wn13-long	2400	wn8-long	6320	wn8-long	6320	wn8-short	6369	stable, estimate extrapolated
+Moderate	-90	wn1-long	0	wn1-long	0	wn1-long	0	wn1-medium	1	stable
+Moderate	-75	wn1-long	0	wn1-long	0	wn1-long	0	wn1-medium	5	stable
+Moderate	-60	wn1-long	4	wn1-long	4	wn1-long	4	wn2-short	19	stable
+Moderate	-45	wn1-long	30	wn1-long	28	wn1-long	30	wn2-short	38	stable
+Moderate	-30	wn1-long	87	wn1-long	82	wn1-long	87	wn1-long	87	stable
+Moderate	-15	wn1-long	134	wn1-long	130	wn1-long	134	wn1-long	134	stable
+Moderate	0	wn2-long	160	wn2-long	157	wn2-long	160	wn3-short	176	stable
+Moderate	15	wn3-long	356	wn3-long	338	wn3-long	356	wn3-long	356	stable
+Moderate	30	wn3-long	544	wn3-long	527	wn3-long	544	wn3-long	544	stable
+Moderate	45	wn3-long	588	wn3-long	604	wn13-long	897	wn13-medium	1072	stable
+Moderate	60	wn13-long	1746	wn13-long	1690	wn13-long	1746	wn13-long	1746	stable
+Moderate	75	wn13-long	2246	wn13-long	2203	wn13-long	2246	wn13-long	2246	stable
+Moderate	90	wn13-long	2384	wn6-long	1841	wn13-long	2384	wn13-long	2384	stable
+Moderate	105	wn13-long	2400	wn6-long	2783	wn6-long	2858	wn6-long	2858	stable
+Moderate	120	wn13-long	2400	wn7-medium	2538	wn6-long	3141	wn6-long	3141	stable
+Moderate	135	wn6-medium	3097	wn7-long	3450	wn7-long	3586	wn7-long	3586	stable
+Moderate	150	wn6-medium	3151	wn7-long	4408	wn7-long	4486	wn7-long	4486	stable
+Moderate	165	wn6-long	3200	wn8-long	5326	wn8-long	5326	wn8-long	5326	stable
+Moderate	180	wn6-long	3200	wn8-long	6041	wn8-long	6041	wn8-long	6041	stable
+Moderate	195	wn6-long	3200	wn8-long	6308	wn8-long	6308	wn8-long	6308	stable
+Moderate	210	wn6-long	3200	wn8-long	6340	wn8-long	6340	wn8-long	6340	stable, estimate extrapolated
+Moderate	225	wn6-long	3200	wn8-long	6400	wn8-long	6400	wn8-long	6400	stable, estimate extrapolated
+Moderate	240	wn6-long	3200	wn8-long	6400	wn8-long	6400	wn8-long	6400	stable, estimate extrapolated
+Moderate	255	wn6-long	3200	wn8-long	6400	wn8-long	6400	wn8-long	6400	stable, estimate extrapolated
+Moderate	270	wn6-long	3200	wn8-long	6400	wn8-long	6400	wn8-long	6400	stable, estimate extrapolated
+Moderate	285	wn6-long	3200	wn8-long	6400	wn8-long	6400	wn8-medium	6400	stable, estimate extrapolated
+Moderate	300	wn6-long	3200	wn8-long	6400	wn8-long	6400	wn8-medium	6400	stable, estimate extrapolated
+Moderate	315	wn6-long	3200	wn8-long	6400	wn8-long	6400	wn8-medium	6400	stable, estimate extrapolated
+Moderate	330	wn6-long	3200	wn8-long	6400	wn8-long	6400	wn8-short	6400	stable, estimate extrapolated
+AWGN-SSB	-90	wn1-long	0	wn1-long	0	wn1-long	0	wn1-ultra_short	0	stable
+AWGN-SSB	-75	wn1-long	0	wn1-long	0	wn1-long	0	wn1-medium	1	stable
+AWGN-SSB	-60	wn1-long	59	wn1-long	56	wn1-long	59	wn1-medium	72	stable
+AWGN-SSB	-45	wn1-long	150	wn1-long	142	wn1-long	150	wn1-medium	150	stable
+AWGN-SSB	-30	wn1-long	150	wn2-long	197	wn2-long	208	wn2-short	212	stable
+AWGN-SSB	-15	wn2-long	300	wn2-long	284	wn2-long	300	wn2-medium	300	stable
+AWGN-SSB	0	wn3-long	500	wn3-long	474	wn3-long	500	wn3-short	529	stable
+AWGN-SSB	15	wn3-long	597	wn3-long	566	wn3-long	597	wn3-short	600	stable
+AWGN-SSB	30	wn3-long	600	wn3-long	583	wn3-long	600	wn5-medium	1055	stable
+AWGN-SSB	45	wn13-long	2175	wn13-long	2061	wn13-long	2175	wn13-long	2175	stable
+AWGN-SSB	60	wn13-long	2397	wn13-long	2353	wn13-long	2397	wn13-short	2400	stable
+AWGN-SSB	75	wn6-medium	3155	wn6-long	2989	wn6-medium	3155	wn6-medium	3155	stable
+AWGN-SSB	90	wn6-long	3200	wn6-long	3060	wn6-medium	3200	wn6-ultra_short	3200	stable
+AWGN-SSB	105	wn7-medium	3237	wn7-medium	3187	wn7-medium	3237	wn7-medium	3237	stable
+AWGN-SSB	120	wn7-medium	4750	wn7-long	4457	wn7-medium	4750	wn7-medium	4750	stable
+AWGN-SSB	135	wn8-long	5093	wn8-long	5093	wn8-long	5093	wn8-long	5093	stable
+AWGN-SSB	150	wn8-long	6345	wn8-long	6345	wn8-long	6345	wn8-short	6346	stable
+AWGN-SSB	165	wn8-long	6400	wn8-long	6400	wn8-long	6400	wn8-ultra_short	6400	stable
+AWGN-SSB	180	wn8-long	6400	wn8-long	6400	wn8-long	6400	wn8-ultra_short	6400	stable
+AWGN-SSB	195	wn8-long	6400	wn8-long	6400	wn8-long	6400	wn8-ultra_short	6400	stable
+AWGN-SSB	210	wn8-long	6400	wn8-long	6400	wn8-long	6400	wn8-ultra_short	6400	stable
+AWGN-SSB	225	wn8-long	6400	wn8-long	6400	wn8-long	6400	wn8-ultra_short	6400	stable, estimate extrapolated
+Poor-SSB	-75	wn1-long	0	wn1-long	0	wn1-long	0	wn1-medium	5	stable
+Poor-SSB	-60	wn1-long	2	wn1-long	1	wn1-long	2	wn1-medium	11	stable
+Poor-SSB	-45	wn1-long	15	wn1-long	14	wn1-long	15	wn1-medium	37	stable
+Poor-SSB	-30	wn1-long	70	wn1-long	66	wn1-long	70	wn1-long	70	stable
+Poor-SSB	-15	wn1-long	113	wn1-long	107	wn1-long	113	wn1-long	113	stable
+Poor-SSB	0	wn1-long	143	wn1-long	137	wn1-long	143	wn1-long	143	stable
+Poor-SSB	15	wn2-long	129	wn2-long	130	wn3-long	150	wn3-short	188	stable
+Poor-SSB	30	wn3-long	400	wn3-long	379	wn3-long	400	wn3-long	400	stable
+Poor-SSB	45	wn3-long	541	wn3-long	515	wn3-long	541	wn3-long	541	stable
+Poor-SSB	60	wn3-long	597	wn3-long	588	wn3-long	597	wn13-medium	659	stable
+Poor-SSB	75	wn13-long	1477	wn13-long	1404	wn13-long	1477	wn13-long	1477	stable
+Poor-SSB	90	wn13-long	2068	wn13-long	1978	wn13-long	2068	wn13-long	2068	stable
+Poor-SSB	105	wn13-long	2361	wn13-long	2279	wn13-long	2361	wn13-long	2361	stable
+Poor-SSB	120	wn13-long	2369	wn13-long	2321	wn13-long	2369	wn13-long	2369	stable
+Poor-SSB	135	wn13-long	2376	wn6-long	2326	wn6-long	2395	wn6-long	2395	stable
+Poor-SSB	150	wn13-long	2376	wn6-long	2820	wn7-long	2940	wn7-long	2940	stable
+Poor-SSB	165	wn13-long	2400	wn7-long	3635	wn7-long	3837	wn7-long	3837	stable
+Poor-SSB	180	wn13-long	2400	wn7-long	4105	wn7-long	4333	wn7-long	4333	stable
+Poor-SSB	195	wn13-long	2400	wn7-long	4072	wn7-long	4298	wn7-long	4298	stable
+Poor-SSB	210	wn13-long	2400	wn7-long	4201	wn7-long	4433	wn7-long	4433	stable, estimate extrapolated
+Poor-SSB	225	wn13-long	2400	wn7-long	4213	wn7-long	4446	wn7-long	4446	stable, estimate extrapolated
+Poor-SSB	240	wn13-long	2400	wn7-long	4146	wn7-long	4371	wn7-long	4371	stable, estimate extrapolated
+Poor-SSB	255	wn13-long	2400	wn7-long	4315	wn7-long	4553	wn7-long	4553	stable, estimate extrapolated
+Poor-SSB	270	wn13-long	2400	wn7-long	4149	wn7-long	4374	wn7-long	4374	stable, estimate extrapolated
+Poor-SSB	285	wn13-long	2400	wn7-long	4156	wn7-long	4374	wn7-long	4374	stable, estimate extrapolated
+Poor-SSB	300	wn13-long	2400	wn7-long	4153	wn7-long	4374	wn7-long	4374	stable, estimate extrapolated
+Poor-SSB	315	wn13-long	2400	wn7-long	4154	wn7-long	4374	wn7-long	4374	stable, estimate extrapolated
+Poor-SSB	330	wn13-long	2400	wn7-long	4154	wn7-long	4374	wn7-long	4374	stable, estimate extrapolated
+Poor-SSB	345	wn13-long	2400	wn7-long	4154	wn7-long	4374	wn7-long	4374	stable, estimate extrapolated
+Poor-SSB	360	wn13-long	2400	wn7-long	4154	wn7-long	4374	wn7-long	4374	stable, estimate extrapolated
