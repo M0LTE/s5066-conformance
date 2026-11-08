@@ -38,6 +38,18 @@
     "default_speed": {
       "wn": 2,
       "interleaver": "long"
+    },
+    "table": {
+      "ladder": [],
+      "thresholds": [],
+      "smoothing_weight": null,
+      "clean_run": null,
+      "rx_error_limit_ppt": null,
+      "rx_ceiling_initial": null,
+      "rx_ceiling_cap": null,
+      "tx_step_down_waits": null,
+      "tx_ceiling_initial": null,
+      "tx_ceiling_cap": null
     }
   },
   "cas": {

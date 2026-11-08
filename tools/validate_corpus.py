@@ -309,8 +309,51 @@ def check_t1(path, err, ctx):
             check_sis_case(err, where, c, b, kind)
         elif kind in ("cpdu", "spdu"):
             check_pdu_case(err, where, c, b, kind)
+        elif kind in ("drc_smooth", "drc_ed3_basic_rate"):
+            check_drc_case(err, where, c, b, kind)
         else:
             err.add(where, "unregistered kind %r" % (kind,))
+
+
+# ---- Rate selection (corpus-format.md sections 3.2 and 6.2)
+
+DRC_ED3_RATE = {1: 1, 2: 2, 3: 3, 4: 4, 5: 4, 13: 5, 6: 6, 7: 8, 8: 9}
+DRC_ED3_IL = {"ultra_short": 1, "short": 1, "medium": 2, "long": 2}
+
+
+def drc_smooth(s, x, w):
+    if s is None:
+        return x
+    d = x - s
+    q = (abs(d) * w) // 16
+    return s - q if d < 0 else s + q
+
+
+def check_drc_case(err, where, c, b, kind):
+    if c["dir"] != "encode":
+        err.add(where, "%s cases are encode only" % kind)
+        return
+    v = c["value"]
+    if kind == "drc_smooth":
+        w, xs = v.get("weight"), v.get("samples")
+        if not is_int(w, 1, 16) or not isinstance(xs, list) or set(v) != {"weight", "samples"}:
+            err.add(where, "value is {weight 1-16, samples}")
+            return
+        s, want = None, b""
+        for x in xs:
+            if x is not None:
+                if not isinstance(x, int) or isinstance(x, bool) or not -32767 <= x <= 32767:
+                    err.add(where, "samples are integers or null")
+                    return
+                s = drc_smooth(s, x, w)
+            want += (0x8000 if s is None else s & 0xFFFF).to_bytes(2, "big")
+    else:
+        if set(v) != {"wn", "interleaver"} or v["wn"] not in DRC_ED3_RATE or v["interleaver"] not in DRC_ED3_IL:
+            err.add(where, "value is {wn 1-8 or 13, interleaver ultra_short, short, medium or long}")
+            return
+        want = bytes([1, (DRC_ED3_RATE[v["wn"]] << 4) | (DRC_ED3_IL[v["interleaver"]] << 2) | 2])
+    if b != want:
+        err.add(where, "bytes %s, reference gives %s" % (b.hex(), want.hex()))
 
 
 # ---- SIS primitives (corpus-format.md section 3.7)
