@@ -105,7 +105,7 @@ BURST_END_REASONS = {"eom", "signal_lost", "terminated"}
 # Registered names (corpus-format.md section 4.6). Empty until the first scenario needs one.
 REGISTERED_TIMERS = {"csma.lbt_wait", "csma.cont_wait", "csma.vdcd_end", "dts.ttd", "dts.reception_window", "dts.ack_wait", "dts.reset_wait",
                      "cas.link_request", "cas.first_data", "cas.break", "cas.clean_close",
-                     "sis.soft_link_idle", "sis.soft_link_min_hold", "sis.soft_link_max", "sis.held_off"}
+                     "sis.soft_link_idle", "sis.soft_link_min_hold", "sis.soft_link_max", "sis.held_off", "sis.confirm_wait"}
 REGISTERED_LINK_STATES = {"unlinked", "calling", "linked", "closing", "breaking"}
 
 
