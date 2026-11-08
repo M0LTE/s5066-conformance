@@ -1,0 +1,19 @@
+{"scenario":"sis-management-node-info","rows":["S-0030","S-0032","S-0034","S-0035","S-0037","S-0038","S-0113","S-0114","S-0164","S-0058","C-0833","A-0193"],"source":"Ed4 S.4.2, S.4.3, pp.S-5 to S-6; S.5.11, p.S-15","description":"S_MANAGEMENT_MSG_REQUEST MSG TYPE 2 is answered, to the asking client only, with our published node information: this node\u0027s address and transmit speed, and per peer its soft link state and what the last burst heard from it showed; other MSG TYPEs are ignored.","config":{"local_address":"0.0.1.2","csma":{"mode":"jitter"},"modem":{"preamble_ms":600,"flush_ms":150,"waveforms":[{"wn":2,"interleaver":"long","block_bytes":256,"block_ms":4800}]},"cas":{"max_links":4,"link_request_timeout_ms":60000,"link_request_retries":2,"first_data_timeout_ms":120000}},"note":"Our published encoding, docs/management-messages.md MSG TYPE 2 (interp S-0164; S-0035, S-0038, S-0114). The channel is held busy from 0 (P5-4), so nothing goes on air. Conn 2 never binds: its S_MANAGEMENT_MSG_REQUEST MSG TYPE 2 with an empty body is valid without a binding (S-0032, S-0162) and is answered at once to conn 2 only with S_MANAGEMENT_MSG_INDICATION MSG TYPE 2 (S-0034, S-0037). Body: this node\u0027s address as a 4-byte S_primitive address field (SIZE 7, individual: e0 00 01 02, Fig S-19, S-0058), the transmit waveform number 2 and interleaver code 4 (long) from drc.default_speed, and the peer count, 0. Its MSG TYPE 99 request is ignored with no reply (interp S-0038). Conn 1 binds SAP 5 for ARQ and sends \u0027hi\u0027 to 0.0.1.6, which is held for a soft link while the CAS calls (A-0008, A-0193): link_state calling. Two bursts are heard, each one type 7 D_PDU addressed to 0.0.1.4, not to us, so nothing is acted on (C-0566, C-0868) but the sender\u0027s receive quality is recorded at the burst end (C-0833): from 0.0.1.3, burst ended at 6000, wn 2 long, SNR 12.3 dB; from 0.0.1.5, ended at 9000, wn 3 short, SNR -5.7 dB. At 10500 conn 2 asks again. The answer lists three peers in address order, each a 13-byte record: address field; soft link state (0 none, 1 being made or held off); transmit wn and interleaver to the peer (the default speed); the wn and interleaver of the last burst heard (ff ff when never heard); its SNR in tenths of a dB, signed 16-bit big-endian (007b = 123, ffc7 = -57, 8000 when never heard); and whole seconds since that burst end (4 and 1; ffff when never heard). Interleaver codes: 0 ultra short to 5 very long."}
+{"t":0,"in":"channel_busy","busy":true}
+{"t":0,"in":"sis_connect","conn":1}
+{"t":0,"in":"sis_connect","conn":2}
+{"t":0,"in":"sis_bytes","conn":2,"bytes":"90eb0000021202"}
+{"out":"sis_bytes","conn":2,"bytes":"90eb0000091302e0000102020400"}
+{"t":0,"in":"sis_bytes","conn":2,"bytes":"90eb0000051263010203"}
+{"t":0,"in":"sis_bytes","conn":1,"bytes":"90eb00000401501000"}
+{"out":"sis_bytes","conn":1,"bytes":"90eb00000403500800"}
+{"t":0,"in":"sis_bytes","conn":1,"bytes":"90eb00000e1405e00001060000000000026869"}
+{"out":"link_state","peer":"0.0.1.6","state":"calling"}
+{"t":1000,"in":"burst_started"}
+{"t":2000,"in":"bytes_received","bytes":"90eb70000a6f10410300010000010000000ab17e7803997554"}
+{"t":6000,"in":"burst_ended","reason":"eom","wn":2,"interleaver":"long","k":7,"snr_tenth_db":123,"blocks":1}
+{"t":7000,"in":"burst_started"}
+{"t":8000,"in":"bytes_received","bytes":"90eb70000a6f10410500010000010000000abc6479cd0cdf9a"}
+{"t":9000,"in":"burst_ended","reason":"eom","wn":3,"interleaver":"short","k":7,"snr_tenth_db":-57,"blocks":1}
+{"t":10500,"in":"sis_bytes","conn":2,"bytes":"90eb0000021202"}
+{"out":"sis_bytes","conn":2,"bytes":"90eb0000301302e0000102020403e00001030002040204007b0004e00001050002040302ffc70001e0000106010204ffff8000ffff"}
