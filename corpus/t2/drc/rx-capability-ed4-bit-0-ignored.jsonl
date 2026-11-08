@@ -1,0 +1,16 @@
+{"scenario":"drc-rx-capability-ed4-bit-0-ignored","rows":["C-1261","C-0055","MAIN-0009","C-0419","C-0425","C-1260","C-1154","C-0588"],"source":"Ed4 C.3, p.C-7; C.6.10, p.C-75; C.4.14, p.C-53","description":"A CAPABILITY with the Ed4 bit clear is ignored: the peer stays of unknown edition, gets EMPTY and no PADDING.","config":{"local_address":"0.0.1.2","csma":{"mode":"jitter"},"modem":{"preamble_ms":600,"flush_ms":150,"waveforms":[{"wn":2,"interleaver":"long","block_bytes":256,"block_ms":4800}]}},"note":"Conn 1 binds SAP 5 for non-ARQ (service type tx_mode 2, no confirmation) and gets S_BIND_ACCEPTED with MTU 2048 (A-0041, A-0047). At 1500, during a burst, conn 1 sends an S_UNIDATA_REQUEST (priority 0, SAP 5 at 0.0.1.3, DELIVERY MODE default, TTL 0 so TTD = 1500 + 1296000000 ms, U_PDU \"hello\", no confirmation): no SIS output (A-0095), dts.ttd starts (C-1050). At 2000 a PADDING D_PDU (type 14) from 0.0.1.3, unknown, to 0.0.1.2, address size 3, EOT 10 (end 7000), EOW 0xF00, CAPABILITY with Ed4 clear and Duplex clear: ignored (C-1261), so 0.0.1.3 stays of unknown edition. At 52000 the type 7 to 0.0.1.3 carries EOW 0, EMPTY (C-0419, C-1260), and the rest of the block is the modem's zero fill, no PADDING (C-1154). Burst end 3000: csma.vdcd_end 4000; at 7000 LBT rule 1 (K-0067, K-0068), seed 0 draws slot 15, CONT_WAIT 45000 (K-0080). Fixture: preamble 600, flush 150, 256 bytes and 4800 ms a block; the 35-byte type 7 (C_PDU ID 0, offset 0, DATA C_PDU holding the DATA S_PDU SAP 5 to SAP 5 with its TTD, address size 3) needs one block, duration 5550, so EOT and reception window 10 (C-0104, C-0350, C-1043). The transmit queue empties, so dts.ttd is cancelled (C-1050)."}
+{"t":0,"in":"sis_connect","conn":1}
+{"t":0,"in":"sis_bytes","conn":1,"bytes":"90eb00000401502000"}
+{"out":"sis_bytes","conn":1,"bytes":"90eb00000403500800"}
+{"t":1000,"in":"burst_started"}
+{"t":1500,"in":"sis_bytes","conn":1,"bytes":"90eb0000111405e000010300000000000568656c6c6f"}
+{"out":"timer_start","name":"dts.ttd","ms":1296000000}
+{"t":2000,"in":"bytes_received","bytes":"90ebef000a66102103a56f"}
+{"t":3000,"in":"burst_ended","reason":"eom","wn":2,"interleaver":"long","k":7,"snr_tenth_db":60,"blocks":1}
+{"out":"timer_start","name":"csma.vdcd_end","ms":4000}
+{"t":7000,"in":"timer_expired","name":"csma.vdcd_end"}
+{"out":"timer_start","name":"csma.cont_wait","ms":45000}
+{"t":52000,"in":"timer_expired","name":"csma.cont_wait"}
+{"out":"timer_cancel","name":"dts.ttd"}
+{"out":"transmit","bytes":"90eb70000a6f103102000b00000b0000000a819c00005540000068656c6c6f5398c0d5","wn":2,"interleaver":"long","k":7,"eom":true}
+{"t":57550,"in":"transmit_done"}

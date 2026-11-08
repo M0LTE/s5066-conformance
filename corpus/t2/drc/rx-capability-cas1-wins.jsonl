@@ -1,0 +1,16 @@
+{"scenario":"drc-rx-capability-cas1-wins","rows":["C-1261","C-0055","MAIN-0009","B-0408","C-0419","C-0938","C-1260","C-0589","B-0227","B-0130","B-0210","B-0211","B-0408","B-0213","B-0400","C-0571","C-1100","K-0067","K-0068"],"source":"Ed4 C.6, pp.C-66 to C-67; C.6.1, p.C-68; C.6.10, p.C-75; B.7.2.1 Step 2, pp.B-27 to B-28","description":"A peer recorded Ed3 by CAS-1 stays Ed3 when a CAPABILITY with the Ed4 bit arrives from it, and keeps getting EMPTY.","config":{"local_address":"0.0.1.2","csma":{"mode":"jitter"},"modem":{"preamble_ms":600,"flush_ms":150,"waveforms":[{"wn":2,"interleaver":"long","block_bytes":48,"block_ms":4800}]},"cas":{"max_links":4,"link_request_timeout_ms":60000,"link_request_retries":2,"first_data_timeout_ms":120000}},"note":"As drc-empty-to-ed3-peer (0.0.1.3 recorded Ed3 by its request at 2000), then at 2500, in the same burst, a WARNING D_PDU (type 15, received frame type 0, reason 0) from 0.0.1.3 to 0.0.1.2, address size 3, EOT 10, EOW 0xF01, CAPABILITY with Ed4 set. A CAS-1 record always wins over a received CAPABILITY (C-1261), so 0.0.1.3 stays Ed3; the WARNING goes to the CAS, which is not calling 0.0.1.3 and ignores it (C-0589, B-0411). At 52000 the accept goes with EOW 0, EMPTY, and no PADDING even though the 48-byte block has room (C-0419, C-1154). Fixture: preamble 600, flush 150, 48 bytes and 4800 ms a block; the type 8 D_PDU carrying a one-byte CAS-1 C_PDU (address size 3, C-0133) is 25 bytes, so the transmission is one block, 5550 ms, and every D_PDU in it starts in block 0: EOT ceil(4950 / 500) = 10 (C-0104, C-1043), and the type 8 reception window 10 (C-0350). Burst end 3000: csma.vdcd_end 4000; at 7000 LBT rule 1 (K-0067, K-0068), seed 0 draws slot 15, CONT_WAIT 45000 (K-0080). The link is made when the accept has been sent, at 57550 (B-0213, B-0400, C-1100), with the timers of cas-make-called-accept."}
+{"t":1000,"in":"burst_started"}
+{"t":2000,"in":"bytes_received","bytes":"90eb80000a6f10210300010000010000000a8bb210aa9c741e"}
+{"t":2500,"in":"bytes_received","bytes":"90ebff010a6710210300895f"}
+{"t":3000,"in":"burst_ended","reason":"eom","wn":2,"interleaver":"long","k":7,"snr_tenth_db":60,"blocks":1}
+{"out":"timer_start","name":"csma.vdcd_end","ms":4000}
+{"t":7000,"in":"timer_expired","name":"csma.vdcd_end"}
+{"out":"timer_start","name":"csma.cont_wait","ms":45000}
+{"t":52000,"in":"timer_expired","name":"csma.cont_wait"}
+{"out":"transmit","bytes":"90eb80000a6f10310200010000010000000a5cf6205439e93c","wn":2,"interleaver":"long","k":7,"eom":true}
+{"t":57550,"in":"transmit_done"}
+{"out":"link_state","peer":"0.0.1.3","state":"linked"}
+{"out":"timer_start","name":"cas.first_data/0.0.1.3","ms":120000}
+{"out":"timer_start","name":"sis.soft_link_min_hold/0.0.1.3","ms":616500}
+{"out":"timer_start","name":"sis.soft_link_max/0.0.1.3","ms":1233000}
+{"out":"timer_start","name":"sis.soft_link_idle/0.0.1.3","ms":616500}
