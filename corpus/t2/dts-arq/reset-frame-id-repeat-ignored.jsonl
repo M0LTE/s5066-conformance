@@ -9,7 +9,7 @@
 {"t":7000,"in":"timer_expired","name":"csma.vdcd_end"}
 {"out":"timer_start","name":"csma.cont_wait","ms":45000}
 {"t":52000,"in":"timer_expired","name":"csma.cont_wait"}
-{"out":"transmit","bytes":"90eb80000a6f10310200010000010000000a5cf62269d8f546","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90eb8f010a6f10310200010000010000000ad1b32269d8f546","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":57550,"in":"transmit_done"}
 {"out":"link_state","peer":"0.0.1.3","state":"linked"}
 {"out":"timer_start","name":"cas.first_data/0.0.1.3","ms":600000}
@@ -23,7 +23,7 @@
 {"t":66000,"in":"timer_expired","name":"csma.vdcd_end"}
 {"out":"timer_start","name":"csma.cont_wait","ms":12000}
 {"t":78000,"in":"timer_expired","name":"csma.cont_wait"}
-{"out":"transmit","bytes":"90ebc0000a6a103102010000000dd0","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90ebcf010a6a10310201000000c1e1","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":83550,"in":"transmit_done"}
 {"t":85000,"in":"sis_bytes","conn":1,"bytes":"90eb0000101405e000010300000000000470696e67"}
 {"out":"timer_cancel","name":"sis.soft_link_idle/0.0.1.3"}
@@ -32,7 +32,7 @@
 {"t":88000,"in":"timer_expired","name":"csma.lbt_wait"}
 {"out":"timer_start","name":"csma.cont_wait","ms":45000}
 {"t":133000,"in":"timer_expired","name":"csma.cont_wait"}
-{"out":"transmit","bytes":"90eb9000146a103102ec0a000021f300009540002a70696e67468c8f1590ebe0000a66103102ddd2","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90eb9f01146a103102ec0a0000edc200009540002a70696e67468c8f1590ebef010a66103102bdbf","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":143350,"in":"transmit_done"}
 {"out":"timer_start","name":"dts.ack_wait/0.0.1.3","ms":60000}
 {"t":145000,"in":"burst_started"}
@@ -42,7 +42,7 @@
 {"t":151000,"in":"timer_expired","name":"csma.vdcd_end"}
 {"out":"timer_start","name":"csma.cont_wait","ms":36000}
 {"t":187000,"in":"timer_expired","name":"csma.cont_wait"}
-{"out":"transmit","bytes":"90ebc0000a6a103102010000000dd0","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90ebcf010a6a10310201000000c1e1","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":192550,"in":"transmit_done"}
 {"t":195000,"in":"burst_started"}
 {"t":196000,"in":"bytes_received","bytes":"90eba0000a6a102103000100006c93"}
@@ -57,7 +57,7 @@
 {"t":206000,"in":"timer_expired","name":"csma.vdcd_end"}
 {"out":"timer_start","name":"csma.cont_wait","ms":33000}
 {"t":239000,"in":"timer_expired","name":"csma.cont_wait"}
-{"out":"transmit","bytes":"90ebc0000a6a103102010000000dd0","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90ebcf010a6a10310201000000c1e1","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":244550,"in":"transmit_done"}
 {"t":245000,"in":"sis_bytes","conn":1,"bytes":"90eb0000101405e0000103000000000004706f6e67"}
 {"out":"timer_cancel","name":"sis.soft_link_idle/0.0.1.3"}
@@ -66,6 +66,6 @@
 {"t":248000,"in":"timer_expired","name":"csma.lbt_wait"}
 {"out":"timer_start","name":"csma.cont_wait","ms":30000}
 {"t":278000,"in":"timer_expired","name":"csma.cont_wait"}
-{"out":"transmit","bytes":"90eb9000146a103102ec0a000021f300009540007a706f6e67a972b89690ebe0000a66103102ddd2","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90eb9f01146a103102ec0a0000edc200009540007a706f6e67a972b89690ebef010a66103102bdbf","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":288350,"in":"transmit_done"}
 {"out":"timer_start","name":"dts.ack_wait/0.0.1.3","ms":60000}

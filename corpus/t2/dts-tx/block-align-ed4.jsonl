@@ -22,7 +22,7 @@
 {"t":96000,"in":"timer_expired","name":"csma.vdcd_end"}
 {"out":"timer_start","name":"csma.cont_wait","ms":12000}
 {"t":108000,"in":"timer_expired","name":"csma.cont_wait"}
-{"out":"transmit","bytes":"90eb90001e6a103102a4150000e0e80000594000006162636465666768696a6b6c6d6e6fabfa707090eb9000146a103102681d0001f241707172737475767778797a4142434445464748494a4b4c4d4e4f50515211d6bc8390ebe0000a66103102ddd290ebe0000a66103102ddd2","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90eb9f011e6a103102a41500002cd90000594000006162636465666768696a6b6c6d6e6fabfa707090eb9f01146a103102681d00013e70707172737475767778797a4142434445464748494a4b4c4d4e4f50515211d6bc8390ebef010a66103102bdbf90ebef010a66103102bdbf","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":123150,"in":"transmit_done"}
 {"out":"timer_start","name":"dts.ack_wait/0.0.1.3","ms":60000}
 {"t":130000,"in":"burst_started"}

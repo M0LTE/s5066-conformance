@@ -9,7 +9,7 @@
 {"t":7000,"in":"timer_expired","name":"csma.vdcd_end"}
 {"out":"timer_start","name":"csma.cont_wait","ms":45000}
 {"t":52000,"in":"timer_expired","name":"csma.cont_wait"}
-{"out":"transmit","bytes":"90eb80000a6f10310200010000010000000a5cf62269d8f546","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90eb8f010a6f10310200010000010000000ad1b32269d8f546","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":57550,"in":"transmit_done"}
 {"out":"link_state","peer":"0.0.1.3","state":"linked"}
 {"out":"timer_start","name":"cas.first_data/0.0.1.3","ms":120000}
@@ -29,7 +29,7 @@
 {"t":76000,"in":"timer_expired","name":"csma.vdcd_end"}
 {"out":"timer_start","name":"csma.cont_wait","ms":12000}
 {"t":88000,"in":"timer_expired","name":"csma.cont_wait"}
-{"out":"transmit","bytes":"90eb5000146710310201c5c190eba000146a1031020001000011b290eba0000a6a10310200010000d58f","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90eb5f011467103102010ee590ebaf01146a10310200010000dd8390ebaf010a6a1031020001000019be","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":98350,"in":"transmit_done"}
 {"t":105000,"in":"burst_started"}
 {"t":106000,"in":"bytes_received","bytes":"90eb9000146a102103cc0a0001da130000594000006d6f7265ac6774dd"}
@@ -39,7 +39,7 @@
 {"t":116000,"in":"timer_expired","name":"csma.vdcd_end"}
 {"out":"timer_start","name":"csma.cont_wait","ms":45000}
 {"t":161000,"in":"timer_expired","name":"csma.cont_wait"}
-{"out":"transmit","bytes":"90ebb000146d103102ec0a0000000200e30500009540001e61626364a17853bd90eba0000a6a10310200020000fe3e","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90ebbf01146d103102ec0a000000020075f700009540001e61626364a17853bd90ebaf010a6a10310200020000320f","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":171350,"in":"transmit_done"}
 {"out":"timer_start","name":"dts.ack_wait/0.0.1.3","ms":60000}
 {"t":180000,"in":"burst_started"}

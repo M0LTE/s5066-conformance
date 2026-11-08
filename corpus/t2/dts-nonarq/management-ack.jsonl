@@ -12,5 +12,5 @@
 {"out":"timer_start","name":"csma.cont_wait","ms":45000}
 {"t":52000,"in":"timer_expired","name":"csma.cont_wait"}
 {"out":"timer_cancel","name":"dts.ttd"}
-{"out":"transmit","bytes":"90eb60000a68103102010564c690eb70000a6f103102000b00000b0000000a819c00005540000068656c6c6f5398c0d5","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90eb6f010a681031020105eaea90eb7f010a6f103102000b00000b0000000a0cd900005540000068656c6c6f5398c0d5","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":57550,"in":"transmit_done"}

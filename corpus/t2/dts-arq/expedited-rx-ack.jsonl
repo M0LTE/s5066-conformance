@@ -9,7 +9,7 @@
 {"t":7000,"in":"timer_expired","name":"csma.vdcd_end"}
 {"out":"timer_start","name":"csma.cont_wait","ms":45000}
 {"t":52000,"in":"timer_expired","name":"csma.cont_wait"}
-{"out":"transmit","bytes":"90eb80000a6f10310200010000010000000a5cf62269d8f546","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90eb8f010a6f10310200010000010000000ad1b32269d8f546","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":57550,"in":"transmit_done"}
 {"out":"link_state","peer":"0.0.1.3","state":"linked"}
 {"out":"timer_start","name":"cas.first_data/0.0.1.3","ms":120000}
@@ -23,7 +23,7 @@
 {"t":71000,"in":"timer_expired","name":"csma.vdcd_end"}
 {"out":"timer_start","name":"csma.cont_wait","ms":12000}
 {"t":83000,"in":"timer_expired","name":"csma.cont_wait"}
-{"out":"transmit","bytes":"90eb50000a681031020101922390ebe0000a66103102ddd2","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90eb5f010a6810310201011c0f90ebef010a66103102bdbf","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":88550,"in":"transmit_done"}
 {"t":95000,"in":"burst_started"}
 {"t":96000,"in":"bytes_received","bytes":"90eb400014691021030c03015bf300007056d74f5b"}
@@ -35,7 +35,7 @@
 {"t":106000,"in":"timer_expired","name":"csma.vdcd_end"}
 {"out":"timer_start","name":"csma.cont_wait","ms":45000}
 {"t":151000,"in":"timer_expired","name":"csma.cont_wait"}
-{"out":"transmit","bytes":"90eb50000a67103102032c6b90ebe0000a66103102ddd2","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90eb5f010a6710310203e74f90ebef010a66103102bdbf","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":156550,"in":"transmit_done"}
 {"t":160000,"in":"burst_started"}
 {"t":161000,"in":"bytes_received","bytes":"90eb400014691021034c0302c55c696e67a3d3f9be"}
@@ -44,5 +44,5 @@
 {"t":171000,"in":"timer_expired","name":"csma.vdcd_end"}
 {"out":"timer_start","name":"csma.cont_wait","ms":36000}
 {"t":207000,"in":"timer_expired","name":"csma.cont_wait"}
-{"out":"transmit","bytes":"90eb50000a67103102032c6b90ebe0000a66103102ddd2","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90eb5f010a6710310203e74f90ebef010a66103102bdbf","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":212550,"in":"transmit_done"}

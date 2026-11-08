@@ -6,7 +6,7 @@
 {"t":7000,"in":"timer_expired","name":"csma.vdcd_end"}
 {"out":"timer_start","name":"csma.cont_wait","ms":45000}
 {"t":52000,"in":"timer_expired","name":"csma.cont_wait"}
-{"out":"transmit","bytes":"90eb80000a6f10310200010000010000000a5cf626131accb2","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90eb8f010a6f10310200010000010000000ad1b326131accb2","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":57550,"in":"transmit_done"}
 {"out":"link_state","peer":"0.0.1.3","state":"linked"}
 {"out":"timer_start","name":"cas.first_data/0.0.1.3","ms":120000}

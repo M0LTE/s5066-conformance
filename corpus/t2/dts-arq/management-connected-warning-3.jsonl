@@ -9,7 +9,7 @@
 {"t":7000,"in":"timer_expired","name":"csma.vdcd_end"}
 {"out":"timer_start","name":"csma.cont_wait","ms":45000}
 {"t":52000,"in":"timer_expired","name":"csma.cont_wait"}
-{"out":"transmit","bytes":"90eb80000a6f10310200010000010000000a5cf62269d8f546","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90eb8f010a6f10310200010000010000000ad1b32269d8f546","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":57550,"in":"transmit_done"}
 {"out":"link_state","peer":"0.0.1.3","state":"linked"}
 {"out":"timer_start","name":"cas.first_data/0.0.1.3","ms":120000}
@@ -23,5 +23,5 @@
 {"t":71000,"in":"timer_expired","name":"csma.vdcd_end"}
 {"out":"timer_start","name":"csma.cont_wait","ms":12000}
 {"t":83000,"in":"timer_expired","name":"csma.cont_wait"}
-{"out":"transmit","bytes":"90eb600014681031020100966b90ebf000146710310253707f90ebf0000a67103102c384b790ebe0000a66103102ddd2","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90eb6f0114681031020100184790ebff01146710310253bb5b90ebff010a67103102c34f9390ebef010a66103102bdbf","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":93350,"in":"transmit_done"}

@@ -9,7 +9,7 @@
 {"t":7000,"in":"timer_expired","name":"csma.vdcd_end"}
 {"out":"timer_start","name":"csma.cont_wait","ms":45000}
 {"t":52000,"in":"timer_expired","name":"csma.cont_wait"}
-{"out":"transmit","bytes":"90eb80000a6f10310200010000010000000a5cf62269d8f546","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90eb8f010a6f10310200010000010000000ad1b32269d8f546","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":57550,"in":"transmit_done"}
 {"out":"link_state","peer":"0.0.1.3","state":"linked"}
 {"out":"timer_start","name":"cas.first_data/0.0.1.3","ms":120000}
@@ -26,7 +26,7 @@
 {"t":71000,"in":"timer_expired","name":"csma.vdcd_end"}
 {"out":"timer_start","name":"csma.cont_wait","ms":12000}
 {"t":83000,"in":"timer_expired","name":"csma.cont_wait"}
-{"out":"transmit","bytes":"90eba0000a6a10310200010000d58f","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90ebaf010a6a1031020001000019be","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":88550,"in":"transmit_done"}
 {"t":95000,"in":"burst_started"}
 {"t":96000,"in":"bytes_received","bytes":"90ebc0000a6a102103020005035e51"}
@@ -35,7 +35,7 @@
 {"t":101000,"in":"timer_expired","name":"csma.vdcd_end"}
 {"out":"timer_start","name":"csma.cont_wait","ms":45000}
 {"t":146000,"in":"timer_expired","name":"csma.cont_wait"}
-{"out":"transmit","bytes":"90ebc0000a6a103102010000000dd0","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90ebcf010a6a10310201000000c1e1","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":151550,"in":"transmit_done"}
 {"t":155000,"in":"burst_started"}
 {"t":155500,"in":"sis_bytes","conn":1,"bytes":"90eb0000101405e000010300000000000461626364"}
@@ -48,7 +48,7 @@
 {"t":166000,"in":"timer_expired","name":"csma.vdcd_end"}
 {"out":"timer_start","name":"csma.cont_wait","ms":36000}
 {"t":202000,"in":"timer_expired","name":"csma.cont_wait"}
-{"out":"transmit","bytes":"90ebb000146d103102ec0a00000006009da800009540004d6162636479cc455f90eba0000a6a10310200060000a9a7","wn":2,"interleaver":"long","k":7,"eom":true}
+{"out":"transmit","bytes":"90ebbf01146d103102ec0a00000006000b5a00009540004d6162636479cc455f90ebaf010a6a103102000600006596","wn":2,"interleaver":"long","k":7,"eom":true}
 {"t":212350,"in":"transmit_done"}
 {"out":"timer_start","name":"dts.ack_wait/0.0.1.3","ms":60000}
 {"t":215000,"in":"burst_started"}
