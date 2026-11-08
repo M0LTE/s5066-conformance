@@ -103,6 +103,8 @@ A kind is added to this table, and to the validator, in the same change that add
 | `eow` | Section 3.8 | The 12-bit EOW as 2 bytes: the EOW type, then the contents byte. |
 | `address` | Section 3.9 | The m-byte address field. |
 | `speed_interleaver` | `{"interleaver": 0-7, "speed": 0-31}` | The one speed and interleaver byte [Ed4 Figure C-49, p.C-72]: interleaver in bits 7-5, speed in bits 4-0. |
+| `drc_smooth` | `{"weight": 1-16, "samples": [int or null, ...]}` | The smoothed estimate after each sample (section 6.2), each as 2 bytes, 16-bit two's complement, most significant byte first; `8000` while still empty. Encode only. |
+| `drc_ed3_basic_rate` | `{"wn", "interleaver"}`: a rung our ladder can hold (WN 1 to 8 or 13; ultra_short, short, medium, long) | The 2-byte ED3-BASIC-RATE EOW we send for that rung (section 6.2; interp C-1273), as kind `eow` encodes it. Encode only. |
 | `sis_frame` | Section 3.7 | One whole SIS Access Protocol frame, from the first preamble byte to the last body byte. |
 | `sis_stream` | Section 3.7 | A byte stream made of several frames, junk and partial frames, with the events a streaming decoder gives. |
 
