@@ -1,0 +1,15 @@
+{"scenario":"drc-owed-eow-before-capability","rows":["C-1079","C-0445","C-0443","C-0447","C-0448","C-0405","C-0421","C-1260","C-0426","C-0373","C-1154","B-0227","B-0130","B-0210","B-0211","B-0408","B-0213","B-0400","C-0571","C-1100","K-0067","K-0068"],"source":"Ed4 C.6, pp.C-66 to C-67; C.6.1, p.C-68; C.6.10, p.C-75; B.7.2.1 Step 2, pp.B-27 to B-28","description":"An owed UNRECOGNIZED-TYPE-ERROR takes the first header to the peer; the headers after it carry CAPABILITY.","config":{"local_address":"0.0.1.2","csma":{"mode":"jitter"},"modem":{"preamble_ms":600,"flush_ms":150,"waveforms":[{"wn":2,"interleaver":"long","block_bytes":48,"block_ms":4800}]},"cas":{"max_links":4,"link_request_timeout_ms":60000,"link_request_retries":2,"first_data_timeout_ms":120000}},"note":"As drc-padding-continues-rotation, but the request's type 8 D_PDU carries EOW 0x700, type 7, RESERVED, which this node does not recognise (C-0405, C-0421), so UNRECOGNIZED-TYPE-ERROR naming type 7, EOW 0x307, is owed to 0.0.1.3 (C-0445, C-1079). At 52000 it goes in the first header placed for 0.0.1.3, the type 8 carrying the accept (C-1079, C-1260), and the 2 PADDING D_PDUs of the fill carry CAPABILITY, 0xF01 (C-0426, C-0373). Fixture: preamble 600, flush 150, 48 bytes and 4800 ms a block; the type 8 D_PDU carrying a one-byte CAS-1 C_PDU (address size 3, C-0133) is 25 bytes, so the transmission is one block, 5550 ms, and every D_PDU in it starts in block 0: EOT ceil(4950 / 500) = 10 (C-0104, C-1043), and the type 8 reception window 10 (C-0350). Burst end 3000: csma.vdcd_end 4000; at 7000 LBT rule 1 (K-0067, K-0068), seed 0 draws slot 15, CONT_WAIT 45000 (K-0080). The link is made when the accept has been sent, at 57550 (B-0213, B-0400, C-1100), with the timers of cas-make-called-accept."}
+{"t":1000,"in":"burst_started"}
+{"t":2000,"in":"bytes_received","bytes":"90eb87000a6f10210300010000010000000a65fe12977d6864"}
+{"t":3000,"in":"burst_ended","reason":"eom","wn":2,"interleaver":"long","k":7,"snr_tenth_db":60,"blocks":1}
+{"out":"timer_start","name":"csma.vdcd_end","ms":4000}
+{"t":7000,"in":"timer_expired","name":"csma.vdcd_end"}
+{"out":"timer_start","name":"csma.cont_wait","ms":45000}
+{"t":52000,"in":"timer_expired","name":"csma.cont_wait"}
+{"out":"transmit","bytes":"90eb83070a6f10310200010000010000000a7f0c2269d8f54690ebef010a66103102bdbf90ebef010a66103102bdbf","wn":2,"interleaver":"long","k":7,"eom":true}
+{"t":57550,"in":"transmit_done"}
+{"out":"link_state","peer":"0.0.1.3","state":"linked"}
+{"out":"timer_start","name":"cas.first_data/0.0.1.3","ms":120000}
+{"out":"timer_start","name":"sis.soft_link_min_hold/0.0.1.3","ms":616500}
+{"out":"timer_start","name":"sis.soft_link_max/0.0.1.3","ms":1233000}
+{"out":"timer_start","name":"sis.soft_link_idle/0.0.1.3","ms":616500}
