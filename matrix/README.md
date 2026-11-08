@@ -1,6 +1,6 @@
 # Requirements matrix
 
-There is one tab-separated file per source: `main.tsv` (main body), then `A.tsv`, `B.tsv`, `C.tsv`, `D.tsv`, `J.tsv`, `K.tsv` and `S.tsv` (Edition 4 annexes). Our profile is "CSMA Fixed Frequency"; see plan section 4.
+There is one tab-separated file per source: `main.tsv` (main body), then `A.tsv`, `B.tsv`, `C.tsv`, `D.tsv`, `J.tsv`, `K.tsv`, `O.tsv` and `S.tsv` (Edition 4 annexes; O is the optional HF Operator Chat application of the profile, MAIN-0033). Our profile is "CSMA Fixed Frequency"; see plan section 4.
 
 Each row is one requirement or one interpretation. The columns, in order:
 
