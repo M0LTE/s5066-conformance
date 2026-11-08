@@ -1,0 +1,11 @@
+channel	pairs	dpdus	observed_errors	predicted_errors	observed_ppt	predicted_ppt
+AWGN	same rung	45721	26756	26752.8	585	585
+AWGN	other rung	164633	65493	65493.3	398	398
+Poor	same rung	62490	27509	27478.2	440	440
+Poor	other rung	219017	68487	68536.9	313	313
+Moderate	same rung	62389	28090	28121.4	450	451
+Moderate	other rung	219296	71787	71757.8	327	327
+AWGN-SSB	same rung	49827	28091	28102.6	564	564
+AWGN-SSB	other rung	180503	70915	70899.6	393	393
+Poor-SSB	same rung	66275	48004	47959.1	724	724
+Poor-SSB	other rung	233939	142399	142483.2	609	609
