@@ -349,7 +349,7 @@ Each input has `t` and `in`, plus the keys listed.
 |---|---|---|---|
 | `config` | 0 | `set` (object) | Change configuration at run time; `set` is an overlay, as in section 6. |
 | `timer_expired` | 1 | `name` | A timer the core started has reached its deadline. |
-| `burst_started` | 2 | none | The modem detected the start of a burst (carrier detect) [plan 5.1]. |
+| `burst_started` | 2 | optional `block_ms` | The modem detected the start of a burst (carrier detect) [plan 5.1]. |
 | `bytes_received` | 2 | `bytes` | Decoded bytes from one modem block [plan 5.1]. |
 | `burst_ended` | 2 | `reason`, `wn`, `interleaver`, `k`, `snr_tenth_db`, `blocks` | End of a received burst and its quality [plan 5.1]. |
 | `transmit_done` | 2 | none | The core's own transmission has finished on air. |
@@ -357,6 +357,8 @@ Each input has `t` and `in`, plus the keys listed.
 | `sis_connect` | 3 | `conn` | A SIS client connected; `conn` is a positive integer chosen by the trace. A `conn` value names one connection only and is not reused after it closes, within a scenario. |
 | `sis_bytes` | 3 | `conn`, `bytes` | Bytes from that client's stream. They may hold part of a frame or several frames. |
 | `sis_disconnect` | 3 | `conn` | The client went away. |
+
+`burst_started` key: `block_ms`, when present, is a positive integer, the duration of one block of the waveform the modem locked to, in whole ms rounded down. A modem that does not say leaves it out. With it the core places each received EOT by the block holding its D_PDU's first byte (interp C-1289); without it, at the arrival of the bytes completing the header (C-1024). Added in corpus 0.31.0; traces without it are unchanged.
 
 `burst_ended` keys: `reason` is one of `eom`, `signal_lost`, `terminated`; `wn` is the waveform number; `interleaver` is from the interleaver enum below; `k` is the constraint length; `snr_tenth_db` is a signed integer SNR in tenths of a dB (it may be negative), or `null` when the modem gives none; `blocks` is the number of blocks decoded.
 
@@ -431,18 +433,19 @@ Each timer name, and each `link_state` state name, is registered in a table in t
 The core needs burst durations from the modem port's `PlanBurst` (plan 5.1) before it transmits, for example to compute EOT. In T2 the harness answers those calls from a fixture in the configuration, so traces do not depend on the real modem. The fixture values are test data, not claims about MIL-STD-188-110D.
 
 ```json
-"modem": {"preamble_ms": 720, "flush_ms": 0,
+"modem": {"preamble_ms": 720, "flush_ms": 0, "eom_bytes": 0,
           "waveforms": [{"wn": 6, "interleaver": "short", "block_bytes": 192, "block_ms": 1000}]}
 ```
 
-`block_bytes` and `block_ms` are positive integers, and no two entries share a `wn` and `interleaver`. For a plan request with waveform number `wn`, interleaver `i` and `n` bytes, the harness finds the entry with that `wn` and `interleaver` (missing entry: the case fails with `unplanned_waveform`) and returns:
+`block_bytes` and `block_ms` are positive integers, and no two entries share a `wn` and `interleaver`. `eom_bytes` is a non-negative integer, default 0: the block space the modem's end-of-message marker takes after the last byte of every burst (a MIL-STD-188-110D modem's 32-bit EOM is 4; interp C-1290). It was added in corpus 0.31.0, and 0 gives the arithmetic of earlier versions. For a plan request with waveform number `wn`, interleaver `i` and `n` bytes, the harness finds the entry with that `wn` and `interleaver` (missing entry: the case fails with `unplanned_waveform`) and returns:
 
-- blocks = max(1, ceil(n / block_bytes)), using integer arithmetic, that is (n + block_bytes - 1) / block_bytes rounded down, and 1 when n is 0;
+- blocks = max(1, ceil((n + eom_bytes) / block_bytes)), using integer arithmetic, that is (n + eom_bytes + block_bytes - 1) / block_bytes rounded down, and 1 when n + eom_bytes is 0;
 - bytes_per_block = block_bytes;
 - preamble_ms, block_ms and flush_ms, as in the fixture;
-- duration_ms = preamble_ms + blocks x block_ms + flush_ms.
+- duration_ms = preamble_ms + blocks x block_ms + flush_ms;
+- eom_bytes, as in the fixture.
 
-The answer exposes all six values, not only the duration: a core needs the start time of each block (preamble_ms + i x block_ms) to stamp a different EOT on each D_PDU, and the block capacity to size a transmission. The real modem port gives the same six values (plan 5.1).
+So n blocks carry at most n x block_bytes - eom_bytes bytes. The answer exposes all seven values, not only the duration: a core needs the start time of each block (preamble_ms + i x block_ms) to stamp a different EOT on each D_PDU, and the block capacity, less the marker's space, to size a transmission (interp C-1290). The real modem port gives the same seven values (plan 5.1).
 
 ## 6. Node configuration
 
@@ -466,6 +469,7 @@ The base configuration and where each default comes from:
 | `csma.node_slot_position` | `null` | Per node, slotted mode only [Ed4 K.2.2, p.K-4] |
 | `modem.preamble_ms` | `null` | Section 5 |
 | `modem.flush_ms` | `null` | Section 5 |
+| `modem.eom_bytes` | 0 | Section 5 (corpus 0.31.0) |
 | `modem.waveforms` | `[]` | Section 5 |
 | `sis.default_ttl` | 648000 | The default maximum TTL, in the 2-second units of the TTL field, used when a request gives TTL 0; it is configurable [Ed4 A.2.2.6, p.A-9; A-0087, A-0088], and we default it to the field maximum (A-0091). 1 to 648000. |
 | `sis.soft_link_idle_ms` | `null` | How long an open soft link with no ARQ U_PDU outstanding and none received waits before the SIS closes it with Idle Soft Link Terminated; configurable, implementation dependent, and may be zero [Ed4 A.1.4, p.A-2; A-0011, A-0013]; our reading of idle is interp A-0320. 0 or more. When null it is derived: three answer waits (interp A-0321). |
