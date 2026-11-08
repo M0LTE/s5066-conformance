@@ -1,7 +1,7 @@
 id	source	page	strength	requirement	applies	reason	impl	tests	notes
 A-0001	Ed4 A.1.2	A-1	info	SAP IDs run from 0 to 15, so at most 16 clients can use the SIS of one node.	yes				Same in Ed4 S.1.2.
 A-0002	Ed4 A.1.2	A-1	may	Clients may reach the SIS through the Annex S access protocol, directly, or by another protocol.	yes				Annex S itself makes its mechanism mandatory for servers (Ed4 S.1.2, p.S-2); we offer Annex S.
-A-0003	Ed4 A.1.2	A-1	info	Clients, not the SIS, split large messages into U_PDUs.	yes				The SIS never segments client data.
+A-0003	Ed4 A.1.2	A-1	info	Clients, not the SIS, split large messages into U_PDUs.	yes		src/M0LTE.S5066.Client/SisClient.cs	ClientDutyTests.A_u_pdu_over_the_mtu_is_refused_by_the_client	The SIS never segments client data.
 A-0004	Ed4 A.1.2	A-2	info	The SIS treats every client the same way whatever its application.	yes				
 A-0005	Ed4 A.1.3	A-2	info	Two session types exist: a Soft Link Data Exchange Session, which needs a point-to-point physical link, and a Broadcast Data Exchange Session, which gives unreliable transfer with no physical link.	yes				Text cross references to "A.1.1.x" elsewhere in Annex A are stale; the numbers are A.1.3 to A.1.5.
 A-0006	Ed4 A.1.3	A-2	may	Clients may interleave requests needing different session types.	yes				
@@ -28,13 +28,13 @@ A-0026	Ed4 A.2	A-4	info	Table A-1 core primitives: client to SIS S_BIND_REQUEST,
 A-0027	Ed4 A.2.1	A-4	info	Flow control and management between SIS and application are local, not standardised in Annex A, and do not affect end-to-end interoperation; Annex S gives suitable primitives.	yes				We implement the Annex S local primitives (plan 4.3).
 A-0028	Ed4 A.2.2	A-4	shall	The content and use of the SIS primitives are as given in A.2.2.1 to A.2.2.9.	yes				
 A-0029	Ed4 A.2.2.1	A-4	info	S_BIND_REQUEST carries the requested SAP ID and the default service type.	yes				Rank removed in Ed4 (A.5 item 3); the S encoding keeps a RANK nibble set to 0.
-A-0030	Ed4 A.2.2.1	A-4	shall	A new client issues S_BIND_REQUEST when it first connects.	yes				Client duty (client library). Node side: see S interp rows on primitives before bind.
+A-0030	Ed4 A.2.2.1	A-4	shall	A new client issues S_BIND_REQUEST when it first connects.	yes		src/M0LTE.S5066.Client/SisClient.cs	ClientDutyTests.Bind_sends_the_request_and_returns_the_acceptance	Client duty (client library). Node side: see S interp rows on primitives before bind.
 A-0031	Ed4 A.2.2.1	A-4	info	A client that has not bound cannot be served; binding declares it on-line.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
 A-0032	Ed4 A.2.2.1	A-5	shall	The first argument of S_BIND_REQUEST is the SAP ID the client wants.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
 A-0033	Ed4 A.2.2.1	A-5	shall	A SAP ID is unique within the node: it cannot be given to a second client of the same node.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Node enforces with S_BIND_REJECTED reason 3.
 A-0034	Ed4 A.2.2.1	A-5	shall	The last argument of S_BIND_REQUEST is the default Service Type, defined in A.2.2.6.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Shall numbering jumps from (3) to (7) where Ed3 rank text was removed.
 A-0035	Ed4 A.2.2.1	A-5	shall	The bind Service Type applies to every U_PDU the client submits unless that U_PDU explicitly overrides it.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
-A-0036	Ed4 A.2.2.2	A-5	shall	A client goes off-line by issuing S_UNBIND_REQUEST.	yes				Client duty.
+A-0036	Ed4 A.2.2.2	A-5	shall	A client goes off-line by issuing S_UNBIND_REQUEST.	yes		src/M0LTE.S5066.Client/SisClient.cs	ClientDutyTests.A_new_bind_starts_with_flow_on	Client duty.
 A-0037	Ed4 A.2.2.2	A-5	shall	On S_UNBIND_REQUEST the SIS releases the client's SAP ID.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
 A-0038	Ed4 A.2.2.2	A-5	shall	A released SAP ID becomes available to any other client that asks for it.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
 A-0039	Ed4 A.2.2.2	A-5	info	A client that unbound can come back on-line with a new S_BIND_REQUEST.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Basis for keeping the TCP connection open after unbind (S interp).
@@ -53,7 +53,7 @@ A-0051	Ed4 A.2.2.4	A-6	shall	The Reason argument of S_BIND_REJECTED states why t
 A-0052	Ed4 A.2.2.4	A-6	shall	Bind reject reasons: 1 Not Enough Resources, 2 Invalid SAP ID, 3 SAP ID already allocated, 4 ARQ Mode unsupportable during Broadcast Session.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Reason 4 is never sent by us (no exclusive broadcast session).
 A-0053	Ed4 A.2.2.4	A-6	shall	These bind reject values are the ones carried in the Annex S encoding.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Ed4 S.5.6.
 A-0054	Ed4 A.2.2.5	A-6	shall	The SIS uses S_UNBIND_INDICATION to declare a client off-line on its own initiative.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
-A-0055	Ed4 A.2.2.5	A-7	info	A client declared off-line must send a new S_BIND_REQUEST to come back.	yes				Text points to "A.2.1.1" for the bind; that is stale, the bind is A.2.2.1.
+A-0055	Ed4 A.2.2.5	A-7	info	A client declared off-line must send a new S_BIND_REQUEST to come back.	yes		src/M0LTE.S5066.Client/SisClient.cs	ClientDutyTests.A_new_bind_starts_with_flow_on	Text points to "A.2.1.1" for the bind; that is stale, the bind is A.2.2.1.
 A-0056	Ed4 A.2.2.5	A-7	shall	The Reason argument of S_UNBIND_INDICATION says why the client was taken off-line.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		
 A-0057	Ed4 A.2.2.5	A-7	info	Unbind reasons: 1 Reserved, 2 Inactivity (no answer to keep-alive), 3 Too many invalid primitives, 4 Reserved, 5 ARQ Mode Unsupportable during Broadcast, 6 SIS service or session terminating (label garbled).	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Ed1 meanings of 1 (pre-empted by higher ranked client) and 4 (too many expedited requests) dropped with rank and expedited data.
 A-0058	Ed4 A.2.2.5	A-7	shall	These unbind reason values are the ones carried in the Annex S encoding.	yes		src/M0LTE.S5066.Core/Runtime/SisSublayer.cs		Ed4 S.5.7.

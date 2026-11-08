@@ -148,7 +148,7 @@ C-0146	Ed4 C.4.2.8	C-18	should	The receiver extracts the two CRC bytes and reass
 C-0147	Ed4 C.4.2.8 worked example	C-18	info	Test vector: header bytes F0 00 00 47 05 64 02 (WARNING, EOW 0, EOT 0, m = 2, dest 0.0.0.5, src 0.0.0.100, received type 0, reason 2) give CRC 0x1E5F.	yes				Verified in notes/dts-drc.md 2.3.
 C-0148	Ed4 C.4.2.8 worked example	C-19	info	Test vector: the complete D_PDU on air is 90 EB F0 00 00 47 05 64 02 5F 1E.	yes				
 C-0149	Ed4 C.4.2.9	C-19	shall	In I and I+C D_PDUs the segmented C_PDU octets follow the header CRC in ascending order.	yes				
-C-0150	Ed4 C.4.2.9	C-19	shall	Within each segmented C_PDU octet the LSB is sent first.	yes				Figure C-6. Bit order on the air is the modem's job; our modem port carries bytes.
+C-0150	Ed4 C.4.2.9	C-19	shall	Within each segmented C_PDU octet the LSB is sent first.	yes		src/M0LTE.S5066.Host/Modem/Ms110dHostModem.cs	Ms110dHostTests.Bits_go_least_significant_first_and_pack_back	Figure C-6. Bit order on the air is the modem's job; our modem port carries bytes.
 C-0151	Ed4 C.4.2.10	C-19	shall	The SIZE OF SEGMENTED C_PDU field exists only in I and I+C D_PDUs; it sits in the type-specific header.	yes				
 C-0152	Ed4 C.4.2.10	C-20	shall	SIZE OF SEGMENTED C_PDU is a 10-bit field.	yes				
 C-0153	Ed4 C.4.2.10	C-20	shall	SIZE OF SEGMENTED C_PDU does not count the CRC that follows the segmented C_PDU.	yes				
@@ -901,7 +901,7 @@ C-0887	Ed4 C.7.5.4.2	C-114	info	Ways to fill space: ACK-ONLY repeats, PADDING D_
 C-0888	Ed4 C.7.5.4.3	C-114	shall	In single channel operation, the EOT field is set in every D_PDU	yes		src/M0LTE.S5066.Core/Runtime/TransmitQueue.cs		
 C-0889	Ed4 C.7.5.4.3	C-114	shall	A node does not transmit while EOTs from another node's transmission show it is still transmitting	yes		src/M0LTE.S5066.Core/Runtime/MacSublayer.cs	SimulationTests.Broadcast_to_two_receivers_with_loss_never_overlaps_an_announced_eot; SimulationTests.Fades_mid_burst_never_overlap_an_announced_eot; SimulationTests.The_overlap_check_catches_a_node_that_ignores_an_announced_eot; T3 ThreeNodeTests	
 C-0890	Ed4 C.7.5.4.3	C-114	shall	Once an EOT is sent, each later D_PDU of the same transmission carries a consistent EOT that decreases monotonically in half-second steps	yes		src/M0LTE.S5066.Core/Runtime/TransmitQueue.cs		
-C-0891	Ed4 C.7.5.4.3	C-114	shall	A transmitting node rounds its EOT calculation up to the next half second, so the transmission is over by the time declared	yes		src/M0LTE.S5066.Core/Runtime/TransmitQueue.cs		
+C-0891	Ed4 C.7.5.4.3	C-114	shall	A transmitting node rounds its EOT calculation up to the next half second, so the transmission is over by the time declared	yes		src/M0LTE.S5066.Core/Runtime/TransmitQueue.cs; src/M0LTE.S5066.Host/Modem/Ms110dHostModem.cs	Ms110dHostTests.The_plan_is_never_early_and_matches_the_modulated_audio	
 C-0892	Ed4 C.7.5.4.3	C-114	shall	A node stops transmitting when its EOT reaches zero; what follows is governed by the MAC (Annex K)	yes		src/M0LTE.S5066.Core/Runtime/TransmitQueue.cs		
 C-0893	Ed4 C.7.5.4.4	C-115	may	On a single channel a node may send all traffic to one peer, ARQ traffic to several peers each over its own CAS-1 soft link, and non-ARQ traffic to unicast or broadcast addresses	yes				Peers take turns under Annex K
 C-0894	Ed4 C.7.5.4.4	C-115	shall	Transmission parameters take into account every peer that will receive the transmission, and at least never exceed any of those peers' maximum recommended speed	yes		src/M0LTE.S5066.Core/Runtime/TransmitQueue.cs		Plan 6.1
