@@ -5,7 +5,8 @@ A language-neutral conformance corpus and requirements matrix for STANAG 5066 Ed
 - `matrix/`: one row per requirement, citing annex, section and page, with a one-line paraphrase. It never reproduces the standard's text.
 - `corpus/`: test vectors and scenario traces.
 - `docs/`: the corpus format, the specified PRNG, and the harness contract each implementation follows.
-- `tools/`: `validate_corpus.py` checks every corpus file against the format (run `python3 tools/validate_corpus.py`).
+- `calibration/`: rate selection calibrations, one directory per modem implementation and version: the sweep's aggregates and the `drc.table` built from them (`docs/calibration-results.md`).
+- `tools/`: `validate_corpus.py` checks every corpus file against the format (run `python3 tools/validate_corpus.py`); `build_drc_table.py` builds a calibrated `drc.table`.
 
 ## Licence
 
