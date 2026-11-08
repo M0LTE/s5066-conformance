@@ -358,7 +358,7 @@ Each input has `t` and `in`, plus the keys listed.
 | `sis_bytes` | 3 | `conn`, `bytes` | Bytes from that client's stream. They may hold part of a frame or several frames. |
 | `sis_disconnect` | 3 | `conn` | The client went away. |
 
-`burst_started` key: `block_ms`, when present, is a positive integer, the duration of one block of the waveform the modem locked to, in whole ms rounded down. A modem that does not say leaves it out. With it the core anchors each received EOT by block (interp C-1289); without it, at the arrival of the bytes completing the header (C-1024). Added in corpus 0.31.0; traces without it are unchanged.
+`burst_started` key: `block_ms`, when present, is a positive integer, the duration of one block of the waveform the modem locked to, in whole ms rounded down. A modem that does not say leaves it out. With it the core places each received EOT by the block holding its D_PDU's first byte (interp C-1289); without it, at the arrival of the bytes completing the header (C-1024). Added in corpus 0.31.0; traces without it are unchanged.
 
 `burst_ended` keys: `reason` is one of `eom`, `signal_lost`, `terminated`; `wn` is the waveform number; `interleaver` is from the interleaver enum below; `k` is the constraint length; `snr_tenth_db` is a signed integer SNR in tenths of a dB (it may be negative), or `null` when the modem gives none; `blocks` is the number of blocks decoded.
 
