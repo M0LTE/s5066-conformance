@@ -98,7 +98,8 @@ MIN_BIN_BURSTS = 20
 # Starting values of the constants, tuned by the P7-9 stack sweep rounds.
 CONSTANTS = {
     "smoothing_weight": 8,
-    "clean_run": 2,
+    # P7-9 round 2 (stack sweep, docs/calibration-results.md): 1, from 2, halves the climb.
+    "clean_run": 1,
     "rx_error_limit_ppt": 500,
     "rx_ceiling_initial": 2,
     "rx_ceiling_cap": 16,
@@ -106,7 +107,7 @@ CONSTANTS = {
     "tx_ceiling_initial": 2,
     "tx_ceiling_cap": 8,
     # The probe of corpus-format.md 6.2 step 6 (P7-9c; interp C-1291).
-    "probe_run": 2,
+    "probe_run": 1,
 }
 
 IL_ORDER = {"ultra_short": 0, "short": 1, "medium": 2, "long": 3}

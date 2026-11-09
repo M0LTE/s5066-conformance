@@ -51,13 +51,13 @@
       {"wn": 8, "interleaver": "long", "bulk": [0, 0, 0, 0, 20, 20, 70, 120, 120], "latency": [0, 0, 0, 0, 50, 50, 95, 95, 135]}
     ],
     "smoothing_weight": 8,
-    "clean_run": 2,
+    "clean_run": 1,
     "rx_error_limit_ppt": 500,
     "rx_ceiling_initial": 2,
     "rx_ceiling_cap": 16,
     "tx_step_down_waits": 2,
     "tx_ceiling_initial": 2,
     "tx_ceiling_cap": 8,
-    "probe_run": 2
+    "probe_run": 1
   }
 }
