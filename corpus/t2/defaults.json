@@ -51,7 +51,9 @@
       "tx_step_down_waits": null,
       "tx_ceiling_initial": null,
       "tx_ceiling_cap": null,
-      "probe_run": null
+      "probe_run": null,
+      "bulk_rungs": null,
+      "latency_rungs": null
     }
   },
   "cas": {
