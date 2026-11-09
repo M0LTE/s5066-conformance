@@ -50,7 +50,8 @@
       "rx_ceiling_cap": null,
       "tx_step_down_waits": null,
       "tx_ceiling_initial": null,
-      "tx_ceiling_cap": null
+      "tx_ceiling_cap": null,
+      "probe_run": null
     }
   },
   "cas": {
