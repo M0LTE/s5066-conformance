@@ -10,7 +10,7 @@ Everything is in `calibration/ms110d-cs-0.6.1/`. The directory name is the prove
 |---|---|
 | `own.tsv`, `next.tsv`, `meta.json`, `audit-sample.tsv` | The sweep's aggregates, as merged on the instance (M0LTE.Ms110d `docs/calibration-sweep.md`; commit be49721, HfChannel 0.2.0, 1357 of 1357 jobs, 237,749 bursts, 1852 signal-hours). About 7 MB; the TSVs hold everything the builder needs, so the tarball is not kept |
 | `drc-table.json` | The default table: `{"source": {...}, "table": {...}}`. `table` is exactly the `drc.table` of corpus-format.md 6.1; `source` names the calibration, the modem (implementation, package, version, commit), HfChannel, and the builder's choices |
-| `rungs.tsv` | Per channel and rung: the set SNR at which it meets each criterion, and whether that channel's rule would keep it (and if not, which rung beats it) |
+| `rungs.tsv` | Per channel and rung: the set SNR at which it meets each criterion, and whether that channel's rule would keep it (for bulk, if not, which rung beats it; for latency, kept, not chosen or never meets) |
 | `error-vs-estimate.tsv` | Per channel, rung and estimate bin: bursts, D_PDUs, D_PDU errors and the error rate of the burst itself |
 | `estimate-summary.tsv` | Per channel and rung: the range of the estimate and the bin from which the burst's own error rate meets each criterion |
 | `next-check.tsv` | The check of the builder's independence assumption against the measured burst pairs |
@@ -29,10 +29,11 @@ All arithmetic is exact (Python fractions), so the output is the same on every r
 
 1. **Error rate against set SNR.** Per channel, rung and set SNR, the D_PDU error rate is summed from `own.tsv`. A rung meets a criterion at the lowest set SNR from which its error rate stays at or below the criterion's rate up to the top of its window, interpolated between the 1.5 dB grid points.
 2. **The two criteria.** Latency: a D_PDU error rate at or below **100 per thousand** (the stated latency target; "very few" corrupted, C-0472; one short message in ten needs a retry). Bulk, for ordering and dropping rungs only: at or below **500 per thousand**, where a rung delivers at least half its data rate, after the suggestion in [Ed4 C.5.1.1, p.C-60] that throughput peaks near a 50% frame error rate. Both numbers are ours and sit at the top of the builder.
-3. **The ladder** (open question 15, with the coordinator's tie ruling). On the Poor channel, separately for bulk and latency, a rung is dropped when another rung is no worse on both data rate and the set SNR it needs and strictly better on one; a rung that never meets the criterion inside its window is dropped too. The ladder is the union of the two kept sets, slowest first. On each kept set a higher rate always needs more SNR, so this is also the order by the set SNR each rung needs.
+3. **The ladder** (open question 15, with the coordinator's tie ruling). On the Poor channel. The bulk set: a rung is dropped when another rung is no worse on both data rate and the set SNR it needs for bulk and strictly better on one; a rung that never meets the bulk criterion inside its window is dropped too. The latency set (since corpus 0.36.0, P7-9 round 3: block duration counts): the rungs that are the latency choice (step 4) at some set SNR of Poor's grid. The ladder is the union of the two sets, slowest first, ordered by data rate and then by the least set SNR the rung needs for a criterion whose set holds it. `bulk_rungs` and `latency_rungs` list the positions of each set: the MAX-SPEED walk uses only the bulk set, LOW-SPEED only the latency set (corpus-format.md 6.2 step 6).
 4. **Thresholds** (design shape item 5). For each of the 36 measured rungs a (so a burst from a peer on any rung gives an estimate) and each ladder rung j, the builder works out the expected D_PDU error rate on j given the bin of the estimate on a. It mixes, with equal weight per channel over all five channels (an unknown path and radio), the error rate of j at each set SNR at which a was measured, weighted by how often a's estimate fell in that bin there. Below j's window j's error rate counts as 1, above it as the value at the window top. Then:
-   - `latency[j]` is the lowest bin edge from which j's expected error rate stays at or below 100 per thousand in every bin above it (null if the top bin fails);
-   - `bulk[j]` is the lowest bin edge from which the rung of highest expected goodput (data rate x (1 - error rate)) is j or above in every bin above it. So the target of corpus-format.md 6.2 step 6 is the rung of highest expected throughput.
+   - `latency[j]`, for a latency rung j, is the lowest bin edge from which the latency choice is j or above in every bin above it (null if it never is). The latency choice is, among the latency rungs whose expected error rate is at or below 100 per thousand, the one with the least expected time on air for a short message of 128 bytes (about a 100-byte U_PDU in one D_PDU, or an acknowledgement with its fill copies): whole blocks of the rung, so a long interleaver's 7.68 s block counts against it, divided by 1 - error rate; ties go to the higher data rate. Corpus 0.35.0 and before: the lowest bin from which j's own error rate stayed at or below 100 per thousand, so LOW-SPEED was the fastest rung meeting the target, whatever its block.
+   - `bulk[j]`, for a bulk rung j, is the lowest bin edge from which the bulk rung of highest expected data rate x (1 - error rate)^2 is j or above in every bin above it. The square charges what ARQ costs on top of the lost air time: a lost D_PDU goes again in a later transmission, after a turnaround (corpus 0.36.0, P7-9 round 3; before, data rate x (1 - error rate), which at AWGN 9 dB kept WN 7 Medium at about 30% errors where WN 6 Long delivered twice as much). So the target of corpus-format.md 6.2 step 6 is the rung of highest expected value.
+   - Elements of rungs outside the criterion's set are null.
 
    Bins with fewer than 20 bursts of a are not used. The values are bin edges, so multiples of 5 tenths.
 5. **Constants.** Starting values, for the P7-9 stack sweep rounds to tune: `smoothing_weight` 8, `clean_run` 2, `rx_error_limit_ppt` 500, `rx_ceiling_initial` 2, `rx_ceiling_cap` 16, `tx_step_down_waits` 2, `tx_ceiling_initial` 2, `tx_ceiling_cap` 8, and since corpus 0.33.0 `probe_run` 2 (the probe of corpus-format.md 6.2 step 6, P7-9c; interp C-1291), the same run as the trial. Nothing in this sweep measures them. Tuned in P7-9 round 2 (corpus 0.35.0) from the stack sweep: `clean_run` 1 and `probe_run` 1, from 2 and 2. The round 1 stack sweep spent the first 600 to 950 s of each 1800 s run climbing from `drc.default_speed` (WN 2 Long) one rung per two clean bursts, at a sender transmission about every 50 s; one burst a rung halves that. Measured on studybox (seeds 1 to 3, M0LTE.S5066 docs/stack-sweep.md): mean goodput up 6% at AWGN 18 dB, 16% at Poor 18 dB, 18% at Poor 30 dB and 16% on Poor-SSB 18 dB, down 9% at AWGN 12 dB and 3% at Poor 12 dB, where a probe of WN 8 Long fails more often; no links lost.
@@ -41,19 +42,27 @@ All arithmetic is exact (Python fractions), so the output is the same on every r
 
 ## The ladder
 
-Set SNR (dB) at which each rung meets each criterion on Poor (from `rungs.tsv`):
+Set SNR (dB) at which each rung meets each criterion on Poor (from `rungs.tsv`), and the time on air of the 128-byte short message (since corpus 0.36.0):
 
-| Position | Rung | Rate (bit/s) | Bulk needs | Latency needs | Kept for |
-|---|---|---|---|---|---|
-| 0 | WN 1 Long | 150 | -2.63 | -0.66 | bulk and latency |
-| 1 | WN 2 Long | 300 | 0.94 | 2.87 | bulk and latency |
-| 2 | WN 3 Long | 600 | 1.70 | 2.95 | bulk and latency |
-| 3 | WN 13 Long | 2400 | 5.29 | 7.16 | bulk and latency |
-| 4 | WN 6 Medium | 3200 | 8.52 | 11.57 | bulk |
-| 5 | WN 6 Long | 3200 | 8.94 | 10.80 | latency |
-| 6 | WN 7 Medium | 4800 | 12.32 | 15.84 | bulk |
-| 7 | WN 7 Long | 4800 | 12.74 | 14.70 | latency |
-| 8 | WN 8 Long | 6400 | 15.50 | 17.62 | bulk and latency |
+| Position | Rung | Rate (bit/s) | Bulk needs | Latency needs | Short message (s) | Kept for |
+|---|---|---|---|---|---|---|
+| 0 | WN 1 Long | 150 | -2.63 | -0.66 | 10.24 | bulk and latency |
+| 1 | WN 1 Medium | 150 | -2.02 | 1.18 | 7.68 | latency |
+| 2 | WN 2 Long | 300 | 0.94 | 2.87 | 10.24 | bulk |
+| 3 | WN 2 Medium | 300 | 1.58 | 4.35 | 5.12 | latency |
+| 4 | WN 3 Long | 600 | 1.70 | 2.95 | 6.83 | bulk and latency |
+| 5 | WN 3 Medium | 600 | 2.22 | 5.26 | 1.71 | latency |
+| 6 | WN 3 Short | 600 | 4.81 | 9.06 | 1.71 | latency |
+| 7 | WN 4 Short | 1200 | 9.55 | 13.43 | 0.85 | latency |
+| 8 | WN 13 Long | 2400 | 5.29 | 7.16 | 7.68 | bulk |
+| 9 | WN 13 Short | 2400 | 8.98 | 15.28 | 0.48 | latency |
+| 10 | WN 6 Medium | 3200 | 8.52 | 11.57 | 1.92 | bulk |
+| 11 | WN 7 Medium | 4800 | 12.32 | 15.84 | 1.92 | bulk |
+| 12 | WN 7 Short | 4800 | 13.81 | 18.69 | 0.48 | latency |
+| 13 | WN 7 Ultra Short | 4800 | 15.84 | 23.42 | 0.24 | latency |
+| 14 | WN 8 Long | 6400 | 15.50 | 17.62 | 7.68 | bulk |
+
+`bulk_rungs` is [0, 2, 4, 8, 10, 11, 14] and `latency_rungs` [0, 1, 3, 4, 5, 6, 7, 9, 12, 13]. The bulk set is as before round 3; the corpus 0.35.0 ladder (WN 1, 2, 3, 13 Long, WN 6 Medium, WN 6 Long, WN 7 Medium, WN 7 Long, WN 8 Long) kept WN 6 Long and WN 7 Long for latency only, and they no longer are the latency choice anywhere on Poor: a Medium or Short rung of the same or a lower rate carries a short message in a quarter of the time or less. The notes on the bulk set below are from corpus 0.32.0 and still hold.
 
 Why the other 27 went (each is beaten by the rung named in `rungs.tsv`):
 
@@ -62,7 +71,7 @@ Why the other 27 went (each is beaten by the rung named in `rungs.tsv`):
 - **WN 6 and 7**: Medium needs less for bulk and Long less for latency, so each criterion keeps a different one and both stay; Short and Ultra Short are beaten by them.
 - **Ultra Short of WN 1, 2, 6 and 13, and Short of WN 1 and 2**: never meet the latency target on Poor (the error floor below).
 
-The ladder is all Long and Medium. On the AWGN and AWGN-SSB channels the same rule would keep Short and Medium rungs instead (`rungs.tsv`), because without fading a shorter interleaver costs nothing; Poor orders the ladder, as ruled, and the Long rungs lose little on AWGN: the walk follows the best ladder rung at every AWGN point but one (-3 dB, where it stays on WN 1 Long, 150 bit/s, against 230 on WN 2 Long), and the best ladder rung is at most 103 bit/s below the best of all 36 rungs (3 dB, WN 13 Medium).
+The bulk set is all Long and Medium. On the AWGN and AWGN-SSB channels the same rule would keep Short and Medium rungs instead (`rungs.tsv`), because without fading a shorter interleaver costs nothing; Poor orders the ladder, as ruled, and the Long rungs lose little on AWGN: the walk follows the best ladder rung at every AWGN point but one (-3 dB, where it stays on WN 1 Long, 150 bit/s, against 230 on WN 2 Long), and the best ladder rung is at most 103 bit/s below the best of all 36 rungs (3 dB, WN 13 Medium).
 
 ## Error rate against the estimate
 
@@ -111,5 +120,5 @@ Not warranted by the data. `settle-ssb.tsv` uses a table built the same way over
 
 - The step-up question above decides whether the done-when can be met on Poor at all; it is the first thing for the stack sweep rounds to settle.
 - On AWGN the best fixed Long rung is WN 8 Long, and at 16.5 dB and above both it and the adaptive node deliver the full 6400 bit/s, so "strictly above" the baseline cannot hold there for any selector; open question 14's gate needs reading for points where the baseline already reaches the top rate.
-- The latency ladder is Long and Medium only, so LOW-SPEED (acknowledgements and short messages) goes on 7.68 s or 10.24 s blocks at the low end (WN 1, 2 and 3 Long). That bears on issue #67.
+- The latency ladder was Long and Medium only, so LOW-SPEED (acknowledgements and short messages) went on 7.68 s or 10.24 s blocks (issue #67). Since corpus 0.36.0 (P7-9 round 3) the latency criterion counts the block duration: LOW-SPEED goes to Medium, Short and Ultra Short rungs as the estimate allows.
 - The constants are untuned starting values.
