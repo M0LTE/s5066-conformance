@@ -1,0 +1,16 @@
+channel	estimate_on_a	pairs	dpdus	observed_errors	predicted_errors	observed_ppt	predicted_ppt
+AWGN	below median	4625	26452	12770	12727	483	481
+AWGN	at median	29897	161604	65648	65666	406	406
+AWGN	above median	4083	22298	13831	13853	620	621
+Poor	below median	17089	101712	33556	33482	330	329
+Poor	at median	15253	78570	27478	27305	350	348
+Poor	above median	17202	101225	34962	35228	345	348
+Moderate	below median	18747	112323	39549	39630	352	353
+Moderate	at median	11386	58511	21732	21564	371	369
+Moderate	above median	19106	110851	38596	38686	348	349
+AWGN-SSB	below median	2915	17272	9778	9786	566	567
+AWGN-SSB	at median	33770	183696	75052	75047	409	409
+AWGN-SSB	above median	5592	29362	14176	14169	483	483
+Poor-SSB	below median	17939	104904	67684	67635	645	645
+Poor-SSB	at median	17515	91876	56258	56264	612	612
+Poor-SSB	above median	17477	103434	66461	66543	643	643
