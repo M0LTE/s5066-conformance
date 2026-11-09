@@ -57,6 +57,7 @@
     "rx_ceiling_cap": 16,
     "tx_step_down_waits": 2,
     "tx_ceiling_initial": 2,
-    "tx_ceiling_cap": 8
+    "tx_ceiling_cap": 8,
+    "probe_run": 2
   }
 }

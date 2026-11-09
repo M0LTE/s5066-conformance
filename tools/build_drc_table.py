@@ -105,6 +105,8 @@ CONSTANTS = {
     "tx_step_down_waits": 2,
     "tx_ceiling_initial": 2,
     "tx_ceiling_cap": 8,
+    # The probe of corpus-format.md 6.2 step 6 (P7-9c; interp C-1291).
+    "probe_run": 2,
 }
 
 IL_ORDER = {"ultra_short": 0, "short": 1, "medium": 2, "long": 3}
@@ -573,14 +575,15 @@ def settle(table, channels, cv, point, binned, rate, rungs, ladder, default_rung
                 # rx_ceiling_cap + clean_run + 1 bursts.
                 n = table["rx_ceiling_cap"] + table["clean_run"]
                 g = (g * n + good(trial)) / (n + 1)
-            # Not corpus-format 6.2: what a step up on a clean run alone (a trial
-            # whatever the estimate says) would reach, for the P7-9 decision.
+            # The probe of corpus-format.md 6.2 step 6 (P7-9c; interp C-1291): a step
+            # up on probe_run clean bursts whatever the estimate says, back down only
+            # through the receiver's cap.
             q = pos
             while q + 1 < len(ladder) and cv[(c, ladder[q + 1])].at(s) <= lim:
                 q += 1
             gp = good(ladder[q])
             if q + 1 < len(ladder):
-                n = table["rx_ceiling_cap"] + table["clean_run"]
+                n = table["rx_ceiling_cap"] + table["probe_run"]
                 gp = (gp * n + good(ladder[q + 1])) / (n + 1)
             rows.append([c, s, r, tenths(g), ladder[q], tenths(gp), bl, tenths(good(bl)), ba, tenths(good(ba)), reason])
     return tsv(rows)
