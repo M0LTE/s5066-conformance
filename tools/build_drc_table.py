@@ -32,13 +32,16 @@ question 15; docs/calibration-results.md gives the reasons):
    uses BULK_ERROR_PPT (expected goodput at least half the data rate), latency
    uses LATENCY_TARGET_PPT. A rung whose window top is still above the error
    rate never meets the criterion on that channel.
-2. The ladder: on the ordering channel (Poor), separately for bulk and latency,
-   a rung is dropped when another rung is no worse on both data rate and the
-   set SNR it needs and strictly better on one (strict Pareto dominance, the
-   coordinator's ruling on the open question 15 tie); a rung that never meets
-   the criterion is dropped. The ladder is the union of the two kept sets,
-   ordered by data rate, then by the set SNR it needs (on a Pareto front a
-   higher rate always needs more SNR, so this is the order by set SNR).
+2. The ladder: on the ordering channel (Poor). The bulk set: a rung is dropped
+   when another rung is no worse on both data rate and the set SNR it needs for
+   bulk and strictly better on one (strict Pareto dominance, the coordinator's
+   ruling on the open question 15 tie); a rung that never meets the criterion
+   is dropped. The latency set (P7-9 round 3, block duration counts): the rungs
+   that are the latency choice (below) at some set SNR of the ordering channel's
+   grid. The ladder is the union of the two sets, ordered by data rate, then by
+   the least set SNR it needs for a criterion whose set holds it; bulk_rungs and
+   latency_rungs give the positions of each set (open question 15: the MAX-SPEED
+   walk uses only the bulk set, the LOW-SPEED walk only the latency set).
 3. Thresholds, per measured rung a (every rung measured) and ladder rung j: the
    expected D_PDU error rate of a burst on j given the estimate bin of a burst
    on a is the mixture, over channels c with weights w_c and the set SNRs s at
@@ -48,13 +51,19 @@ question 15; docs/calibration-results.md gives the reasons):
    argues and next-check.tsv tests against the measured pairs. Below j's
    window p_j is taken as 1, above it as the value at the window top, and
    between grid points linearly.
-   - latency, element j: the lowest bin edge from which the expected error rate
-     of j stays at or below LATENCY_TARGET_PPT in every bin with data above it;
-     null when the top bin still fails.
-   - bulk, element j: the lowest bin edge from which the rung with the highest
-     expected goodput (data rate x (1 - error rate)) is at position j or above
-     in every bin with data above it; null when it never is. So the target of
-     corpus-format.md 6.2 step 6 is the rung of highest expected goodput.
+   - latency, element j of a latency rung: the lowest bin edge from which the
+     latency choice among the latency rungs is at position j or above in every
+     bin with data above it; null when it never is. The latency choice is, of
+     the rungs whose expected error rate is at or below LATENCY_TARGET_PPT, the
+     one with the least expected time on air for a short message of
+     LATENCY_MESSAGE_BYTES (whole blocks, so the block duration counts), over
+     1 - error rate; ties go to the higher data rate.
+   - bulk, element j of a bulk rung: the lowest bin edge from which the bulk
+     rung with the highest expected value of the bulk objective, data rate x
+     (1 - error rate)^2 (P7-9 round 3: the square charges retransmission), is
+     at position j or above in every bin with data above it; null when it never
+     is. So the target of corpus-format.md 6.2 step 6 is that rung.
+   Elements of rungs outside the criterion's set are null.
    Bins with fewer than MIN_BIN_BURSTS bursts of a are not used.
 4. The constants are starting values for the P7-9 stack sweep rounds.
 
@@ -85,6 +94,9 @@ BULK_ERROR_PPT = 500
 # The latency target: the D_PDU error rate at or below which a rung counts as
 # meeting the latency criterion ("very few" corrupted, C-0472). Parts per thousand.
 LATENCY_TARGET_PPT = 100
+# The short message the latency criterion times (P7-9 round 3): about a 100-byte
+# U_PDU in one D_PDU, or an acknowledgement with its fill copies. Bytes.
+LATENCY_MESSAGE_BYTES = 128
 # The channel that orders the ladder (design shape item 4).
 ORDER_CHANNEL = "Poor"
 # Channel weights of the default table (an unknown channel and radio) and of the
@@ -137,6 +149,8 @@ def load(caldir):
     if not meta.get("merge", {}).get("complete"):
         sys.exit("meta.json: the merge is not complete")
     rate = {r["rung"]: r["data_rate_bps"] for r in meta["rungs"]}
+    global BLOCK_BYTES
+    BLOCK_BYTES = {r["rung"]: r["bytes_per_block"] for r in meta["rungs"]}
     # point[(c, rung, s)] = [dpdus, errors, bursts]; binned[(c, rung, s)][bin] = bursts
     point = {}
     binned = {}
@@ -221,11 +235,51 @@ def pareto(cands, rate):
     return out
 
 
+BLOCK_BYTES = {}
+POINT = {}
+
+
+def message_time(r, rate):
+    """Seconds on air (a Fraction) for LATENCY_MESSAGE_BYTES on rung r: whole blocks,
+    each bytes_per_block x 8 / data rate long (the block duration counts)."""
+    bpb = BLOCK_BYTES[r]
+    blocks = -(-LATENCY_MESSAGE_BYTES // bpb)
+    return Fraction(blocks * bpb * 8, rate[r])
+
+
+def latency_choice(cands, err, rate):
+    """Of the rungs cands whose error rate err[r] (a Fraction) is at or below the
+    latency target, the least expected time for the short message, time / (1 -
+    err), ties to the higher data rate then the earlier in cands; None when none."""
+    lim = Fraction(LATENCY_TARGET_PPT, 1000)
+    ok = [r for r in cands if err[r] <= lim]
+    if not ok:
+        return None
+    return min(ok, key=lambda r: (message_time(r, rate) / (1 - err[r]), -rate[r], cands.index(r)))
+
+
+def bulk_value(rate_bps, err):
+    """The bulk objective (P7-9 round 3): data rate x (1 - error rate)^2."""
+    return rate_bps * (1 - err) * (1 - err)
+
+
 def kept_of(verdict):
     return sorted(r for r, by in verdict.items() if by is None)
 
 
-def build_ladder(cv, rate, rungs):
+def latency_set(c, cv, rate, rungs, point):
+    """The rungs that are the latency choice at some set SNR of channel c's grid."""
+    snrs = sorted({s for (cc, r, s) in point if cc == c})
+    have = [r for r in rungs if (c, r) in cv]
+    out = set()
+    for s in snrs:
+        r = latency_choice(have, {x: cv[(c, x)].at(s) for x in have}, rate)
+        if r is not None:
+            out.add(r)
+    return sorted(out)
+
+
+def build_ladder(cv, rate, rungs, point):
     need = {}
     for crit, ppt in (("bulk", BULK_ERROR_PPT), ("latency", LATENCY_TARGET_PPT)):
         need[crit] = {}
@@ -234,12 +288,13 @@ def build_ladder(cv, rate, rungs):
             n = c.needs(ppt) if c else None
             if n is not None:
                 need[crit][r] = n
-    kept = {crit: kept_of(pareto(need[crit], rate)) for crit in need}
+    kept = {"bulk": kept_of(pareto(need["bulk"], rate)),
+            "latency": latency_set(ORDER_CHANNEL, cv, rate, rungs, point)}
     union = set(kept["bulk"]) | set(kept["latency"])
 
     def order(r):
-        sn = [need[k][r] for k in ("bulk", "latency") if r in kept[k]]
-        return (rate[r], min(sn))
+        sn = [need[k][r] for k in ("bulk", "latency") if r in kept[k] and r in need[k]]
+        return (rate[r], min(sn) if sn else Fraction(0))
 
     ladder = sorted(union, key=order)
     return ladder, need, kept
@@ -276,37 +331,40 @@ def expected_errors(a, weights, cv, point, binned, ladder):
     return out
 
 
-def thresholds_for(exp, ladder, rate):
-    bins = sorted(exp)
-    n = len(ladder)
-    lat = [None] * n
-    bulk = [None] * n
-    lim = Fraction(LATENCY_TARGET_PPT, 1000)
-    for j in range(n):
-        edge = None
-        for b in reversed(bins):
-            if exp[b][1][j] <= lim:
-                edge = b
-            else:
-                break
-        lat[j] = edge
-    best = {}
-    for b in bins:
-        good = [rate[ladder[j]] * (1 - exp[b][1][j]) for j in range(n)]
-        top = max(good)
-        best[b] = max(j for j in range(n) if good[j] == top) if top > 0 else -1
-    for j in range(n):
+def edges(best, bins, positions, n):
+    """Element j (j in positions): the lowest bin from which best[b] >= j in every
+    bin above; None when the top bin fails. Other elements None."""
+    row = [None] * n
+    for j in positions:
         edge = None
         for b in reversed(bins):
             if best[b] >= j:
                 edge = b
             else:
                 break
-        bulk[j] = edge
+        row[j] = edge
+    return row
+
+
+def thresholds_for(exp, ladder, rate, walks):
+    bins = sorted(exp)
+    n = len(ladder)
+    best = {}
+    lbest = {}
+    for b in bins:
+        err = {ladder[j]: exp[b][1][j] for j in range(n)}
+        good = {j: bulk_value(rate[ladder[j]], exp[b][1][j]) for j in walks["bulk"]}
+        top = max(good.values())
+        best[b] = max(j for j in good if good[j] == top) if top > 0 else -1
+        choice = latency_choice([ladder[j] for j in walks["latency"]], err, rate)
+        lbest[b] = ladder.index(choice) if choice is not None else -1
+    bulk = edges(best, bins, walks["bulk"], n)
+    lat = edges(lbest, bins, walks["latency"], n)
     return bulk, lat, best
 
 
-def build_table(weights, cv, point, binned, rate, rungs, ladder):
+def build_table(weights, cv, point, binned, rate, rungs, ladder, kept):
+    walks = {crit: [j for j, r in enumerate(ladder) if r in kept[crit]] for crit in ("bulk", "latency")}
     entries = []
     for a in rungs:
         if not all((c, a) in cv for c in weights):
@@ -314,7 +372,7 @@ def build_table(weights, cv, point, binned, rate, rungs, ladder):
         exp = expected_errors(a, weights, cv, point, binned, ladder)
         if not exp:
             continue
-        bulk, lat, _ = thresholds_for(exp, ladder, rate)
+        bulk, lat, _ = thresholds_for(exp, ladder, rate, walks)
         e = rung_obj(a)
         e["bulk"] = bulk
         e["latency"] = lat
@@ -322,6 +380,8 @@ def build_table(weights, cv, point, binned, rate, rungs, ladder):
     entries.sort(key=lambda e: (e["wn"] if e["wn"] != 13 else 4.5, IL_ORDER[e["interleaver"]]))
     table = {"ladder": [rung_obj(r) for r in ladder], "thresholds": entries}
     table.update(CONSTANTS)
+    table["bulk_rungs"] = walks["bulk"]
+    table["latency_rungs"] = walks["latency"]
     return table
 
 
@@ -343,6 +403,8 @@ def source(meta, caldir, weights, kind):
         "order_channel": ORDER_CHANNEL,
         "bulk_error_ppt": BULK_ERROR_PPT,
         "latency_target_ppt": LATENCY_TARGET_PPT,
+        "latency_message_bytes": LATENCY_MESSAGE_BYTES,
+        "bulk_objective": "rate x (1 - e)^2",
         "min_bin_bursts": MIN_BIN_BURSTS,
         "builder": "tools/build_drc_table.py",
     }
@@ -371,22 +433,25 @@ def tsv(rows):
 
 def channel_sets(c, cv, rate, rungs):
     """The bulk and latency sets the ladder rule would keep if channel c ordered it."""
-    out = {}
-    for crit, lim in (("bulk", BULK_ERROR_PPT), ("latency", LATENCY_TARGET_PPT)):
-        need = {}
-        for r in rungs:
-            if (c, r) in cv:
-                n = cv[(c, r)].needs(lim)
-                if n is not None:
-                    need[r] = n
-        out[crit] = pareto(need, rate)
+    need = {}
+    for r in rungs:
+        if (c, r) in cv:
+            n = cv[(c, r)].needs(BULK_ERROR_PPT)
+            if n is not None:
+                need[r] = n
+    out = {"bulk": pareto(need, rate)}
+    chosen = set(latency_set(c, cv, rate, rungs, POINT))
+    out["latency"] = {r: (None if r in chosen else "!not chosen") for r in rungs
+                      if (c, r) in cv and (r in chosen or cv[(c, r)].needs(LATENCY_TARGET_PPT) is not None)}
     return out
 
 
 def verdict(v, r):
     if r not in v:
         return "never meets"
-    return "kept" if v[r] is None else "beaten by " + v[r]
+    if v[r] is None:
+        return "kept"
+    return v[r][1:] if v[r].startswith("!") else "beaten by " + v[r]
 
 
 def db2(fr):
@@ -529,9 +594,16 @@ def settle(table, channels, cv, point, binned, rate, rungs, ladder, default_rung
     """A static prediction of where the bulk walk settles, per channel and set SNR,
     with the receiver's estimate taken as the median bin on the rung in use (the
     smoothing converges near it) and a step up refused when the higher rung loses
-    more than rx_error_limit_ppt there (its cap would bring it back). The P7-9
+    more than rx_error_limit_ppt there (its cap would bring it back), over the
+    positions of bulk_rungs, one at a time (a lower bound on the walk, which
+    goes straight to its target since P7-9 round 3). The P7-9
     stack sweeps measure the real thing; this only shows what the table implies."""
     ent = {(e["wn"], e["interleaver"]): e for e in table["thresholds"]}
+    walk = table.get("bulk_rungs") or list(range(len(ladder)))
+
+    def up(p):
+        """The next position of the bulk walk above p, or None (P7-9 round 3)."""
+        return next((w for w in walk if w > p), None)
     lim = Fraction(table["rx_error_limit_ppt"], 1000)
     rows = [["channel", "set_snr_tenth", "settles_on", "goodput_bps", "probing_reaches", "probing_goodput_bps", "best_ladder_rung", "best_ladder_bps",
              "best_any_rung", "best_any_bps", "stop_reason"]]
@@ -558,11 +630,11 @@ def settle(table, channels, cv, point, binned, rate, rungs, ladder, default_rung
                 if t < pos:
                     pos = t
                 elif t > pos:
-                    if cv[(c, ladder[pos + 1])].at(s) > lim:
+                    if cv[(c, ladder[up(pos)])].at(s) > lim:
                         reason = "next rung fails, capped"
-                        trial = ladder[pos + 1]
+                        trial = ladder[up(pos)]
                         break
-                    pos += 1
+                    pos = up(pos)
                 else:
                     break
             r = ladder[pos]
@@ -580,12 +652,12 @@ def settle(table, channels, cv, point, binned, rate, rungs, ladder, default_rung
             # up on probe_run clean bursts whatever the estimate says, back down only
             # through the receiver's cap.
             q = pos
-            while q + 1 < len(ladder) and cv[(c, ladder[q + 1])].at(s) <= lim:
-                q += 1
+            while up(q) is not None and cv[(c, ladder[up(q)])].at(s) <= lim:
+                q = up(q)
             gp = good(ladder[q])
-            if q + 1 < len(ladder):
+            if up(q) is not None:
                 n = table["rx_ceiling_cap"] + table["probe_run"]
-                gp = (gp * n + good(ladder[q + 1])) / (n + 1)
+                gp = (gp * n + good(ladder[up(q)])) / (n + 1)
             rows.append([c, s, r, tenths(g), ladder[q], tenths(gp), bl, tenths(good(bl)), ba, tenths(good(ba)), reason])
     return tsv(rows)
 
@@ -593,12 +665,14 @@ def settle(table, channels, cv, point, binned, rate, rungs, ladder, default_rung
 def build(caldir):
     meta, rate, channels, rungs, point, binned, errbin = load(caldir)
     cv = curves(point)
-    ladder, need, kept = build_ladder(cv, rate, rungs)
+    global POINT
+    POINT = point
+    ladder, need, kept = build_ladder(cv, rate, rungs, point)
     fading = {c["name"]: bool(c["paths"]) for c in meta["channels"]}
     out = {}
     for name, weights, kind in (("drc-table.json", DEFAULT_WEIGHTS, "default: unknown channel and radio"),
                                 ("drc-table-ssb.json", SSB_WEIGHTS, "comparison: SSB band-pass channels only")):
-        table = build_table(weights, cv, point, binned, rate, rungs, ladder)
+        table = build_table(weights, cv, point, binned, rate, rungs, ladder, kept)
         if name == "drc-table.json":
             out[name] = table_json({"source": source(meta, caldir, weights, kind), "table": table})
             out["settle.tsv"] = settle(table, channels, cv, point, binned, rate, rungs, ladder, DEFAULT_SPEED, fading)

@@ -1,181 +1,181 @@
 channel	rung	data_rate_bps	window_low_tenth	window_high_tenth	top_error_ppt	bulk_needs_db	latency_needs_db	bulk	latency	ladder
-AWGN	wn1-ultra_short	150	-90	90	0	-4.78	-3.31	beaten by wn1-medium	beaten by wn1-long	-
-AWGN	wn1-short	150	-90	60	0	-5.24	-4.61	beaten by wn1-medium	beaten by wn1-long	-
-AWGN	wn1-medium	150	-90	30	0	-5.85	-4.76	kept	beaten by wn1-long	-
-AWGN	wn1-long	150	-90	30	0	-5.84	-4.77	beaten by wn1-medium	kept	0
-AWGN	wn2-ultra_short	300	-60	90	0	-2.30	-0.72	beaten by wn2-short	beaten by wn2-medium	-
-AWGN	wn2-short	300	-90	60	0	-3.94	-1.90	kept	beaten by wn2-medium	-
-AWGN	wn2-medium	300	-90	60	0	-3.68	-2.20	beaten by wn2-short	kept	-
-AWGN	wn2-long	300	-90	30	0	-3.52	-2.13	beaten by wn2-short	beaten by wn2-medium	1
-AWGN	wn3-ultra_short	600	-30	90	0	-0.57	0.74	beaten by wn3-short	beaten by wn3-short	-
-AWGN	wn3-short	600	-90	90	0	-1.23	-0.13	kept	kept	-
-AWGN	wn3-medium	600	-90	60	0	-0.85	-0.07	beaten by wn3-short	beaten by wn3-short	-
-AWGN	wn3-long	600	-90	60	0	-0.74	-0.10	beaten by wn3-short	beaten by wn3-short	2
-AWGN	wn4-ultra_short	1200	0	120	0	2.24	2.90	beaten by wn4-long	beaten by wn4-long	-
-AWGN	wn4-short	1200	-30	90	0	2.20	2.88	beaten by wn4-long	beaten by wn4-long	-
-AWGN	wn4-medium	1200	-15	90	0	2.19	2.86	beaten by wn4-long	beaten by wn4-long	-
-AWGN	wn4-long	1200	-90	90	0	2.15	2.86	kept	kept	-
-AWGN	wn5-ultra_short	1600	0	120	0	2.33	3.53	beaten by wn5-long	beaten by wn5-long	-
-AWGN	wn5-short	1600	-30	120	0	2.35	3.39	beaten by wn5-long	beaten by wn5-long	-
-AWGN	wn5-medium	1600	-30	90	0	2.29	3.28	beaten by wn5-long	beaten by wn5-long	-
-AWGN	wn5-long	1600	-60	90	0	2.29	3.02	kept	kept	-
-AWGN	wn13-ultra_short	2400	0	165	0	3.32	4.30	beaten by wn13-medium	beaten by wn13-medium	-
-AWGN	wn13-short	2400	-15	120	0	3.14	4.26	beaten by wn13-medium	beaten by wn13-medium	-
-AWGN	wn13-medium	2400	-30	90	0	2.74	4.15	kept	kept	-
-AWGN	wn13-long	2400	-60	90	0	2.83	4.20	beaten by wn13-medium	beaten by wn13-medium	3
-AWGN	wn6-ultra_short	3200	30	165	0	5.36	6.40	beaten by wn6-medium	beaten by wn6-long	-
-AWGN	wn6-short	3200	0	165	0	5.38	6.55	beaten by wn6-medium	beaten by wn6-long	-
-AWGN	wn6-medium	3200	0	120	0	5.29	6.11	kept	kept	4
-AWGN	wn6-long	3200	0	120	0	5.33	6.11	beaten by wn6-medium	kept	5
-AWGN	wn7-ultra_short	4800	75	210	0	9.75	10.99	beaten by wn7-medium	beaten by wn7-medium	-
-AWGN	wn7-short	4800	30	195	0	9.70	10.72	beaten by wn7-medium	beaten by wn7-medium	-
-AWGN	wn7-medium	4800	30	195	0	9.24	10.44	kept	kept	6
-AWGN	wn7-long	4800	0	165	0	9.72	10.86	beaten by wn7-medium	beaten by wn7-medium	7
-AWGN	wn8-ultra_short	6400	75	210	0	12.94	14.31	beaten by wn8-short	beaten by wn8-short	-
-AWGN	wn8-short	6400	75	210	0	12.86	14.12	kept	kept	-
-AWGN	wn8-medium	6400	60	195	0	12.89	14.26	beaten by wn8-short	beaten by wn8-short	-
-AWGN	wn8-long	6400	60	195	0	12.89	14.17	beaten by wn8-short	beaten by wn8-short	8
+AWGN	wn1-ultra_short	150	-90	90	0	-4.78	-3.31	beaten by wn1-medium	not chosen	-
+AWGN	wn1-short	150	-90	60	0	-5.24	-4.61	beaten by wn1-medium	kept	-
+AWGN	wn1-medium	150	-90	30	0	-5.85	-4.76	kept	not chosen	1
+AWGN	wn1-long	150	-90	30	0	-5.84	-4.77	beaten by wn1-medium	not chosen	0
+AWGN	wn2-ultra_short	300	-60	90	0	-2.30	-0.72	beaten by wn2-short	not chosen	-
+AWGN	wn2-short	300	-90	60	0	-3.94	-1.90	kept	kept	-
+AWGN	wn2-medium	300	-90	60	0	-3.68	-2.20	beaten by wn2-short	not chosen	3
+AWGN	wn2-long	300	-90	30	0	-3.52	-2.13	beaten by wn2-short	not chosen	2
+AWGN	wn3-ultra_short	600	-30	90	0	-0.57	0.74	beaten by wn3-short	kept	-
+AWGN	wn3-short	600	-90	90	0	-1.23	-0.13	kept	kept	6
+AWGN	wn3-medium	600	-90	60	0	-0.85	-0.07	beaten by wn3-short	not chosen	5
+AWGN	wn3-long	600	-90	60	0	-0.74	-0.10	beaten by wn3-short	not chosen	4
+AWGN	wn4-ultra_short	1200	0	120	0	2.24	2.90	beaten by wn4-long	not chosen	-
+AWGN	wn4-short	1200	-30	90	0	2.20	2.88	beaten by wn4-long	kept	7
+AWGN	wn4-medium	1200	-15	90	0	2.19	2.86	beaten by wn4-long	not chosen	-
+AWGN	wn4-long	1200	-90	90	0	2.15	2.86	kept	not chosen	-
+AWGN	wn5-ultra_short	1600	0	120	0	2.33	3.53	beaten by wn5-long	not chosen	-
+AWGN	wn5-short	1600	-30	120	0	2.35	3.39	beaten by wn5-long	not chosen	-
+AWGN	wn5-medium	1600	-30	90	0	2.29	3.28	beaten by wn5-long	not chosen	-
+AWGN	wn5-long	1600	-60	90	0	2.29	3.02	kept	not chosen	-
+AWGN	wn13-ultra_short	2400	0	165	0	3.32	4.30	beaten by wn13-medium	kept	-
+AWGN	wn13-short	2400	-15	120	0	3.14	4.26	beaten by wn13-medium	kept	9
+AWGN	wn13-medium	2400	-30	90	0	2.74	4.15	kept	not chosen	-
+AWGN	wn13-long	2400	-60	90	0	2.83	4.20	beaten by wn13-medium	not chosen	8
+AWGN	wn6-ultra_short	3200	30	165	0	5.36	6.40	beaten by wn6-medium	kept	-
+AWGN	wn6-short	3200	0	165	0	5.38	6.55	beaten by wn6-medium	not chosen	-
+AWGN	wn6-medium	3200	0	120	0	5.29	6.11	kept	not chosen	10
+AWGN	wn6-long	3200	0	120	0	5.33	6.11	beaten by wn6-medium	not chosen	-
+AWGN	wn7-ultra_short	4800	75	210	0	9.75	10.99	beaten by wn7-medium	kept	13
+AWGN	wn7-short	4800	30	195	0	9.70	10.72	beaten by wn7-medium	not chosen	12
+AWGN	wn7-medium	4800	30	195	0	9.24	10.44	kept	not chosen	11
+AWGN	wn7-long	4800	0	165	0	9.72	10.86	beaten by wn7-medium	not chosen	-
+AWGN	wn8-ultra_short	6400	75	210	0	12.94	14.31	beaten by wn8-short	kept	-
+AWGN	wn8-short	6400	75	210	0	12.86	14.12	kept	not chosen	-
+AWGN	wn8-medium	6400	60	195	0	12.89	14.26	beaten by wn8-short	not chosen	-
+AWGN	wn8-long	6400	60	195	0	12.89	14.17	beaten by wn8-short	not chosen	14
 Poor	wn1-ultra_short	150	-30	150	912	never	never	never meets	never meets	-
 Poor	wn1-short	150	-60	120	167	6.46	never	beaten by wn1-long	never meets	-
-Poor	wn1-medium	150	-75	105	0	-2.02	1.18	beaten by wn1-long	beaten by wn1-long	-
+Poor	wn1-medium	150	-75	105	0	-2.02	1.18	beaten by wn1-long	kept	1
 Poor	wn1-long	150	-75	105	0	-2.63	-0.66	kept	kept	0
 Poor	wn2-ultra_short	300	-15	165	961	never	never	never meets	never meets	-
 Poor	wn2-short	300	-45	135	108	4.57	never	beaten by wn2-long	never meets	-
-Poor	wn2-medium	300	-60	135	0	1.58	4.35	beaten by wn2-long	beaten by wn2-long	-
-Poor	wn2-long	300	-75	120	0	0.94	2.87	kept	kept	1
-Poor	wn3-ultra_short	600	15	195	88	11.12	16.90	beaten by wn3-long	beaten by wn3-long	-
-Poor	wn3-short	600	-30	165	10	4.81	9.06	beaten by wn3-long	beaten by wn3-long	-
-Poor	wn3-medium	600	-45	150	10	2.22	5.26	beaten by wn3-long	beaten by wn3-long	-
-Poor	wn3-long	600	-45	135	10	1.70	2.95	kept	kept	2
-Poor	wn4-ultra_short	1200	30	225	58	12.75	17.45	beaten by wn13-long	beaten by wn13-long	-
-Poor	wn4-short	1200	15	195	10	9.55	13.43	beaten by wn13-long	beaten by wn13-long	-
-Poor	wn4-medium	1200	0	180	0	6.43	9.06	beaten by wn13-long	beaten by wn13-long	-
-Poor	wn4-long	1200	-15	165	0	5.36	7.43	beaten by wn13-long	beaten by wn13-long	-
-Poor	wn5-ultra_short	1600	45	225	45	10.64	16.60	beaten by wn13-long	beaten by wn13-long	-
-Poor	wn5-short	1600	15	195	0	8.61	12.57	beaten by wn13-long	beaten by wn13-long	-
-Poor	wn5-medium	1600	0	180	0	5.52	8.60	beaten by wn13-long	beaten by wn13-long	-
-Poor	wn5-long	1600	-15	165	10	5.57	7.39	beaten by wn13-long	beaten by wn13-long	-
+Poor	wn2-medium	300	-60	135	0	1.58	4.35	beaten by wn2-long	kept	3
+Poor	wn2-long	300	-75	120	0	0.94	2.87	kept	not chosen	2
+Poor	wn3-ultra_short	600	15	195	88	11.12	16.90	beaten by wn3-long	not chosen	-
+Poor	wn3-short	600	-30	165	10	4.81	9.06	beaten by wn3-long	kept	6
+Poor	wn3-medium	600	-45	150	10	2.22	5.26	beaten by wn3-long	kept	5
+Poor	wn3-long	600	-45	135	10	1.70	2.95	kept	kept	4
+Poor	wn4-ultra_short	1200	30	225	58	12.75	17.45	beaten by wn13-long	not chosen	-
+Poor	wn4-short	1200	15	195	10	9.55	13.43	beaten by wn13-long	kept	7
+Poor	wn4-medium	1200	0	180	0	6.43	9.06	beaten by wn13-long	not chosen	-
+Poor	wn4-long	1200	-15	165	0	5.36	7.43	beaten by wn13-long	not chosen	-
+Poor	wn5-ultra_short	1600	45	225	45	10.64	16.60	beaten by wn13-long	not chosen	-
+Poor	wn5-short	1600	15	195	0	8.61	12.57	beaten by wn13-long	not chosen	-
+Poor	wn5-medium	1600	0	180	0	5.52	8.60	beaten by wn13-long	not chosen	-
+Poor	wn5-long	1600	-15	165	10	5.57	7.39	beaten by wn13-long	not chosen	-
 Poor	wn13-ultra_short	2400	45	240	359	13.96	never	beaten by wn13-long	never meets	-
-Poor	wn13-short	2400	15	210	54	8.98	15.28	beaten by wn13-long	beaten by wn13-long	-
-Poor	wn13-medium	2400	0	180	10	5.31	8.08	beaten by wn13-long	beaten by wn13-long	-
-Poor	wn13-long	2400	0	180	0	5.29	7.16	kept	kept	3
+Poor	wn13-short	2400	15	210	54	8.98	15.28	beaten by wn13-long	kept	9
+Poor	wn13-medium	2400	0	180	10	5.31	8.08	beaten by wn13-long	not chosen	-
+Poor	wn13-long	2400	0	180	0	5.29	7.16	kept	not chosen	8
 Poor	wn6-ultra_short	3200	60	270	387	17.06	never	beaten by wn6-medium	never meets	-
-Poor	wn6-short	3200	60	255	92	11.66	21.77	beaten by wn6-medium	beaten by wn6-long	-
-Poor	wn6-medium	3200	30	225	9	8.52	11.57	kept	beaten by wn6-long	4
-Poor	wn6-long	3200	30	210	9	8.94	10.80	beaten by wn6-medium	kept	5
-Poor	wn7-ultra_short	4800	120	345	65	15.84	23.42	beaten by wn7-medium	beaten by wn7-long	-
-Poor	wn7-short	4800	90	300	13	13.81	18.69	beaten by wn7-medium	beaten by wn7-long	-
-Poor	wn7-medium	4800	75	285	39	12.32	15.84	kept	beaten by wn7-long	6
-Poor	wn7-long	4800	60	255	10	12.74	14.70	beaten by wn7-medium	kept	7
-Poor	wn8-ultra_short	6400	135	345	86	19.69	30.18	beaten by wn8-long	beaten by wn8-long	-
-Poor	wn8-short	6400	135	345	5	16.15	21.34	beaten by wn8-long	beaten by wn8-long	-
-Poor	wn8-medium	6400	105	315	19	15.53	18.90	beaten by wn8-long	beaten by wn8-long	-
-Poor	wn8-long	6400	90	300	13	15.50	17.62	kept	kept	8
+Poor	wn6-short	3200	60	255	92	11.66	21.77	beaten by wn6-medium	not chosen	-
+Poor	wn6-medium	3200	30	225	9	8.52	11.57	kept	not chosen	10
+Poor	wn6-long	3200	30	210	9	8.94	10.80	beaten by wn6-medium	not chosen	-
+Poor	wn7-ultra_short	4800	120	345	65	15.84	23.42	beaten by wn7-medium	kept	13
+Poor	wn7-short	4800	90	300	13	13.81	18.69	beaten by wn7-medium	kept	12
+Poor	wn7-medium	4800	75	285	39	12.32	15.84	kept	not chosen	11
+Poor	wn7-long	4800	60	255	10	12.74	14.70	beaten by wn7-medium	not chosen	-
+Poor	wn8-ultra_short	6400	135	345	86	19.69	30.18	beaten by wn8-long	not chosen	-
+Poor	wn8-short	6400	135	345	5	16.15	21.34	beaten by wn8-long	not chosen	-
+Poor	wn8-medium	6400	105	315	19	15.53	18.90	beaten by wn8-long	not chosen	-
+Poor	wn8-long	6400	90	300	13	15.50	17.62	kept	not chosen	14
 Moderate	wn1-ultra_short	150	-45	135	853	never	never	never meets	never meets	-
 Moderate	wn1-short	150	-75	105	314	7.31	never	beaten by wn1-long	never meets	-
-Moderate	wn1-medium	150	-90	90	20	-1.70	2.08	beaten by wn1-long	beaten by wn1-long	-
+Moderate	wn1-medium	150	-90	90	20	-1.70	2.08	beaten by wn1-long	not chosen	1
 Moderate	wn1-long	150	-90	90	0	-3.31	-1.37	kept	kept	0
 Moderate	wn2-ultra_short	300	-30	150	873	never	never	never meets	never meets	-
 Moderate	wn2-short	300	-60	120	108	4.35	never	beaten by wn2-long	never meets	-
-Moderate	wn2-medium	300	-75	120	0	0.87	4.56	beaten by wn2-long	beaten by wn2-long	-
-Moderate	wn2-long	300	-90	105	0	-0.15	2.06	kept	kept	1
-Moderate	wn3-ultra_short	600	0	180	29	9.94	14.75	beaten by wn3-long	beaten by wn3-long	-
-Moderate	wn3-short	600	-45	150	10	4.15	10.17	beaten by wn3-long	beaten by wn3-long	-
-Moderate	wn3-medium	600	-60	135	0	2.58	6.18	beaten by wn3-long	beaten by wn3-long	-
-Moderate	wn3-long	600	-60	120	0	1.18	2.97	kept	kept	2
-Moderate	wn4-ultra_short	1200	15	210	22	10.06	15.35	beaten by wn4-long	beaten by wn13-long	-
-Moderate	wn4-short	1200	0	180	20	9.13	13.56	beaten by wn4-long	beaten by wn13-long	-
-Moderate	wn4-medium	1200	-15	165	0	6.49	10.13	beaten by wn4-long	beaten by wn13-long	-
-Moderate	wn4-long	1200	-30	150	0	4.70	7.37	kept	beaten by wn13-long	-
-Moderate	wn5-ultra_short	1600	30	210	6	9.13	15.39	beaten by wn13-medium	beaten by wn13-long	-
-Moderate	wn5-short	1600	0	180	0	7.85	13.15	beaten by wn13-medium	beaten by wn13-long	-
-Moderate	wn5-medium	1600	-15	165	0	5.26	9.19	beaten by wn13-medium	beaten by wn13-long	-
-Moderate	wn5-long	1600	-30	150	10	5.17	7.45	beaten by wn13-medium	beaten by wn13-long	-
-Moderate	wn13-ultra_short	2400	30	225	48	9.34	16.73	beaten by wn13-medium	beaten by wn13-long	-
-Moderate	wn13-short	2400	0	195	2	8.34	12.66	beaten by wn13-medium	beaten by wn13-long	-
-Moderate	wn13-medium	2400	-15	165	21	4.89	8.34	kept	beaten by wn13-long	-
-Moderate	wn13-long	2400	-15	165	0	5.04	7.24	beaten by wn13-medium	kept	3
-Moderate	wn6-ultra_short	3200	45	255	38	11.43	17.87	beaten by wn6-medium	beaten by wn6-long	-
-Moderate	wn6-short	3200	45	240	10	10.19	15.33	beaten by wn6-medium	beaten by wn6-long	-
-Moderate	wn6-medium	3200	15	210	0	7.87	11.55	kept	beaten by wn6-long	4
-Moderate	wn6-long	3200	15	195	0	8.51	10.61	beaten by wn6-medium	kept	5
-Moderate	wn7-ultra_short	4800	105	330	0	14.19	20.00	beaten by wn7-medium	beaten by wn7-long	-
-Moderate	wn7-short	4800	75	285	0	13.15	18.50	beaten by wn7-medium	beaten by wn7-long	-
-Moderate	wn7-medium	4800	60	270	0	11.78	15.63	kept	beaten by wn7-long	6
-Moderate	wn7-long	4800	45	240	0	12.34	14.72	beaten by wn7-medium	kept	7
-Moderate	wn8-ultra_short	6400	120	330	11	17.17	23.46	beaten by wn8-long	beaten by wn8-long	-
-Moderate	wn8-short	6400	120	330	0	15.53	20.62	beaten by wn8-long	beaten by wn8-long	-
-Moderate	wn8-medium	6400	90	300	0	15.29	19.37	beaten by wn8-long	beaten by wn8-long	-
-Moderate	wn8-long	6400	75	285	0	15.13	17.41	kept	kept	8
-AWGN-SSB	wn1-ultra_short	150	-90	105	0	-4.75	-3.37	beaten by wn1-medium	beaten by wn1-medium	-
-AWGN-SSB	wn1-short	150	-90	75	0	-5.25	-4.59	beaten by wn1-medium	beaten by wn1-medium	-
-AWGN-SSB	wn1-medium	150	-90	45	0	-5.94	-4.79	kept	kept	-
-AWGN-SSB	wn1-long	150	-90	45	0	-5.74	-4.75	beaten by wn1-medium	beaten by wn1-medium	0
-AWGN-SSB	wn2-ultra_short	300	-60	105	0	-2.34	-1.50	beaten by wn2-short	beaten by wn2-long	-
-AWGN-SSB	wn2-short	300	-90	75	0	-3.83	-1.96	kept	beaten by wn2-long	-
-AWGN-SSB	wn2-medium	300	-90	75	0	-3.48	-1.96	beaten by wn2-short	beaten by wn2-long	-
-AWGN-SSB	wn2-long	300	-90	45	0	-3.42	-1.99	beaten by wn2-short	kept	1
-AWGN-SSB	wn3-ultra_short	600	-30	105	0	-0.13	1.22	beaten by wn3-short	beaten by wn3-medium	-
-AWGN-SSB	wn3-short	600	-90	105	0	-1.03	0.23	kept	kept	-
-AWGN-SSB	wn3-medium	600	-90	75	0	-0.77	0.23	beaten by wn3-short	kept	-
-AWGN-SSB	wn3-long	600	-90	75	0	-0.60	0.62	beaten by wn3-short	beaten by wn3-medium	2
-AWGN-SSB	wn4-ultra_short	1200	0	135	0	2.41	3.65	beaten by wn4-medium	beaten by wn4-medium	-
-AWGN-SSB	wn4-short	1200	-30	105	0	2.36	3.37	beaten by wn4-medium	beaten by wn4-medium	-
-AWGN-SSB	wn4-medium	1200	-15	105	0	2.36	3.32	kept	kept	-
-AWGN-SSB	wn4-long	1200	-90	105	0	2.40	3.63	beaten by wn4-medium	beaten by wn4-medium	-
-AWGN-SSB	wn5-ultra_short	1600	0	135	0	2.93	4.22	beaten by wn5-medium	beaten by wn5-medium	-
-AWGN-SSB	wn5-short	1600	-30	135	0	2.87	4.23	beaten by wn5-medium	beaten by wn5-medium	-
-AWGN-SSB	wn5-medium	1600	-30	105	0	2.64	4.06	kept	kept	-
-AWGN-SSB	wn5-long	1600	-60	105	0	2.69	4.12	beaten by wn5-medium	beaten by wn5-medium	-
-AWGN-SSB	wn13-ultra_short	2400	0	180	0	3.98	5.38	beaten by wn13-long	beaten by wn13-long	-
-AWGN-SSB	wn13-short	2400	-15	135	0	3.90	5.17	beaten by wn13-long	beaten by wn13-long	-
-AWGN-SSB	wn13-medium	2400	-30	105	0	3.78	4.57	beaten by wn13-long	beaten by wn13-long	-
-AWGN-SSB	wn13-long	2400	-60	105	0	3.73	4.49	kept	kept	3
-AWGN-SSB	wn6-ultra_short	3200	30	180	0	6.41	7.33	beaten by wn6-medium	beaten by wn6-medium	-
-AWGN-SSB	wn6-short	3200	0	180	0	6.32	7.29	beaten by wn6-medium	beaten by wn6-medium	-
-AWGN-SSB	wn6-medium	3200	0	135	0	6.04	7.24	kept	kept	4
-AWGN-SSB	wn6-long	3200	0	135	0	6.27	7.28	beaten by wn6-medium	beaten by wn6-medium	5
-AWGN-SSB	wn7-ultra_short	4800	75	225	0	10.21	11.66	beaten by wn7-medium	beaten by wn7-medium	-
-AWGN-SSB	wn7-short	4800	30	210	0	10.18	11.62	beaten by wn7-medium	beaten by wn7-medium	-
-AWGN-SSB	wn7-medium	4800	30	210	0	10.03	11.57	kept	kept	6
-AWGN-SSB	wn7-long	4800	0	180	0	10.57	11.76	beaten by wn7-medium	beaten by wn7-medium	7
-AWGN-SSB	wn8-ultra_short	6400	75	225	0	13.15	14.62	beaten by wn8-long	beaten by wn8-long	-
-AWGN-SSB	wn8-short	6400	75	225	0	12.96	14.37	beaten by wn8-long	beaten by wn8-long	-
-AWGN-SSB	wn8-medium	6400	60	210	0	13.12	14.62	beaten by wn8-long	beaten by wn8-long	-
-AWGN-SSB	wn8-long	6400	60	210	0	12.94	14.30	kept	kept	8
+Moderate	wn2-medium	300	-75	120	0	0.87	4.56	beaten by wn2-long	kept	3
+Moderate	wn2-long	300	-90	105	0	-0.15	2.06	kept	not chosen	2
+Moderate	wn3-ultra_short	600	0	180	29	9.94	14.75	beaten by wn3-long	not chosen	-
+Moderate	wn3-short	600	-45	150	10	4.15	10.17	beaten by wn3-long	not chosen	6
+Moderate	wn3-medium	600	-60	135	0	2.58	6.18	beaten by wn3-long	kept	5
+Moderate	wn3-long	600	-60	120	0	1.18	2.97	kept	kept	4
+Moderate	wn4-ultra_short	1200	15	210	22	10.06	15.35	beaten by wn4-long	not chosen	-
+Moderate	wn4-short	1200	0	180	20	9.13	13.56	beaten by wn4-long	not chosen	7
+Moderate	wn4-medium	1200	-15	165	0	6.49	10.13	beaten by wn4-long	not chosen	-
+Moderate	wn4-long	1200	-30	150	0	4.70	7.37	kept	not chosen	-
+Moderate	wn5-ultra_short	1600	30	210	6	9.13	15.39	beaten by wn13-medium	not chosen	-
+Moderate	wn5-short	1600	0	180	0	7.85	13.15	beaten by wn13-medium	not chosen	-
+Moderate	wn5-medium	1600	-15	165	0	5.26	9.19	beaten by wn13-medium	not chosen	-
+Moderate	wn5-long	1600	-30	150	10	5.17	7.45	beaten by wn13-medium	not chosen	-
+Moderate	wn13-ultra_short	2400	30	225	48	9.34	16.73	beaten by wn13-medium	not chosen	-
+Moderate	wn13-short	2400	0	195	2	8.34	12.66	beaten by wn13-medium	kept	9
+Moderate	wn13-medium	2400	-15	165	21	4.89	8.34	kept	not chosen	-
+Moderate	wn13-long	2400	-15	165	0	5.04	7.24	beaten by wn13-medium	not chosen	8
+Moderate	wn6-ultra_short	3200	45	255	38	11.43	17.87	beaten by wn6-medium	kept	-
+Moderate	wn6-short	3200	45	240	10	10.19	15.33	beaten by wn6-medium	not chosen	-
+Moderate	wn6-medium	3200	15	210	0	7.87	11.55	kept	not chosen	10
+Moderate	wn6-long	3200	15	195	0	8.51	10.61	beaten by wn6-medium	not chosen	-
+Moderate	wn7-ultra_short	4800	105	330	0	14.19	20.00	beaten by wn7-medium	kept	13
+Moderate	wn7-short	4800	75	285	0	13.15	18.50	beaten by wn7-medium	not chosen	12
+Moderate	wn7-medium	4800	60	270	0	11.78	15.63	kept	not chosen	11
+Moderate	wn7-long	4800	45	240	0	12.34	14.72	beaten by wn7-medium	not chosen	-
+Moderate	wn8-ultra_short	6400	120	330	11	17.17	23.46	beaten by wn8-long	kept	-
+Moderate	wn8-short	6400	120	330	0	15.53	20.62	beaten by wn8-long	not chosen	-
+Moderate	wn8-medium	6400	90	300	0	15.29	19.37	beaten by wn8-long	not chosen	-
+Moderate	wn8-long	6400	75	285	0	15.13	17.41	kept	not chosen	14
+AWGN-SSB	wn1-ultra_short	150	-90	105	0	-4.75	-3.37	beaten by wn1-medium	kept	-
+AWGN-SSB	wn1-short	150	-90	75	0	-5.25	-4.59	beaten by wn1-medium	kept	-
+AWGN-SSB	wn1-medium	150	-90	45	0	-5.94	-4.79	kept	not chosen	1
+AWGN-SSB	wn1-long	150	-90	45	0	-5.74	-4.75	beaten by wn1-medium	not chosen	0
+AWGN-SSB	wn2-ultra_short	300	-60	105	0	-2.34	-1.50	beaten by wn2-short	kept	-
+AWGN-SSB	wn2-short	300	-90	75	0	-3.83	-1.96	kept	kept	-
+AWGN-SSB	wn2-medium	300	-90	75	0	-3.48	-1.96	beaten by wn2-short	not chosen	3
+AWGN-SSB	wn2-long	300	-90	45	0	-3.42	-1.99	beaten by wn2-short	not chosen	2
+AWGN-SSB	wn3-ultra_short	600	-30	105	0	-0.13	1.22	beaten by wn3-short	kept	-
+AWGN-SSB	wn3-short	600	-90	105	0	-1.03	0.23	kept	kept	6
+AWGN-SSB	wn3-medium	600	-90	75	0	-0.77	0.23	beaten by wn3-short	not chosen	5
+AWGN-SSB	wn3-long	600	-90	75	0	-0.60	0.62	beaten by wn3-short	not chosen	4
+AWGN-SSB	wn4-ultra_short	1200	0	135	0	2.41	3.65	beaten by wn4-medium	not chosen	-
+AWGN-SSB	wn4-short	1200	-30	105	0	2.36	3.37	beaten by wn4-medium	not chosen	7
+AWGN-SSB	wn4-medium	1200	-15	105	0	2.36	3.32	kept	not chosen	-
+AWGN-SSB	wn4-long	1200	-90	105	0	2.40	3.63	beaten by wn4-medium	not chosen	-
+AWGN-SSB	wn5-ultra_short	1600	0	135	0	2.93	4.22	beaten by wn5-medium	kept	-
+AWGN-SSB	wn5-short	1600	-30	135	0	2.87	4.23	beaten by wn5-medium	not chosen	-
+AWGN-SSB	wn5-medium	1600	-30	105	0	2.64	4.06	kept	not chosen	-
+AWGN-SSB	wn5-long	1600	-60	105	0	2.69	4.12	beaten by wn5-medium	not chosen	-
+AWGN-SSB	wn13-ultra_short	2400	0	180	0	3.98	5.38	beaten by wn13-long	not chosen	-
+AWGN-SSB	wn13-short	2400	-15	135	0	3.90	5.17	beaten by wn13-long	kept	9
+AWGN-SSB	wn13-medium	2400	-30	105	0	3.78	4.57	beaten by wn13-long	not chosen	-
+AWGN-SSB	wn13-long	2400	-60	105	0	3.73	4.49	kept	not chosen	8
+AWGN-SSB	wn6-ultra_short	3200	30	180	0	6.41	7.33	beaten by wn6-medium	kept	-
+AWGN-SSB	wn6-short	3200	0	180	0	6.32	7.29	beaten by wn6-medium	not chosen	-
+AWGN-SSB	wn6-medium	3200	0	135	0	6.04	7.24	kept	not chosen	10
+AWGN-SSB	wn6-long	3200	0	135	0	6.27	7.28	beaten by wn6-medium	not chosen	-
+AWGN-SSB	wn7-ultra_short	4800	75	225	0	10.21	11.66	beaten by wn7-medium	kept	13
+AWGN-SSB	wn7-short	4800	30	210	0	10.18	11.62	beaten by wn7-medium	not chosen	12
+AWGN-SSB	wn7-medium	4800	30	210	0	10.03	11.57	kept	not chosen	11
+AWGN-SSB	wn7-long	4800	0	180	0	10.57	11.76	beaten by wn7-medium	not chosen	-
+AWGN-SSB	wn8-ultra_short	6400	75	225	0	13.15	14.62	beaten by wn8-long	kept	-
+AWGN-SSB	wn8-short	6400	75	225	0	12.96	14.37	beaten by wn8-long	not chosen	-
+AWGN-SSB	wn8-medium	6400	60	210	0	13.12	14.62	beaten by wn8-long	not chosen	-
+AWGN-SSB	wn8-long	6400	60	210	0	12.94	14.30	kept	not chosen	14
 Poor-SSB	wn1-ultra_short	150	-30	165	971	never	never	never meets	never meets	-
 Poor-SSB	wn1-short	150	-60	135	118	5.88	never	beaten by wn1-long	never meets	-
-Poor-SSB	wn1-medium	150	-75	120	29	-2.33	1.24	beaten by wn1-long	beaten by wn1-long	-
+Poor-SSB	wn1-medium	150	-75	120	29	-2.33	1.24	beaten by wn1-long	kept	1
 Poor-SSB	wn1-long	150	-75	120	0	-2.82	-0.42	kept	kept	0
 Poor-SSB	wn2-ultra_short	300	-15	180	990	never	never	never meets	never meets	-
 Poor-SSB	wn2-short	300	-45	150	137	5.45	never	beaten by wn2-long	never meets	-
-Poor-SSB	wn2-medium	300	-60	150	15	2.13	5.79	beaten by wn2-long	beaten by wn2-long	-
-Poor-SSB	wn2-long	300	-75	135	0	1.78	4.03	kept	kept	1
-Poor-SSB	wn3-ultra_short	600	15	210	59	12.00	17.93	beaten by wn3-long	beaten by wn3-long	-
-Poor-SSB	wn3-short	600	-30	180	29	5.04	10.06	beaten by wn3-long	beaten by wn3-long	-
-Poor-SSB	wn3-medium	600	-45	165	20	3.05	5.39	beaten by wn3-long	beaten by wn3-long	-
-Poor-SSB	wn3-long	600	-45	150	10	2.40	4.49	kept	kept	2
+Poor-SSB	wn2-medium	300	-60	150	15	2.13	5.79	beaten by wn2-long	not chosen	3
+Poor-SSB	wn2-long	300	-75	135	0	1.78	4.03	kept	not chosen	2
+Poor-SSB	wn3-ultra_short	600	15	210	59	12.00	17.93	beaten by wn3-long	not chosen	-
+Poor-SSB	wn3-short	600	-30	180	29	5.04	10.06	beaten by wn3-long	not chosen	6
+Poor-SSB	wn3-medium	600	-45	165	20	3.05	5.39	beaten by wn3-long	kept	5
+Poor-SSB	wn3-long	600	-45	150	10	2.40	4.49	kept	kept	4
 Poor-SSB	wn4-ultra_short	1200	30	240	125	13.79	never	beaten by wn4-long	never meets	-
-Poor-SSB	wn4-short	1200	15	210	49	10.61	14.64	beaten by wn4-long	beaten by wn5-long	-
-Poor-SSB	wn4-medium	1200	0	195	20	7.97	11.21	beaten by wn4-long	beaten by wn5-long	-
-Poor-SSB	wn4-long	1200	-15	180	0	6.74	9.02	kept	beaten by wn5-long	-
-Poor-SSB	wn5-ultra_short	1600	45	240	63	12.63	22.43	beaten by wn5-long	beaten by wn5-long	-
-Poor-SSB	wn5-short	1600	15	210	20	10.13	14.40	beaten by wn5-long	beaten by wn5-long	-
-Poor-SSB	wn5-medium	1600	0	195	20	7.13	9.95	beaten by wn5-long	beaten by wn5-long	-
-Poor-SSB	wn5-long	1600	-15	180	10	7.03	8.99	kept	kept	-
+Poor-SSB	wn4-short	1200	15	210	49	10.61	14.64	beaten by wn4-long	kept	7
+Poor-SSB	wn4-medium	1200	0	195	20	7.97	11.21	beaten by wn4-long	not chosen	-
+Poor-SSB	wn4-long	1200	-15	180	0	6.74	9.02	kept	not chosen	-
+Poor-SSB	wn5-ultra_short	1600	45	240	63	12.63	22.43	beaten by wn5-long	kept	-
+Poor-SSB	wn5-short	1600	15	210	20	10.13	14.40	beaten by wn5-long	not chosen	-
+Poor-SSB	wn5-medium	1600	0	195	20	7.13	9.95	beaten by wn5-long	not chosen	-
+Poor-SSB	wn5-long	1600	-15	180	10	7.03	8.99	kept	not chosen	-
 Poor-SSB	wn13-ultra_short	2400	45	255	741	never	never	never meets	never meets	-
-Poor-SSB	wn13-short	2400	15	225	152	12.15	never	beaten by wn13-long	never meets	-
-Poor-SSB	wn13-medium	2400	0	195	10	7.50	11.02	beaten by wn13-long	beaten by wn13-long	-
-Poor-SSB	wn13-long	2400	0	195	0	7.10	9.47	kept	kept	3
+Poor-SSB	wn13-short	2400	15	225	152	12.15	never	beaten by wn13-long	never meets	9
+Poor-SSB	wn13-medium	2400	0	195	10	7.50	11.02	beaten by wn13-long	not chosen	-
+Poor-SSB	wn13-long	2400	0	195	0	7.10	9.47	kept	not chosen	8
 Poor-SSB	wn6-ultra_short	3200	60	285	910	never	never	never meets	never meets	-
 Poor-SSB	wn6-short	3200	60	270	464	23.84	never	beaten by wn6-long	never meets	-
-Poor-SSB	wn6-medium	3200	30	240	47	12.55	17.75	beaten by wn6-long	beaten by wn6-long	4
-Poor-SSB	wn6-long	3200	30	225	9	12.41	15.08	kept	kept	5
-Poor-SSB	wn7-ultra_short	4800	120	360	271	21.74	never	beaten by wn7-long	never meets	-
-Poor-SSB	wn7-short	4800	90	315	120	17.00	never	beaten by wn7-long	never meets	-
-Poor-SSB	wn7-medium	4800	75	300	121	15.91	never	beaten by wn7-long	never meets	6
-Poor-SSB	wn7-long	4800	60	270	89	14.52	19.74	kept	kept	7
+Poor-SSB	wn6-medium	3200	30	240	47	12.55	17.75	beaten by wn6-long	not chosen	10
+Poor-SSB	wn6-long	3200	30	225	9	12.41	15.08	kept	not chosen	-
+Poor-SSB	wn7-ultra_short	4800	120	360	271	21.74	never	beaten by wn7-long	never meets	13
+Poor-SSB	wn7-short	4800	90	315	120	17.00	never	beaten by wn7-long	never meets	12
+Poor-SSB	wn7-medium	4800	75	300	121	15.91	never	beaten by wn7-long	never meets	11
+Poor-SSB	wn7-long	4800	60	270	89	14.52	19.74	kept	not chosen	-
 Poor-SSB	wn8-ultra_short	6400	135	360	985	never	never	never meets	never meets	-
 Poor-SSB	wn8-short	6400	135	360	871	never	never	never meets	never meets	-
 Poor-SSB	wn8-medium	6400	105	330	958	never	never	never meets	never meets	-
-Poor-SSB	wn8-long	6400	90	315	971	never	never	never meets	never meets	8
+Poor-SSB	wn8-long	6400	90	315	971	never	never	never meets	never meets	14
