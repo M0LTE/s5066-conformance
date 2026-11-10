@@ -86,6 +86,7 @@ A decoder that rejects input reports one of these kinds. Harnesses compare the k
 | `unknown_type` | `sis_frame` and `sis_stream`: the type byte is 0 or above 27 (and so not a primitive of this edition or a deprecated one). |
 | `deprecated_type` | `sis_frame` and `sis_stream`: the type is a hard link (6 to 13) or expedited data (24 to 27) primitive. It is recognised and reported, never decoded. |
 | `bad_length` | `sis_frame` and `sis_stream`: the body length does not fit the type's layout, or an inner size field disagrees with the body. |
+| `bad_compression` | `cftp_gzip`: the data do not decompress (bad header, bad check value, cut short). |
 
 Where several apply, the kind is decided by the check order its kind registers (for `dpdu`, section 3.3), so both languages report the same kind. A CRC-32 mismatch on a segment is not an error kind: Annex C requires the header to be processed when its own CRC is valid, whatever the segment CRC says [Ed4 C.4.2.8, p.C-17], so the decoder returns the value with `segment_crc_ok` false.
 
@@ -107,6 +108,11 @@ A kind is added to this table, and to the validator, in the same change that add
 | `drc_ed3_basic_rate` | `{"wn", "interleaver"}`: a rung our ladder can hold (WN 1 to 8 or 13; ultra_short, short, medium, long) | The 2-byte ED3-BASIC-RATE EOW we send for that rung (section 6.2; interp C-1273), as kind `eow` encodes it. Encode only. |
 | `sis_frame` | Section 3.7 | One whole SIS Access Protocol frame, from the first preamble byte to the last body byte. |
 | `sis_stream` | Section 3.7 | A byte stream made of several frames, junk and partial frames, with the events a streaming decoder gives. |
+| `rcop1` | Section 3.10 | One RCOPv1 PDU of CFTP: the 4-octet header, then the data. |
+| `bftp1` | Section 3.10 | One whole BFTPv1 PDU, from its DLE STX to the last file octet. |
+| `cftp_mail` | Section 3.10 | One uncompressed CFTP mail file. |
+| `cftp_recipients` | Section 3.10 | One CFTP RecipientList field, without its line feed. |
+| `cftp_gzip` | Section 3.10 | Compressed CFTP data. Decode only. |
 
 For `crc16` and `crc32`, `register` is the final value of the Annex C shift-register code example after all bytes of `data` [Ed4 C.4.2.8, p.C-18; C.4.2.11, p.C-21], and `bytes` is that register sent least significant byte first [Ed4 pp.C-18, C-22]. These kinds are `encode` only.
 
@@ -312,6 +318,30 @@ Reserved bits are zero in every case here (C-1020, C-0094): a receiver ignores t
 ```
 
 `bytes` is the m-byte address field alone, as in section 3.3. A length of 0, or over 7, is `bad_address_size`. The group flag of types 7 and 8 is a field of those D_PDUs and is not part of this kind (C-0122).
+
+### 3.10 The CFTP kinds (Annex V)
+
+CFTP is an application above the SIS (Annex V, SAP 12), not part of the node, so these kinds are for the CFTP client library. Its behaviour (acknowledgement, retries, reassembly) is tested by each implementation's own tests, cited in the matrix `tests` column. `peer_edition` is not used. Strings are octets, one character per octet; the cases use ASCII only.
+
+| Kind | Value | Bytes |
+|---|---|---|
+| `rcop1` | `connection_id` (0 to 15), `u_pdu_id` (0 to 255), `segment` (0 to 65535), `data` (hex) | Octet 0: connection ID in bits 7 to 4, reserved bits 3 to 0; octet 1 the U_PDU ID; octets 2 and 3 the segment number, most significant first; then the data [Ed4 V.4, Figure V-2, p.V-2]. |
+| `bftp1` | `file_name` (hex, 0 to 255 octets), `file_data` (hex) | `10 02`, SIZE_OF_FILENAME (one octet), the name, SIZE_OF_FILE (four octets, most significant first), the data [Ed4 V.4.1.1, Figure V-4, p.V-4]. |
+| `cftp_mail` | `message_id` (string), `recipient_list` (string, as carried), `message` (hex) | MessageID, LF, RecipientList, LF, MessageSize in decimal digits, LF, then the Message; no LF after it [Ed4 V.6, V.7, pp.V-5 to V-7]. |
+| `cftp_recipients` | `return_path` (string, empty for none), `recipients` (list of strings, at least one) | The return path, then a comma and each recipient [Ed4 V.7 step 3, p.V-7]. |
+| `cftp_gzip` | `data` (hex): the decompressed octets | RFC 1952 gzip data (one or more members), or, when they do not start `1f 8b`, an RFC 1950 zlib stream (interp V-0082). |
+
+A Message Acknowledgement is an `rcop1` with `data` `100b` and `segment` 0 (V-0044, interp V-0075).
+
+`cftp_gzip` is decode only, because deflate output is not unique: two correct compressors may give different bytes for the same input. An encoder is checked by decompressing what it makes.
+
+Decode check order, stopping at the first failure:
+
+- `rcop1`: fewer than 4 octets is `truncated`. Reserved bits are ignored (interp V-0081), so a case with them set is `decode` only; an encoder writes them as 0.
+- `bftp1`: fewer than 2 octets `truncated`; not `10 02` `bad_sync`; then, in turn, too short for the name length, for the name and SIZE_OF_FILE, and for the data, `truncated`; octets after the data `trailing_bytes`.
+- `cftp_mail`: no LF after the MessageID `truncated`; an empty MessageID `invalid_field`; no LF after the RecipientList or after the MessageSize `truncated`; a MessageSize that is empty, longer than 15 characters or not all digits `invalid_field` (leading zeros are accepted, and our encoder writes none); fewer octets after it than it says `truncated`, more `trailing_bytes` (interp V-0085).
+- `cftp_recipients`: the field is split at every comma and spaces around each part are removed; the first part is the return path (a lone space so becomes empty). No comma, or an empty part after the first, is `invalid_field` (interp V-0086). So a case with spaces is `decode` only; an encoder writes the return path, then a comma before each recipient.
+- `cftp_gzip`: any failure to decompress is `bad_compression`.
 
 ## 4. T2 scenario traces
 
