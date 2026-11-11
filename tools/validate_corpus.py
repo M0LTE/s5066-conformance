@@ -36,7 +36,8 @@ ED4_ONLY_TYPES = set(range(9, 15))
 INTERLEAVERS = {"ultra_short", "very_short", "short", "medium", "long", "very_long"}
 ERROR_KINDS = {"truncated", "bad_sync", "header_crc", "bad_header_size",
                "bad_address_size", "trailing_bytes", "invalid_field",
-               "bad_version", "bad_size", "unknown_type", "deprecated_type", "bad_length"}
+               "bad_version", "bad_size", "unknown_type", "deprecated_type", "bad_length",
+               "bad_compression"}
 
 # Registered D_PDU type-specific field sets: name -> "bool", "hex<N>" (at most N bytes) or a max int.
 _DATA = {"c_pdu_start": "bool", "c_pdu_end": "bool", "deliver_in_order": "bool",
@@ -313,6 +314,8 @@ def check_t1(path, err, ctx):
             check_pdu_case(err, where, c, b, kind)
         elif kind in ("drc_smooth", "drc_ed3_basic_rate"):
             check_drc_case(err, where, c, b, kind)
+        elif kind in CFTP_CODECS:
+            check_cftp_case(err, where, c, b, kind)
         else:
             err.add(where, "unregistered kind %r" % (kind,))
 
@@ -1056,6 +1059,169 @@ def check_pdu_case(err, where, c, b, kind):
             if enc != b:
                 err.add(where, "bytes disagree with the reference encoder: %s" % enc.hex())
     res, out = (cpdu_decode if kind == "cpdu" else spdu_decode)(b)
+    if "error" in c:
+        if res != "error":
+            err.add(where, "bytes decode to a value, case says error %s" % c["error"])
+        elif out != c["error"]:
+            err.add(where, "check order gives %s, case says error %s" % (out, c["error"]))
+    elif res != "value":
+        err.add(where, "bytes decode to error %s" % out)
+    elif out != c["value"]:
+        diff = sorted(k for k in set(out) | set(c["value"]) if out.get(k) != c["value"].get(k))
+        err.add(where, "value disagrees with the bytes in: %s" % ", ".join(diff))
+
+
+# ---------------------------------------------------------------- CFTP (Annex V)
+# Kinds of corpus-format.md section 3.10: rcop1, bftp1, cftp_mail, cftp_recipients
+# and cftp_gzip. Reference encoders and decoders, written from the annex figures.
+
+CFTP_KEYS = {
+    "rcop1": ("connection_id", "u_pdu_id", "segment", "data"),
+    "bftp1": ("file_name", "file_data"),
+    "cftp_mail": ("message_id", "recipient_list", "message"),
+    "cftp_recipients": ("return_path", "recipients"),
+    "cftp_gzip": ("data",),
+}
+
+
+def rcop1_encode(v):
+    return bytes([v["connection_id"] << 4, v["u_pdu_id"], v["segment"] >> 8, v["segment"] & 255]) + bytes.fromhex(v["data"])
+
+
+def rcop1_decode(b):
+    if len(b) < 4:
+        return "error", "truncated"
+    # Reserved bits 3 to 0 of octet 0 are ignored on receipt (interp V-0081).
+    return "value", {"connection_id": b[0] >> 4, "u_pdu_id": b[1], "segment": (b[2] << 8) | b[3], "data": b[4:].hex()}
+
+
+def bftp1_encode(v):
+    name, data = bytes.fromhex(v["file_name"]), bytes.fromhex(v["file_data"])
+    return b"\x10\x02" + bytes([len(name)]) + name + len(data).to_bytes(4, "big") + data
+
+
+def bftp1_decode(b):
+    if len(b) < 2:
+        return "error", "truncated"
+    if b[0] != 0x10 or b[1] != 0x02:
+        return "error", "bad_sync"
+    if len(b) < 3:
+        return "error", "truncated"
+    n = b[2]
+    if len(b) < 7 + n:
+        return "error", "truncated"
+    p = int.from_bytes(b[3 + n:7 + n], "big")
+    if len(b) < 7 + n + p:
+        return "error", "truncated"
+    if len(b) > 7 + n + p:
+        return "error", "trailing_bytes"
+    return "value", {"file_name": b[3:3 + n].hex(), "file_data": b[7 + n:].hex()}
+
+
+def cftp_mail_encode(v):
+    mid, rl, msg = v["message_id"].encode("latin-1"), v["recipient_list"].encode("latin-1"), bytes.fromhex(v["message"])
+    if not mid or b"\n" in mid or b"\n" in rl:
+        raise ValueError("not encodable")
+    return mid + b"\n" + rl + b"\n" + str(len(msg)).encode("ascii") + b"\n" + msg
+
+
+def cftp_mail_decode(b):
+    i = b.find(b"\n")
+    if i < 0:
+        return "error", "truncated"
+    if i == 0:
+        return "error", "invalid_field"
+    j = b.find(b"\n", i + 1)
+    if j < 0:
+        return "error", "truncated"
+    k = b.find(b"\n", j + 1)
+    if k < 0:
+        return "error", "truncated"
+    size = b[j + 1:k]
+    if not size or len(size) > 15 or any(c < 0x30 or c > 0x39 for c in size):
+        return "error", "invalid_field"
+    n = int(size)
+    rest = b[k + 1:]
+    if len(rest) < n:
+        return "error", "truncated"
+    if len(rest) > n:
+        return "error", "trailing_bytes"
+    return "value", {"message_id": b[:i].decode("latin-1"), "recipient_list": b[i + 1:j].decode("latin-1"), "message": rest.hex()}
+
+
+def cftp_recipients_encode(v):
+    rs = v["recipients"]
+    if not rs or any(not r or "," in r for r in rs) or "," in v["return_path"]:
+        raise ValueError("not encodable")
+    return ",".join([v["return_path"]] + rs).encode("latin-1")
+
+
+def cftp_recipients_decode(b):
+    parts = [p.strip(b" ").decode("latin-1") for p in b.split(b",")]
+    if len(parts) < 2 or any(not p for p in parts[1:]):
+        return "error", "invalid_field"
+    return "value", {"return_path": parts[0], "recipients": parts[1:]}
+
+
+def cftp_gzip_decode(b):
+    import gzip
+    import zlib
+    try:
+        if b[:2] == b"\x1f\x8b":
+            return "value", {"data": gzip.decompress(b).hex()}
+        return "value", {"data": zlib.decompress(b).hex()}
+    except (OSError, EOFError, zlib.error):
+        return "error", "bad_compression"
+
+
+CFTP_CODECS = {
+    "rcop1": (rcop1_encode, rcop1_decode),
+    "bftp1": (bftp1_encode, bftp1_decode),
+    "cftp_mail": (cftp_mail_encode, cftp_mail_decode),
+    "cftp_recipients": (cftp_recipients_encode, cftp_recipients_decode),
+    "cftp_gzip": (None, cftp_gzip_decode),
+}
+
+
+def check_cftp_value(err, where, v, kind):
+    check_keys(err, where, v, CFTP_KEYS[kind])
+    ok = True
+    if kind == "rcop1":
+        ok = (is_int(v.get("connection_id"), 0, 15) and is_int(v.get("u_pdu_id"), 0, 255)
+              and is_int(v.get("segment"), 0, 65535) and is_hex(v.get("data")))
+    elif kind == "bftp1":
+        ok = is_hex(v.get("file_name")) and len(v["file_name"]) <= 510 and is_hex(v.get("file_data"))
+    elif kind == "cftp_mail":
+        ok = isinstance(v.get("message_id"), str) and isinstance(v.get("recipient_list"), str) and is_hex(v.get("message"))
+    elif kind == "cftp_recipients":
+        ok = (isinstance(v.get("return_path"), str) and isinstance(v.get("recipients"), list)
+              and all(isinstance(r, str) for r in v["recipients"]))
+    elif kind == "cftp_gzip":
+        ok = is_hex(v.get("data"))
+    if not ok:
+        err.add(where, "%s value has a field of the wrong type or range" % kind)
+    return ok
+
+
+def check_cftp_case(err, where, c, b, kind):
+    if "peer_edition" in c:
+        err.add(where, "peer_edition is only for dpdu")
+    d = c.get("dir")
+    enc, dec = CFTP_CODECS[kind]
+    if enc is None and d != "decode":
+        err.add(where, "%s cases are decode only" % kind)
+    if "value" in c:
+        if not check_cftp_value(err, where, c["value"], kind):
+            return
+        if d in ("encode", "both") and enc is not None:
+            try:
+                e = enc(c["value"])
+            except (KeyError, ValueError, TypeError):
+                err.add(where, "the value cannot be encoded")
+                return
+            if e != b:
+                err.add(where, "bytes disagree with the reference encoder: %s" % e.hex())
+    res, out = dec(b)
     if "error" in c:
         if res != "error":
             err.add(where, "bytes decode to a value, case says error %s" % c["error"])
